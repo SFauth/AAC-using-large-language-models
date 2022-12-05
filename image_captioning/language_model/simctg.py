@@ -17,12 +17,12 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import datetime
 
-train_fct = CrossEntropyLoss()
-val_fct = CrossEntropyLoss(reduction='none')
+train_fct = CrossEntropyLoss() # defining training loss function
+val_fct = CrossEntropyLoss(reduction='none') # defining validation loss function
 class SimCTG(nn.Module):
     def __init__(self, model_name, sos_token, pad_token):
         super(SimCTG, self).__init__()
-        from transformers import AutoTokenizer, GPT2LMHeadModel
+        from transformers import AutoTokenizer, GPT2LMHeadModel  #GPT2LMHeadModel: 
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.sos_token, self.sos_token_id = self.add_special_token(sos_token)
         print ('sos token is {}, sos token id is {}'.format(self.sos_token, self.sos_token_id))
