@@ -1,4 +1,5 @@
 # coding=utf-8
+import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -12,6 +13,9 @@ import progressbar
 from PIL import Image
 
 import logging
+
+os.environ["CUDA_VISIBLE_DEVICES"]="4,5,6,7"
+
 logging.getLogger('transformers.generation_utils').disabled = True
 
 def parse_config():

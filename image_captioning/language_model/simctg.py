@@ -12,7 +12,7 @@ import torch.nn.functional as F
 from torch.nn import CrossEntropyLoss
 from loss_func import contrastive_loss
 
-import seaborn as sns
+#import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
 import datetime
