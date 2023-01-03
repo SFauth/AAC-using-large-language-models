@@ -1,2 +1,2 @@
 python cocoeval.py\
-    --result_file_path ../inference_result/mscoco/magic_result.json
+    --result_file_path ../inference_result/clotho_v2.1/baselines/top_k_result_run_1.json
