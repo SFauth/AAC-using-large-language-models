@@ -124,8 +124,10 @@ def model_training(args, data, model, total_steps, print_every, save_every, ckpt
                 print ('Saving model...')
                 one_val_ppl = np.exp(one_val_loss)
                 one_val_ppl = round(one_val_ppl, 3)
-                save_name = 'training_step_{}_train_mle_loss_{}_train_cl_loss_{}_dev_loss_{}_dev_ppl_{}'.format(effective_batch_acm,
-                round(one_train_loss,5), round(one_train_cl_loss,5), round(one_val_loss,5), one_val_ppl)
+                # makes save_name terrible for reproduction
+                #save_name = 'training_step_{}_train_mle_loss_{}_train_cl_loss_{}_dev_loss_{}_dev_ppl_{}'.format(effective_batch_acm,
+                #round(one_train_loss,5), round(one_train_cl_loss,5), round(one_val_loss,5), one_val_ppl)
+                save_name = 'result'
 
                 model_save_path = ckpt_save_path + '/' + save_name
                 import os
@@ -137,7 +139,7 @@ def model_training(args, data, model, total_steps, print_every, save_every, ckpt
                     model.module.save_model(model_save_path)
                 else:
                     model.save_model(model_save_path)
-                print ('Model Saved!')
+                print (str("model saved in") + str(model_save_path))
 
                 # --------------------------------------------------------------------------------------------- #
                 # removing extra checkpoints...

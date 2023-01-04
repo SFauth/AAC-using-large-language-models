@@ -10,7 +10,11 @@ import argparse
 import numpy as np
 import torch.nn.functional as F
 from torch.nn import CrossEntropyLoss
-from language_model.loss_func import contrastive_loss
+
+try:
+    from language_model.loss_func import contrastive_loss
+except:
+    from loss_func import contrastive_loss
 
 #import seaborn as sns
 #import matplotlib.pyplot as plt
