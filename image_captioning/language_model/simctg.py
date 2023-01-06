@@ -138,7 +138,7 @@ class SimCTG(nn.Module):
         return ' '.join(text.split()).strip()
 
     @torch.no_grad()
-    def magic_search(self, input_ids, beam_width, alpha, decoding_len, beta, image_instance, clip, 
+    def magic_search(self, input_ids, beam_width, alpha, decoding_len, beta, sound_instance, clip, 
         clip_text_max_len):#, add_token_level_score=False):
         prefix_len = input_ids.size()[1]
         from utlis import PlugAndPlayContrastiveDecodingOneStepFast
@@ -146,7 +146,7 @@ class SimCTG(nn.Module):
         generated = [item for item in input_ids.tolist()]
         input_ids_for_class = input_ids.clone()
 
-        image_embeds = clip.compute_image_representation_from_image_instance(image_instance)
+        image_embeds = clip.compute_image_representation_from_image_instance(sound_instance)
 
         start_time = datetime.datetime.now()
 

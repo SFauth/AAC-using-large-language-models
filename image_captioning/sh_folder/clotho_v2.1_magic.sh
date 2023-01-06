@@ -1,0 +1,13 @@
+CUDA_VISIBLE_DEVICES=[5,6,7] python ../inference_magic.py\
+    --language_model_code_path ../language_model/\
+    --language_model_name cambridgeltl/magic_mscoco\
+    --clip_path ../clip/\
+    --clip_name ../clip/AudioCLIP/assets/AudioCLIP-Full-Training\ 
+    --test_image_prefix_path ../data/clotho_v2.1/test_sounds/\
+    --test_path ../data/clotho_v2.1/clotho_v2.1_test.json\
+    --decoding_len 16\
+    --k 45\
+    --alpha 0.1\
+    --beta 2.0\
+    --save_path_prefix ../inference_result/clotho_v2.1/magic/\
+    --save_name magic_clotho_v.2.1_run_1_result.json

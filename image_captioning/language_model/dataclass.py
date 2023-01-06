@@ -9,6 +9,8 @@ class Data:
     def __init__(self, model_name, train_path, dev_path, test_path, max_len, 
         sos_token, pad_token, add_eos_token_to_data):
         '''
+            init just tokenizes train, val and test data and inits functions
+
             model_name: gpt2
             train_path: training data path
             dev_path: validation data path
@@ -70,8 +72,11 @@ class Data:
         p = progressbar.ProgressBar(n)
         p.start()
         for i in range(n):
+            # create tokens for every input sentence 
             p.update(i)
             text = lines[i].strip('\n')
+            # add tokens to token and token_id list
+            # ([0]: SOS, 20, 50, EOS)  (Start of speech, I, am, End of speech)
             self.process_one_text(text, res_token_list, res_token_id_list)
         p.finish()
         print ('{} processed!'.format(path))
@@ -81,6 +86,7 @@ class Data:
         tokens = self.tokenizer.tokenize(text, max_length=self.max_len, truncation=True)
         if len(tokens) <= 1: # filter out too short sequence
             return
+        # add sos and eos tokens to tokens of current caption
         tokens = [self.sos_token] + tokens[:self.max_len]
         if self.add_eos_token_to_data:
             tokens = tokens + [self.eos_token]
@@ -97,6 +103,12 @@ class Data:
         return batch_tensor, batch_mask
 
     def process_output(self, batch_tgt_id_list):
+        # for every sample, transform token id's to tensor
+        # pad tensor to maximum length, as some captions are longer than others
+        # assume one sequence of tokens to be the output
+        # assume other sequences of tokens to be the inputs
+        # explain one sample of batch with other samples of the batch 
+
         batch_tgt_id_list = [torch.LongTensor(item) for item in batch_tgt_id_list]
         batch_tgt_tensor, _ = self.pad_batch(batch_tgt_id_list) # padded target sequence
         batch_tgt_input_tensor = batch_tgt_tensor[:, :-1].clone()
@@ -105,10 +117,14 @@ class Data:
 
     def parse_batch(self, batch_id_list):
         batch_input, batch_labels = self.process_output(batch_id_list)
+        # give padded tokens value -100
         batch_labels[batch_labels[:, :] == self.pad_token_id] = -100
         return batch_input, batch_labels
 
     def get_next_train_batch(self, batch_size):
+        # draw n=batch_size samples from list of all sample's tokens.
+        # save tokens and token_ids of every drawn sample
+    
         batch_idx_list = random.sample(self.train_idx_list, batch_size)
         batch_id_list, batch_token_list = [], []
 
@@ -124,6 +140,7 @@ class Data:
             curr_select_idx, instance_num = self.dev_current_idx, self.dev_num
             tgt_token_id_list, tgt_token_list = self.dev_token_id_list, self.dev_token_list
         elif mode == 'test':
+             # current item = 0, total test items = 1045
             curr_select_idx, instance_num = self.test_current_idx, self.test_num
             tgt_token_id_list, tgt_token_list = self.test_token_id_list, self.test_token_list
         else:

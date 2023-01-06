@@ -11,6 +11,7 @@ import time
 import logging
 import progressbar
 from PIL import Image
+import librosa
 
 import logging
 
@@ -32,6 +33,8 @@ def parse_config():
     parser.add_argument("--test_path", type=str)
     # decoding configuration
     parser.add_argument("--decoding_len", type=int, default=16, help='maximum length of (prefix + generated continuation)')
+    # sample rate 
+    parser.add_argument("--sample_rate", type=int, default=44100)
     # magic configuration
     parser.add_argument("--k", type=int, default=-1, help='k for magic search')
     parser.add_argument("--alpha", type=float, default=-1.0, help="alpha for magic search")
@@ -74,15 +77,16 @@ if __name__ == '__main__':
     print ('Data loaded.')
     print ('Number of test instances is {}'.format(len(item_list)))
     
+    # get AudioCLIP
     import sys
-    sys.path.append(args.clip_path)
-    print ('Loading CLIP...')
-    from clip import CLIP
-    clip = CLIP(args.clip_name)
+    sys.path.append(args.clip_path)  # define path to AudioCLIP
+    print ('Loading AudioCLIP...')
+    from AudioCLIP.audioclip import AudioCLIP
+    clip = AudioCLIP(pretrained=args.clip_name) #ACLP *.pt
     if cuda_available:
         clip = clip.cuda(device)
     clip.eval()
-    print ('CLIP loaded!')
+    print ('AudioCLIP loaded!')
 
     print ('Loading off-the-shelf language model...')
     import sys
@@ -111,20 +115,21 @@ if __name__ == '__main__':
 
             one_res_dict = {
                 'split':one_test_dict['split'],
-                'image_name':one_test_dict['image_name'],
+                'sound_name':one_test_dict['sound_name'],
                 #'file_path':one_test_dict['file_path'],
                 'captions':one_test_dict['captions']
             }
 
-            image_full_path = args.test_image_prefix_path + '/' + one_test_dict['image_name']
-            image_instance = Image.open(image_full_path)
+            sound_full_path = args.test_image_prefix_path + '/' + one_test_dict['sound_name']
+            # create sound instance 
+            sound_instance, _ = librosa.load(sound_full_path, sr=args.sample_rate)
             input_ids = get_prompt_id(sos_token, generation_model.tokenizer)
             if cuda_available:
                 input_ids = input_ids.cuda(device)
 
             try:
                 output_text = generation_model.magic_search(input_ids, args.k, args.alpha, args.decoding_len, 
-                    args.beta, image_instance, clip, clip_text_max_len)
+                    args.beta, sound_instance, clip, clip_text_max_len)
 
                 one_res_dict['prediction'] = output_text
                 result_list.append(one_res_dict)
