@@ -4,13 +4,15 @@ import librosa
 from torch import nn
 from PIL import Image
 
+
 class CLIP(nn.Module):
     def __init__(self, model_name):
         super(CLIP, self).__init__()
         # model name: e.g. openai/clip-vit-base-patch32
         print ('Initializing AudioCLIP model...')
-        from AudioCLIP.audioclip import AudioCLIP
-        self.aclp = AudioCLIP(pretrained=f'../assets/AudioCLIP-Full-Training.pt')
+
+        from clip.AudioCLIP.model.audioclip import AudioCLIP
+        self.aclp = AudioCLIP(pretrained=model_name)
         self.cuda_has_been_checked = False
         print ('AudioCLIP model initialized.')
 
@@ -113,12 +115,14 @@ class CLIP(nn.Module):
             image_embeds: 1 x embed_dim
             text_embeds: len(text_list) x embed_dim
         '''
+        
         image_embeds = image_embeds / image_embeds.norm(dim=-1, keepdim=True)
         text_embeds = text_embeds / text_embeds.norm(dim=-1, keepdim=True)
         #logit_scale = self.model.logit_scale.exp()
         logit_scale = torch.clamp(self.aclp.logit_scale_ai.exp(), min=1.0, max=100.0)
         logits_per_text = torch.matmul(text_embeds, image_embeds.t()) * logit_scale
-        logits_per_image = logits_per_text.T
+        logits_per_image = torch.unsqueeze(logits_per_text.T, 0)
+
         return logits_per_image.softmax(dim=1) # 1 x len(text_list)
 
     def compute_image_text_similarity_via_raw_text(self, image_embeds, text_list):

@@ -12,6 +12,7 @@ import logging
 import progressbar
 from PIL import Image
 import librosa
+import sys
 
 import logging
 
@@ -61,6 +62,7 @@ if __name__ == '__main__':
 
     save_path_prefix = args.save_path_prefix
     import os
+    
     if os.path.exists(save_path_prefix):
         pass
     else: # recursively construct directory
@@ -80,9 +82,10 @@ if __name__ == '__main__':
     # get AudioCLIP
     import sys
     sys.path.append(args.clip_path)  # define path to AudioCLIP
+
     print ('Loading AudioCLIP...')
-    from AudioCLIP.audioclip import AudioCLIP
-    clip = AudioCLIP(pretrained=args.clip_name) #ACLP *.pt
+    from clip.clip import CLIP
+    clip = CLIP(model_name=args.clip_name) #ACLP *.pt # er soll hier CLIP aus clip.py laden (dort wird AudioCLIP geladen)
     if cuda_available:
         clip = clip.cuda(device)
     clip.eval()
@@ -127,16 +130,18 @@ if __name__ == '__main__':
             if cuda_available:
                 input_ids = input_ids.cuda(device)
 
-            try:
-                output_text = generation_model.magic_search(input_ids, args.k, args.alpha, args.decoding_len, 
-                    args.beta, sound_instance, clip, clip_text_max_len)
+            #try:
+            output_text = generation_model.magic_search(input_ids, args.k, args.alpha, args.decoding_len, 
+                args.beta, sound_instance, clip, clip_text_max_len)
 
-                one_res_dict['prediction'] = output_text
-                result_list.append(one_res_dict)
+            one_res_dict['prediction'] = output_text
+            result_list.append(one_res_dict)
+            """
             except:
                 invalid_num += 1
                 print ('invalid number is {}'.format(invalid_num))
                 continue
+            """    
         p.finish()
     print ('Inference completed!')
 
