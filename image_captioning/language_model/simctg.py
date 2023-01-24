@@ -34,7 +34,7 @@ class SimCTG(nn.Module):
         print ('pad token is {}, pad token id is {}'.format(self.pad_token, self.pad_token_id))
         self.eos_token, self.eos_token_id = self.tokenizer.bos_token, self.tokenizer.bos_token_id
         print ('eos token is {}, eos token id is {}'.format(self.eos_token, self.eos_token_id))
-        self.model = GPT2LMHeadModel.from_pretrained(model_name)
+        self.model = GPT2LMHeadModel.from_pretrained(model_name) # ändern zu GPT2
         self.vocab_size = len(self.tokenizer)
         print ('Resizing model embedding...')
         self.model.resize_token_embeddings(len(self.tokenizer)) 
@@ -80,11 +80,11 @@ class SimCTG(nn.Module):
         bsz, seqlen = input_ids.size()
         outputs = self.model(input_ids=input_ids, output_hidden_states=True)
         logits = outputs.logits
-        assert logits.size() == torch.Size([bsz, seqlen, self.vocab_size])
+        assert logits.size() == torch.Size([bsz, seqlen, self.vocab_size]) # for every word of every sample we have logits for every word in vocab
         last_hidden_states = outputs.hidden_states[-1]
-        assert last_hidden_states.size() == torch.Size([bsz, seqlen, self.embed_dim])
+        assert last_hidden_states.size() == torch.Size([bsz, seqlen, self.embed_dim])  # for every word of every sample we have one embedding vector
         mle_loss = val_fct(logits.view(-1, self.vocab_size), labels.view(-1))
-        assert mle_loss.size() == torch.Size([bsz * seqlen])
+        assert mle_loss.size() == torch.Size([bsz * seqlen])   # for every sample and every word we have a loss 
         mask_tmp = labels.masked_fill(~labels.eq(-100), 1.0)
         mask = mask_tmp.masked_fill(mask_tmp.eq(-100), 0.0)
         # sum 
@@ -140,10 +140,12 @@ class SimCTG(nn.Module):
     @torch.no_grad()
     def magic_search(self, input_ids, beam_width, alpha, decoding_len, beta, sound_instance, clip, 
         clip_text_max_len):#, add_token_level_score=False):
-        prefix_len = input_ids.size()[1]
+        prefix_len = input_ids.size()[1] # number of tokens in prefix. as of now, 6
+
         from utlis import PlugAndPlayContrastiveDecodingOneStepFast
         past_key_values, last_hidden_states, logits = None, None, None
-        generated = [item for item in input_ids.tolist()]
+        generated = [item for item in input_ids.tolist()]  # prompt token_ids
+
         input_ids_for_class = input_ids.clone()
 
         image_embeds = clip.compute_image_representation_from_image_instance(sound_instance)
@@ -152,8 +154,8 @@ class SimCTG(nn.Module):
 
         # the maximum supported length of generation for SimCTG is 256
         # to support longer generated length, you can re-train the SimCTG model with longer sequences
-        decoding_len = decoding_len - prefix_len
-        for step in range(decoding_len):
+        decoding_len = decoding_len - prefix_len # maximum length of (prefix + generated continuation) - prefix = max length that can be generated
+        for step in range(decoding_len): # model takes sos and prompt as input and produces next word 
             input_ids, past_key_values, last_hidden_states, logits, input_ids_for_class = \
             PlugAndPlayContrastiveDecodingOneStepFast(
                 self.model, 
@@ -208,7 +210,7 @@ class SimCTG(nn.Module):
                 last_hidden_states,
                 self.tokenizer,
                 logits,
-                first_step=step == 0,
+                first_step=step == 0, # first step if step == 0 
             )
             tokens = input_ids.squeeze(dim=-1).tolist()
             for idx, t in enumerate(tokens):

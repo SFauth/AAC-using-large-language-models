@@ -46,11 +46,8 @@ def parse_config():
     return parser.parse_args()
 
 def get_prompt_id(text, tokenizer):
-    text = text
-    tokens = tokenizer.tokenize(text)
-    input_ids = tokenizer.convert_tokens_to_ids(tokens)
-    input_ids = torch.LongTensor(input_ids).view(1,-1)
-    return input_ids
+    tokens = tokenizer(text, return_tensors="pt").input_ids   # gets token id's for the text: e.g. hello I am cool [50257, 281, 6597, 10651, 286, 257]
+    return tokens
 
 import argparse
 if __name__ == '__main__':
@@ -95,12 +92,13 @@ if __name__ == '__main__':
     import sys
     sys.path.append(args.language_model_code_path)
     from simctg import SimCTG
-    sos_token, pad_token = r'<-start_of_text->', r'<-pad->'
+    #sos_token, pad_token = r'<-start_of_text->', r'<-pad->' # r'an audio clip of <-start_of_text->', r'<-pad->'
+    sos_token, pad_token = r'<-start_of_text-> an audio clip of a', r'<-pad->'
     clip_text_max_len = 60
     generation_model = SimCTG(args.language_model_name, sos_token, pad_token)
     if cuda_available:
         generation_model = generation_model.to(device)
-    generation_model.eval()
+    generation_model.eval()  # set model to evaluation (test mode, i.e. no training)
     print ('Language model loaded.')
 
     result_list = []
@@ -120,17 +118,31 @@ if __name__ == '__main__':
                 'split':one_test_dict['split'],
                 'sound_name':one_test_dict['sound_name'],
                 #'file_path':one_test_dict['file_path'],
-                'captions':one_test_dict['captions']
+                'captions':one_test_dict['captions']  
             }
 
             sound_full_path = args.test_image_prefix_path + '/' + one_test_dict['sound_name']
+
+            print(one_test_dict['sound_name'])
             # create sound instance 
             sound_instance, _ = librosa.load(sound_full_path, sr=args.sample_rate)
-            input_ids = get_prompt_id(sos_token, generation_model.tokenizer)
+            
+            # tokenize 
+            input_ids = get_prompt_id(sos_token, generation_model.tokenizer) 
+            
+            """
+            input ids: vector containing tokens of prompt [50257, 271, 6597, 10651, 286, 257]
+            """
+
             if cuda_available:
                 input_ids = input_ids.cuda(device)
 
             #try:
+
+            """
+            input_ids: gets token id of the SOS token 
+            """
+
             output_text = generation_model.magic_search(input_ids, args.k, args.alpha, args.decoding_len, 
                 args.beta, sound_instance, clip, clip_text_max_len)
 
