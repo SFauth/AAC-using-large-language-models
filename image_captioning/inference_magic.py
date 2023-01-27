@@ -93,7 +93,7 @@ if __name__ == '__main__':
     sys.path.append(args.language_model_code_path)
     from simctg import SimCTG
     #sos_token, pad_token = r'<-start_of_text->', r'<-pad->' # r'an audio clip of <-start_of_text->', r'<-pad->'
-    sos_token, pad_token = r'<-start_of_text-> an audio clip of a', r'<-pad->'
+    sos_token, pad_token = r'<-start_of_text-> an audio recording of a', r'<-pad->'
     clip_text_max_len = 60
     generation_model = SimCTG(args.language_model_name, sos_token, pad_token)
     if cuda_available:
@@ -108,6 +108,7 @@ if __name__ == '__main__':
         test_num = len(item_list)
         #test_num = 10
         print ('Number of inference instances is {}'.format(test_num))
+        print ('Alpha: {0}, Beta: {1}, k: {2}'.format(args.alpha, args.beta, args.k))
         p = progressbar.ProgressBar(test_num)
         p.start()
         for p_idx in range(test_num):
@@ -123,7 +124,7 @@ if __name__ == '__main__':
 
             sound_full_path = args.test_image_prefix_path + '/' + one_test_dict['sound_name']
 
-            print(one_test_dict['sound_name'])
+            #print(one_test_dict['sound_name'])
             # create sound instance 
             sound_instance, _ = librosa.load(sound_full_path, sr=args.sample_rate)
             

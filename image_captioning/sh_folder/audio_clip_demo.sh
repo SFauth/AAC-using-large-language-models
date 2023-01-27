@@ -1,14 +1,14 @@
 CUDA_VISIBLE_DEVICES=[5,6,7] python ../inference_magic.py\
     --language_model_code_path ../language_model/\
-    --language_model_name gpt2\
+    --language_model_name cambridgeltl/magic_mscoco\
     --clip_path ../clip/AudioCLIP/\
     --clip_name /shared-network/sfauth/data/MAGIC/image_captioning/clip/AudioCLIP/assets/AudioCLIP-Full-Training.pt\
-    --test_image_prefix_path ../data/clotho_v2.1/test_sounds/\
-    --test_path ../data/clotho_v2.1/clotho_v2.1_test.json\
+    --test_image_prefix_path ../data/aclp_demo_files/test_sounds\
+    --test_path ../data/aclp_demo_files/audio_clip_demo_test.json\
     --decoding_len 16\
     --sample_rate 44100\
-    --k 500\
+    --k 5\
     --alpha 0.1\
-    --beta 200.0\
+    --beta 2.0\
     --save_path_prefix ../inference_result/clotho_v2.1/magic\
-    --save_name magic_clotho_v2.1_gpt2_full_training_run_an_audio_clip_of_a_result_k_55_alpha_0.1_beta_200.json
+    --save_name magic_audio_clip_demo.json

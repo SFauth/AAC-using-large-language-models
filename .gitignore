@@ -1,0 +1,17 @@
+pycocotools*
+image_captioning/evaluation/pycocoevalcap/**
+image_captioning/evaluation/pycocotools/**
+image_captioning/data
+image_captioning/inference_result
+image_captioning/language_model
+image_captioning/clip/AudioCLIP/*.md
+image_captioning/clip/AudioCLIP/ignite_trainer/README.md
+image_captioning/clip/AudioCLIP/assets
+image_captioning/clip/AudioCLIP/demo
+image_captioning/clip/AudioCLIP/images
+image_captioning/clip/AudioCLIP/protocols
+*.pyc
+*.swp
+.vscode
+**/*.wav*
+**/*.jpg*
