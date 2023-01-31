@@ -242,7 +242,7 @@ def PlugAndPlayContrastiveDecodingOneStepFast(model, input_ids, prefix_len, beam
     '''
 
     if first_step:
-        output = model(input_ids=input_ids, past_key_values=past_key_values, use_cache=True, output_hidden_states=True)
+        output = model(input_ids=input_ids, past_key_values=past_key_values, use_cache=True, output_hidden_states=True) # breakpoint 
         past_key_values = output.past_key_values # previously computed key/value attention pair
         last_hidden_states = output.hidden_states[-1]    # [B, S, E] get last hidden state before logit 
         logit_for_next_step = output.logits[:, -1, :]    # [B, V] 1 x vocabulary size (every sample gets logits for every word) (get last logit vector)

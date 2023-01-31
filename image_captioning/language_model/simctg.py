@@ -28,13 +28,13 @@ class SimCTG(nn.Module):
         super(SimCTG, self).__init__()
         from transformers import AutoTokenizer, GPT2LMHeadModel  #GPT2LMHeadModel: 
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.sos_token, self.sos_token_id = self.add_special_token(sos_token)
-        print ('sos token is {}, sos token id is {}'.format(self.sos_token, self.sos_token_id))
-        self.pad_token, self.pad_token_id = self.add_special_token(pad_token)
-        print ('pad token is {}, pad token id is {}'.format(self.pad_token, self.pad_token_id))
+        #self.sos_token, self.sos_token_id = self.add_special_token(sos_token)
+        #print ('sos token is {}, sos token id is {}'.format(self.sos_token, self.sos_token_id))
+        #self.pad_token, self.pad_token_id = self.add_special_token(pad_token)
+        #print ('pad token is {}, pad token id is {}'.format(self.pad_token, self.pad_token_id))
         self.eos_token, self.eos_token_id = self.tokenizer.bos_token, self.tokenizer.bos_token_id
         print ('eos token is {}, eos token id is {}'.format(self.eos_token, self.eos_token_id))
-        self.model = GPT2LMHeadModel.from_pretrained(model_name) # ändern zu GPT2
+        self.model = GPT2LMHeadModel.from_pretrained(model_name) # GPT2LMHeadModel vs. GPT2Model??
         self.vocab_size = len(self.tokenizer)
         print ('Resizing model embedding...')
         self.model.resize_token_embeddings(len(self.tokenizer)) 

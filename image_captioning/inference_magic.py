@@ -93,7 +93,7 @@ if __name__ == '__main__':
     sys.path.append(args.language_model_code_path)
     from simctg import SimCTG
     #sos_token, pad_token = r'<-start_of_text->', r'<-pad->' # r'an audio clip of <-start_of_text->', r'<-pad->'
-    sos_token, pad_token = r'<-start_of_text-> an audio recording of a', r'<-pad->'
+    sos_token, pad_token = r'<-start_of_text->', r'<-pad->'
     clip_text_max_len = 60
     generation_model = SimCTG(args.language_model_name, sos_token, pad_token)
     if cuda_available:
