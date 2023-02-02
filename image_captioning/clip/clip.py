@@ -128,7 +128,7 @@ class CLIP(nn.Module):
         logits_per_text = torch.matmul(text_embeds, image_embeds.t()) * logit_scale
         logits_per_image = torch.unsqueeze(logits_per_text.T, 0)
 
-        return logits_per_image #logits_per_image.softmax(dim=1) # 1 x len(text_list)
+        return logits_per_image.softmax(dim=1) # 1 x len(text_list)
 
     def compute_image_text_similarity_via_raw_text(self, image_embeds, text_list):
         # embed all 45 candidates token sequences (has only length 1 for first token)
