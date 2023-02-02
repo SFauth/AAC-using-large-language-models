@@ -24,7 +24,7 @@ import datetime
 train_fct = CrossEntropyLoss() # defining training loss function
 val_fct = CrossEntropyLoss(reduction='none') # defining validation loss function
 class SimCTG(nn.Module):
-    def __init__(self, model_name, sos_token, pad_token):
+    def __init__(self, model_name, sos_token=None, pad_token=None):
         super(SimCTG, self).__init__()
         from transformers import AutoTokenizer, GPT2LMHeadModel  #GPT2LMHeadModel: 
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -127,13 +127,14 @@ class SimCTG(nn.Module):
     def parse_output_token_list(self, output):
         output = output.tolist()
         res_list = []
+
         for token_id in output:
-            if token_id == self.sos_token_id:
-                continue
-            elif token_id == self.eos_token_id:
+
+            if token_id == self.eos_token_id:
                 break
             else:
                 res_list.append(token_id)
+
         text = self.tokenizer.decode(res_list).strip()
         return ' '.join(text.split()).strip()
 
@@ -177,7 +178,7 @@ class SimCTG(nn.Module):
         end_time = datetime.datetime.now()
         time_diff = (end_time - start_time)
         execution_time = time_diff.total_seconds() * 1000
-        print(self.parse_output_token_list(input_ids_for_class[0]))
+        #print(self.parse_output_token_list(input_ids_for_class[0]))
         return self.parse_output_token_list(input_ids_for_class[0])
 
     def fast_contrastive_search(self, input_ids, beam_width, alpha, decoding_len):

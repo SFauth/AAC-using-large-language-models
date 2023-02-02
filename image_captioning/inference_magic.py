@@ -93,9 +93,10 @@ if __name__ == '__main__':
     sys.path.append(args.language_model_code_path)
     from simctg import SimCTG
     #sos_token, pad_token = r'<-start_of_text->', r'<-pad->' # r'an audio clip of <-start_of_text->', r'<-pad->'
-    sos_token, pad_token = r'<-start_of_text->', r'<-pad->'
+    #sos_token, pad_token = r'<-start_of_text->', r'<-pad->'
+    prompt = "Audio of"
     clip_text_max_len = 60
-    generation_model = SimCTG(args.language_model_name, sos_token, pad_token)
+    generation_model = SimCTG(args.language_model_name)
     if cuda_available:
         generation_model = generation_model.to(device)
     generation_model.eval()  # set model to evaluation (test mode, i.e. no training)
@@ -129,7 +130,7 @@ if __name__ == '__main__':
             sound_instance, _ = librosa.load(sound_full_path, sr=args.sample_rate)
             
             # tokenize 
-            input_ids = get_prompt_id(sos_token, generation_model.tokenizer) 
+            input_ids = get_prompt_id(prompt, generation_model.tokenizer) 
             
             """
             input ids: vector containing tokens of prompt [50257, 271, 6597, 10651, 286, 257]
