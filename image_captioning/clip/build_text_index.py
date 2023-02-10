@@ -56,7 +56,7 @@ if __name__ == '__main__':
         os.makedirs(args.save_index_prefix, exist_ok=True)
 
     print ('Loading CLIP...')
-    from clip import CLIP
+    from image_captioning.clip.clap_ import CLIP
     model = CLIP(args.clip_name)
     if cuda_available:
         model = model.cuda(device)

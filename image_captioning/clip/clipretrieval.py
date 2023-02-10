@@ -81,7 +81,7 @@ if __name__ == '__main__':
     print ('full save path is {}'.format(full_save_path))
 
     print ('Loading CLIP...')
-    from clip import CLIP
+    from image_captioning.clip.clap_ import CLIP
     clip = CLIP(args.clip_name)
     if cuda_available:
         clip = clip.cuda(device)

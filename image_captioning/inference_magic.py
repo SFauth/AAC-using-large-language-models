@@ -21,14 +21,14 @@ os.environ["CUDA_VISIBLE_DEVICES"]="4,5,6,7"
 logging.getLogger('transformers.generation_utils').disabled = True
 
 def parse_config():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(allow_abbrev=False)
     # language model path setting
     parser.add_argument("--language_model_code_path", type=str, help="where is the code of language model located")
     # model and data configuration
     parser.add_argument("--language_model_name", type=str, help="name of pre-trained language model")
     # index path setting
-    parser.add_argument("--clip_path", type=str, help="where is the clip code located")
-    parser.add_argument("--clip_name", type=str)
+    parser.add_argument("--clap_path", type=str, help="where is the clip code located")
+    parser.add_argument("--clap_model_name", type=str)
     parser.add_argument("--test_image_prefix_path", type=str, help="the folder that stores all test images")
     # test data path
     parser.add_argument("--test_path", type=str)
@@ -71,6 +71,7 @@ if __name__ == '__main__':
 
     print ('Loading data...')
     import json
+
     with open(args.test_path) as f:
         item_list = json.load(f)
     print ('Data loaded.')
@@ -78,15 +79,16 @@ if __name__ == '__main__':
     
     # get AudioCLIP
     import sys
-    sys.path.append(args.clip_path)  # define path to AudioCLIP
+    sys.path.append(args.clap_path)  # define path to clap class
 
-    print ('Loading AudioCLIP...')
-    from clip.clip import CLIP
-    clip = CLIP(model_name=args.clip_name) #ACLP *.pt # er soll hier CLIP aus clip.py laden (dort wird AudioCLIP geladen)
-    if cuda_available:
-        clip = clip.cuda(device)
-    clip.eval()
-    print ('AudioCLIP loaded!')
+    print ('Loading CLAP...')
+    print(os.getcwd())
+    from clap_ import CLIP
+    clip = CLIP(args.clap_model_name) #ACLP *.pt # er soll hier CLIP aus clip.py laden (dort wird AudioCLIP geladen)
+    #if cuda_available:
+     #   clip = clip.cuda(device)
+    #clip.eval()
+    print ('CLAP loaded!')
 
     print ('Loading off-the-shelf language model...')
     import sys
