@@ -94,10 +94,10 @@ if __name__ == '__main__':
     from simctg import SimCTG
     #sos_token, pad_token = r'<-start_of_text->', r'<-pad->' # r'an audio clip of <-start_of_text->', r'<-pad->'
     #sos_token, pad_token = r'<-start_of_text->', r'<-pad->'
-    sos_token = r'<-start_of_text->'
+    #sos_token = r'<-start_of_text->' # wieder weglassen
     prompt = "Audio of"
     clip_text_max_len = 60
-    generation_model = SimCTG(args.language_model_name, sos_token=sos_token)
+    generation_model = SimCTG(args.language_model_name)
     if cuda_available:
         generation_model = generation_model.to(device)
     generation_model.eval()  # set model to evaluation (test mode, i.e. no training)

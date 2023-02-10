@@ -67,6 +67,8 @@ class CLIP(nn.Module):
         sound_instance: sample_rate * length_in_seconds x 1
         later: go into the .pt model and do the padding and masking
         for now: do the dirty workaround
+
+        FIX GPT2 FIRST; the EOS token never gets predicted! 
         """
         reshaped_track = torch.from_numpy(sound_instance.reshape(1, -1))
         track_and_copy = torch.stack((reshaped_track, reshaped_track))
@@ -128,7 +130,7 @@ class CLIP(nn.Module):
         logits_per_text = torch.matmul(text_embeds, image_embeds.t()) * logit_scale
         logits_per_image = torch.unsqueeze(logits_per_text.T, 0)
 
-        return logits_per_image.softmax(dim=1) # 1 x len(text_list)
+        return logits_per_image #logits_per_image.softmax(dim=1) # 1 x len(text_list)
 
     def compute_image_text_similarity_via_raw_text(self, image_embeds, text_list):
         # embed all 45 candidates token sequences (has only length 1 for first token)

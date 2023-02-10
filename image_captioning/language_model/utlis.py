@@ -246,6 +246,7 @@ def PlugAndPlayContrastiveDecodingOneStepFast(model, input_ids, prefix_len, beam
         past_key_values = output.past_key_values # previously computed key/value attention pair
         last_hidden_states = output.hidden_states[-1]    # [B, S, E] get last hidden state before logit 
         logit_for_next_step = output.logits[:, -1, :]    # [B, V] 1 x vocabulary size (every sample gets logits for every word) (get last logit vector)
+        # How I think it should be logit_for_next_step = output.logits.mean(axis=1)
     bsz, seqlen, embed_dim = last_hidden_states.size()  # at testing: batch size 1, every word has one embedding vector (on first step: 6 embedding vecs)
 
     next_probs = F.softmax(logit_for_next_step, dim = -1)

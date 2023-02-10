@@ -28,8 +28,8 @@ class SimCTG(nn.Module):
         super(SimCTG, self).__init__()
         from transformers import AutoTokenizer, GPT2LMHeadModel  #GPT2LMHeadModel: 
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.sos_token, self.sos_token_id = self.add_special_token(sos_token)
-        print ('sos token is {}, sos token id is {}'.format(self.sos_token, self.sos_token_id))
+        #self.sos_token, self.sos_token_id = self.add_special_token(sos_token)
+        #print ('sos token is {}, sos token id is {}'.format(self.sos_token, self.sos_token_id))
         #self.pad_token, self.pad_token_id = self.add_special_token(pad_token)
         #print ('pad token is {}, pad token id is {}'.format(self.pad_token, self.pad_token_id))
         self.eos_token, self.eos_token_id = self.tokenizer.bos_token, self.tokenizer.bos_token_id
@@ -123,14 +123,13 @@ class SimCTG(nn.Module):
 
     # decoding functions
     # ------------------------------------------------------- #
-
+ 
     def parse_output_token_list(self, output):
         output = output.tolist()
         res_list = []
         for token_id in output:
-            if token_id == self.sos_token_id:
-                continue
-            elif token_id == self.eos_token_id:
+
+            if token_id == self.eos_token_id:
                 break
             else:
                 res_list.append(token_id)
