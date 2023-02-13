@@ -220,6 +220,13 @@ class CLIP():
 
         print ('Initialized Audio Model')
 
+        self.a_model.eval()
+
+        print( 'Turned on eval mode')
+
+        self.logit_scale_a, self.logit_scale_t = self.a_model(None, None, device)
+        self.logit_scale_a = self.logit_scale_a.cpu()
+
         torch.cuda.empty_cache()
         print ('Cuda cache emptied')
 
@@ -271,6 +278,7 @@ class CLIP():
             audio_cfg=self.a_model_cfg['audio_cfg']
         )
         # can send a list to the model, to process many audio tracks in one time (i.e. batch size)
+        
         audio_embed = self.a_model.get_audio_embedding([audio_dict])
 
         return audio_embed
@@ -306,20 +314,22 @@ class CLIP():
             image_embeds: 1 x embed_dim
             text_embeds: len(text_list) x embed_dim
         '''
+        # CLAP, but text_embed's norm != 1 
+        #logits_per_audio = self.logit_scale_a * image_embeds @ text_embeds.t().detach().cpu()
         
-        image_embeds = image_embeds / image_embeds.norm(dim=-1, keepdim=True)
-        text_embeds = text_embeds / text_embeds.norm(dim=-1, keepdim=True)
-        #logit_scale = torch.clamp(self.aclp.logit_scale_at.exp(), min=1.0, max=100.0) # CLAMP
-        logits_per_text = torch.matmul(text_embeds, image_embeds.t()) # * logit_scale
-        logits_per_image = torch.unsqueeze(logits_per_text.T, 0)
+        # Mine like MAGIC
 
-        return logits_per_image.softmax(dim=1)  # 1 x len(text_list)
+        logits_per_text = self.logit_scale_a * torch.cosine_similarity(image_embeds, text_embeds) 
+        logits_per_image = torch.unsqueeze(logits_per_text.T, 0)
+        
+
+        return logits_per_image.softmax(dim=-1)  # 1 x len(text_list)
 
 
     def compute_image_text_similarity_via_raw_text(self, image_embeds, text_list):
 
         text_embeds = self.compute_text_representation(text_list)
-        
+        # compare candidates with similarities in clap demo
         return self.compute_image_text_similarity_via_embeddings(image_embeds, text_embeds)
         
 
