@@ -13,6 +13,7 @@ import progressbar
 from PIL import Image
 import librosa
 import sys
+import pandas as pd
 
 import logging
 
@@ -82,7 +83,14 @@ if __name__ == '__main__':
     sys.path.append(args.clap_path)  # define path to clap class
 
     print ('Loading CLAP...')
-    print(os.getcwd())
+
+    seed = 4182
+    random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    np.random.seed(seed)
+
     from clap_ import CLIP
     clip = CLIP(args.clap_model_name) #ACLP *.pt # er soll hier CLIP aus clip.py laden (dort wird AudioCLIP geladen)
     #if cuda_available:
@@ -97,8 +105,8 @@ if __name__ == '__main__':
     #sos_token, pad_token = r'<-start_of_text->', r'<-pad->' # r'an audio clip of <-start_of_text->', r'<-pad->'
     #sos_token, pad_token = r'<-start_of_text->', r'<-pad->'
     #sos_token = r'<-start_of_text->' # wieder weglassen
-    prompt = "Audio of"
-    clip_text_max_len = 60
+    prompt = "This is an audio clip of"
+    clip_text_max_len = 77
     generation_model = SimCTG(args.language_model_name)
     if cuda_available:
         generation_model = generation_model.to(device)
@@ -153,12 +161,45 @@ if __name__ == '__main__':
 
             one_res_dict['prediction'] = output_text
             result_list.append(one_res_dict)
-            """
-            except:
-                invalid_num += 1
-                print ('invalid number is {}'.format(invalid_num))
-                continue
-            """    
+
+            # Produce output table
+            
+            audio_embedding = clip.compute_image_representation_from_image_instance(sound_instance)
+            captions = one_res_dict["captions"] # GT captions
+            captions.append(output_text)
+
+            # get unsoftmaxed cos sims
+
+            captions_embs = clip.compute_text_representation(captions)
+            cos_sim = torch.cosine_similarity(audio_embedding, captions_embs) # unscaled! 
+
+            # get softmax cos sims
+
+            cos_sim_softmax = clip.compute_image_text_similarity_via_raw_text(image_embeds=audio_embedding, text_list=captions)
+            
+            # create col for .wav file
+            wav_col = pd.Series([sound_full_path] * len(captions))
+            
+            # create absolute path
+
+            #root_dir = os.path.join(os.getcwd(), "../")
+            sound_file_name = os.path.split(sound_full_path)[1]
+            sound_full_path = os.path.join("../../softlinks/audio_clip_test_data", sound_file_name)
+            print("sound_full_path: ")
+            print(sound_full_path)
+            cols = [pd.Series(cos_sim_softmax.flatten().cpu().detach().numpy().T), pd.Series(cos_sim.cpu().detach().numpy()), pd.Series(captions), wav_col]
+
+            sim_text = pd.concat(cols, axis=1)
+            sim_text.columns = ["softmaxed_cos_sim", "cos_sim", "Captions", "Audio"]
+
+            sim_text["Audio"] = sim_text["Audio"].apply(lambda audio_path: f"""<audio controls> <source src="{sound_full_path}" type="audio/wav"> </audio>""")
+
+            html_filename =  os.path.split(sound_full_path)[-1] + ".html"
+            
+            html_path = os.path.join(os.getcwd(), "../inference_result/similarities_sounds", html_filename)
+            sim_text.to_html(html_path, escape=False)
+            
+
         p.finish()
     print ('Inference completed!')
 

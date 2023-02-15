@@ -179,26 +179,6 @@ class CLIP():
         self.tokenize = RobertaTokenizer.from_pretrained('roberta-base')
         print ('CLAP tokenizer initialized')
     
-        
-        device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
-        precision = 'fp32'
-        amodel = 'HTSAT-tiny' # or 'PANN-14'
-        tmodel = 'roberta' # the best text encoder in our training
-        enable_fusion = False # False if you do not want to use the fusion model
-        fusion_type = 'aff_2d'
-        pretrained = model_name # the checkpoint name, the unfusion model can also be loaded.
-
-        self.t_model, self.t_model_cfg = create_model(
-            amodel,
-            tmodel,
-            pretrained,
-            precision=precision,
-            device=device,
-            enable_fusion=False,
-            fusion_type=fusion_type
-        )
-
-        print ('Initialized Text Model')
 
         device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
         precision = 'fp32'
@@ -218,7 +198,7 @@ class CLIP():
             fusion_type=fusion_type
         )
 
-        print ('Initialized Audio Model')
+        print ('Initialized CLAP Audio Model')
 
         self.a_model.eval()
 
@@ -304,7 +284,7 @@ class CLIP():
 
         text_data = tokenizer(text_data)
         
-        text_embed = self.t_model.get_text_embedding(text_data)
+        text_embed = self.a_model.get_text_embedding(text_data)
 
         return text_embed
 
@@ -329,7 +309,7 @@ class CLIP():
     def compute_image_text_similarity_via_raw_text(self, image_embeds, text_list):
 
         text_embeds = self.compute_text_representation(text_list)
-        # compare candidates with similarities in clap demo
+
         return self.compute_image_text_similarity_via_embeddings(image_embeds, text_embeds)
         
 
