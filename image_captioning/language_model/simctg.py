@@ -154,8 +154,11 @@ class SimCTG(nn.Module):
         # the maximum supported length of generation for SimCTG is 256
         # to support longer generated length, you can re-train the SimCTG model with longer sequences
         decoding_len = decoding_len - prefix_len # maximum length of (prefix + generated continuation) - prefix = max length that can be generated
+
+        unsoftmaxed_cos_sims = []
+
         for step in range(decoding_len): # model takes sos and prompt as input and produces next word 
-            input_ids, past_key_values, last_hidden_states, logits, input_ids_for_class = \
+            input_ids, past_key_values, last_hidden_states, logits, input_ids_for_class, unsoftmaxed_cos_sim = \
             PlugAndPlayContrastiveDecodingOneStepFast(
                 self.model, 
                 input_ids, 
@@ -173,6 +176,9 @@ class SimCTG(nn.Module):
                 first_step=step==0,
                 input_ids_for_class=input_ids_for_class,
             )
+
+            unsoftmaxed_cos_sims.append(unsoftmaxed_cos_sim)
+
         end_time = datetime.datetime.now()
         time_diff = (end_time - start_time)
         execution_time = time_diff.total_seconds() * 1000

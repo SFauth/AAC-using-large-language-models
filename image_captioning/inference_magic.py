@@ -105,7 +105,7 @@ if __name__ == '__main__':
     #sos_token, pad_token = r'<-start_of_text->', r'<-pad->' # r'an audio clip of <-start_of_text->', r'<-pad->'
     #sos_token, pad_token = r'<-start_of_text->', r'<-pad->'
     #sos_token = r'<-start_of_text->' # wieder weglassen
-    prompt = "This is an audio clip of"
+    prompt = "This is a sound of"
     clip_text_max_len = 77
     generation_model = SimCTG(args.language_model_name)
     if cuda_available:
@@ -162,14 +162,20 @@ if __name__ == '__main__':
             one_res_dict['prediction'] = output_text
             result_list.append(one_res_dict)
 
+            last_letter_prompt = prompt[-1]
+            output_text_without_prompt = output_text.split(last_letter_prompt, 1)[1]
+
             # Produce output table
+            pd.set_option('display.float_format', lambda x: '%.9f' % x)
             
             audio_embedding = clip.compute_image_representation_from_image_instance(sound_instance)
             captions = one_res_dict["captions"] # GT captions
-            captions.append(output_text)
+            captions.append(output_text_without_prompt)
+
+            one_res_dict["captions"] = one_res_dict["captions"][:-1]
 
             # get unsoftmaxed cos sims
-
+ 
             captions_embs = clip.compute_text_representation(captions)
             cos_sim = torch.cosine_similarity(audio_embedding, captions_embs) # unscaled! 
 
@@ -185,19 +191,18 @@ if __name__ == '__main__':
             #root_dir = os.path.join(os.getcwd(), "../")
             sound_file_name = os.path.split(sound_full_path)[1]
             sound_full_path = os.path.join("../../softlinks/audio_clip_test_data", sound_file_name)
-            print("sound_full_path: ")
-            print(sound_full_path)
+
             cols = [pd.Series(cos_sim_softmax.flatten().cpu().detach().numpy().T), pd.Series(cos_sim.cpu().detach().numpy()), pd.Series(captions), wav_col]
 
             sim_text = pd.concat(cols, axis=1)
-            sim_text.columns = ["softmaxed_cos_sim", "cos_sim", "Captions", "Audio"]
+            sim_text.columns = ["scaled_cos_sim_softmax", "unscaled_cos_sim", "Captions", "Audio"]
 
             sim_text["Audio"] = sim_text["Audio"].apply(lambda audio_path: f"""<audio controls> <source src="{sound_full_path}" type="audio/wav"> </audio>""")
 
             html_filename =  os.path.split(sound_full_path)[-1] + ".html"
             
             html_path = os.path.join(os.getcwd(), "../inference_result/similarities_sounds", html_filename)
-            sim_text.to_html(html_path, escape=False)
+            #sim_text.to_html(html_path, escape=False)
             
 
         p.finish()

@@ -7,7 +7,7 @@ CUDA_VISIBLE_DEVICES=[5,6,7] python ../inference_magic.py\
     --test_path ../softlinks/test_json_cherry\
     --decoding_len 16\
     --sample_rate 48000\
-    --k 2\
+    --k 45\
     --alpha 0.1\
     --beta 2.0\
     --save_path_prefix ../inference_result/clotho_v2.1/magic\

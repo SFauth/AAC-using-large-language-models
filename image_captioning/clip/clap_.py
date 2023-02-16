@@ -300,7 +300,7 @@ class CLIP():
         # Mine like MAGIC
 
         logits_per_text = self.logit_scale_a * torch.cosine_similarity(image_embeds, text_embeds) 
-        logits_per_image = torch.unsqueeze(logits_per_text.T, 0)
+        logits_per_image = torch.unsqueeze(logits_per_text.t(), 0)
         
 
         return logits_per_image.softmax(dim=-1)  # 1 x len(text_list)
