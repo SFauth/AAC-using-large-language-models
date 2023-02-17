@@ -121,6 +121,9 @@ if __name__ == '__main__':
         #test_num = 10
         print ('Number of inference instances is {}'.format(test_num))
         print ('Alpha: {0}, Beta: {1}, k: {2}'.format(args.alpha, args.beta, args.k))
+        
+        audio_sim_tables = {} # create dict to story output tables
+
         p = progressbar.ProgressBar(test_num)
         p.start()
         for p_idx in range(test_num):
@@ -164,48 +167,63 @@ if __name__ == '__main__':
 
             last_letter_prompt = prompt[-1]
             output_text_without_prompt = output_text.split(last_letter_prompt, 1)[1]
+            output_text_without_prompt_series = pd.Series(output_text_without_prompt)
 
             # Produce output table
-            pd.set_option('display.float_format', lambda x: '%.9f' % x)
+            pd.set_option('display.float_format', lambda x: '%.3f' % x)
             
             audio_embedding = clip.compute_image_representation_from_image_instance(sound_instance)
             captions = one_res_dict["captions"] # GT captions
-            captions.append(output_text_without_prompt)
+            #captions.append(output_text_without_prompt)
 
-            one_res_dict["captions"] = one_res_dict["captions"][:-1]
+            #one_res_dict["captions"] = one_res_dict["captions"][:-1]
 
             # get unsoftmaxed cos sims
  
             captions_embs = clip.compute_text_representation(captions)
-            cos_sim = torch.cosine_similarity(audio_embedding, captions_embs) # unscaled! 
+            cos_sim = torch.cosine_similarity(audio_embedding, captions_embs)# unscaled! 
+            cos_sim_pred = pd.Series({"unsoftmaxed_cos_sim_pred":cos_sim[-1].cpu().detach().numpy()})
 
-            # get softmax cos sims
-
-            cos_sim_softmax = clip.compute_image_text_similarity_via_raw_text(image_embeds=audio_embedding, text_list=captions)
+            cos_sim = cos_sim.cpu().detach().numpy()
+            format_string = "{:.3f}"
+            cos_sim = [format_string.format(i) for i in cos_sim.tolist()]
+            cos_sim = pd.DataFrame(cos_sim).apply('    '.join)
             
+
+            # STORE THESE IN TABLE 
+       
+
             # create col for .wav file
-            wav_col = pd.Series([sound_full_path] * len(captions))
+            wav_col = pd.Series({"Audio":sound_full_path})
             
-            # create absolute path
 
-            #root_dir = os.path.join(os.getcwd(), "../")
             sound_file_name = os.path.split(sound_full_path)[1]
             sound_full_path = os.path.join("../../softlinks/audio_clip_test_data", sound_file_name)
 
-            cols = [pd.Series(cos_sim_softmax.flatten().cpu().detach().numpy().T), pd.Series(cos_sim.cpu().detach().numpy()), pd.Series(captions), wav_col]
+            
+            captions = pd.Series({"captions":' // '.join(captions)})
 
-            sim_text = pd.concat(cols, axis=1)
-            sim_text.columns = ["scaled_cos_sim_softmax", "unscaled_cos_sim", "Captions", "Audio"]
+
+            cols = [output_text_without_prompt_series, captions, cos_sim_pred, cos_sim,  wav_col]
+
+            sim_text = pd.DataFrame(pd.concat(cols, axis=0)).T
+
+            sim_text.columns = ["pred", "captions", "pred_cos_sim", "unsoftmaxed_cos_sim", "Audio"]
+
 
             sim_text["Audio"] = sim_text["Audio"].apply(lambda audio_path: f"""<audio controls> <source src="{sound_full_path}" type="audio/wav"> </audio>""")
 
-            html_filename =  os.path.split(sound_full_path)[-1] + ".html"
-            
-            html_path = os.path.join(os.getcwd(), "../inference_result/similarities_sounds", html_filename)
-            #sim_text.to_html(html_path, escape=False)
+            audio_sim_tables[str(item_list[p_idx]["sound_name"])] = sim_text
+
             
 
         p.finish()
+
+    html_filename =  "sim_audio_table.html"
+    sim_audio_table = pd.concat(audio_sim_tables.values())
+    html_path = os.path.join(os.getcwd(), "../inference_result/similarities_sounds", html_filename)
+    sim_audio_table.to_html(html_path, escape=False)
+            
     print ('Inference completed!')
 
     import json
