@@ -157,6 +157,10 @@ class SimCTG(nn.Module):
 
         unsoftmaxed_cos_sims = []
 
+        break_tokens = ". ! ?"
+
+        break_tokens = self.tokenizer.encode(break_tokens, return_tensors='pt').to("cuda") # specify break_tokens
+
         for step in range(decoding_len): # model takes sos and prompt as input and produces next word 
             input_ids, past_key_values, last_hidden_states, logits, input_ids_for_class, unsoftmaxed_cos_sim = \
             PlugAndPlayContrastiveDecodingOneStepFast(
@@ -176,6 +180,10 @@ class SimCTG(nn.Module):
                 first_step=step==0,
                 input_ids_for_class=input_ids_for_class,
             )
+
+            if input_ids is not None and input_ids in break_tokens:
+                print( f"Stopped after {step} tokens")
+                break
 
             unsoftmaxed_cos_sims.append(unsoftmaxed_cos_sim)
 

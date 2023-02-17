@@ -227,6 +227,7 @@ def plug_and_play_fast_ranking(
     #print(batch_class_score.view([beam_width]))
     #print("sum of magic scores: ")
     #print(torch.sum(batch_class_score.view([beam_width])))
+    
     scores = (1.0 - alpha) * next_top_k_probs - alpha * scores + beta * batch_class_score.view([beam_width])
     scores = torch.stack(torch.split(scores, beam_width))
     selected_idx = scores.max(dim=-1)[1]

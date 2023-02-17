@@ -94,7 +94,7 @@ if __name__ == '__main__':
     from clap_ import CLIP
     clip = CLIP(args.clap_model_name) #ACLP *.pt # er soll hier CLIP aus clip.py laden (dort wird AudioCLIP geladen)
     #if cuda_available:
-     #   clip = clip.cuda(device)
+   #     clip = clip.to(device)
     #clip.eval()
     print ('CLAP loaded!')
 
