@@ -161,13 +161,21 @@ if __name__ == '__main__':
 
             output_text = generation_model.magic_search(input_ids, args.k, args.alpha, args.decoding_len, 
                 args.beta, sound_instance, clip, clip_text_max_len)
-
-            one_res_dict['prediction'] = output_text
-            result_list.append(one_res_dict)
-
+            
             last_letter_prompt = prompt[-1]
             output_text_without_prompt = output_text.split(last_letter_prompt, 1)[1]
             output_text_without_prompt_series = pd.Series(output_text_without_prompt)
+
+            one_res_dict['prediction'] = output_text_without_prompt
+            one_res_dict["beta"] = args.beta
+            one_res_dict["prompt"] = prompt
+            one_res_dict["k"] = args.k
+            one_res_dict["alpha"] = args.alpha
+            one_res_dict["decoding_len"] = args.decoding_len
+            one_res_dict["clip_text_max_len"] = clip_text_max_len
+
+            result_list.append(one_res_dict)
+
 
             # Produce output table
             pd.set_option('display.float_format', lambda x: '%.3f' % x)
