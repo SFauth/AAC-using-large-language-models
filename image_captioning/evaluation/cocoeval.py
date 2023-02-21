@@ -18,12 +18,16 @@ if __name__ == '__main__':
     # add to cocoEval.eval dict all hyperparams (alpha, beta, prompt, ...). include them in the dict in args.result_file_path
 
     res_dict = cocoEval.eval
-    print("type res dict: " + str(type(res_dict)))
+
     all_res_dict = json.load(open(args.result_file_path))
 
     # all_res_dict: list of dicts
 
-    for hyperparam in ["prompt", "alpha", "beta"]:
+    keys_to_remove = ["captions", "sound_name", "split", "prediction"]
+    for k in keys_to_remove:
+        del all_res_dict[0][k]
+
+    for hyperparam in all_res_dict[0].keys():
         res_dict[str(hyperparam)] = all_res_dict[0][str(hyperparam)]
 
     filename = "test_" + datetime.today().strftime('%Y_%m_%d_%H_%M_%S') + ".json"
