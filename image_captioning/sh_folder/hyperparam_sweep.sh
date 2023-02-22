@@ -3,8 +3,8 @@ CUDA_VISIBLE_DEVICES=[2,3,4] python ../inference_magic.py\
     --language_model_name gpt2\
     --clap_path ../clip/\
     --clap_model_name ../clip/CLAP/assets/checkpoints/epoch_top_0.pt\
-    --test_image_prefix_path ../softlinks/audio_clip_test_data/\
-    --test_path ../softlinks/test_json_cherry\
+    --test_image_prefix_path ../softlinks/evaluation_data_files/\
+    --test_path ../softlinks/full_test_data_json\
     --decoding_len 30\
     --sample_rate 48000\
     --k 45\

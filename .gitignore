@@ -1,6 +1,7 @@
-pycocotools*
-#image_captioning/evaluation/pycocoevalcap/**
-#image_captioning/evaluation/pycocotools/**
+#pycocotools*
+image_captioning/evaluation/pycocoevalcap/__pycache__
+image_captioning/evaluation/pycocotools/__pycache__
+image_captioning/evaluation/pycocoevalcap/**/*.jar
 image_captioning/data
 image_captioning/inference_result
 image_captioning/language_model
@@ -16,3 +17,4 @@ image_captioning/clip/AudioCLIP/protocols
 **/*.wav*
 **/*.jpg*
 **/*.json*
+**/*.jar
