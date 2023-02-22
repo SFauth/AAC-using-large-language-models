@@ -295,11 +295,11 @@ def PlugAndPlayContrastiveDecodingOneStepFast(model, input_ids, prefix_len, beam
     #print(batch_text_list)
     # batch_text_list = ['cat', 'thunderstorm', 'coughing', 'alarm clock', 'car horn']
     
-    cos_sim = pd.Series(torch.cosine_similarity(image_embeds, clip.compute_text_representation(batch_text_list)).cpu().detach().numpy())
+    #cos_sim = pd.Series(torch.cosine_similarity(image_embeds, clip.compute_text_representation(batch_text_list)).cpu().detach().numpy())
     # and batch_text_list
-    text_raw_vector = pd.Series(batch_text_list)
+    #text_raw_vector = pd.Series(batch_text_list)
 
-    cos_sims_every_word = pd.concat([text_raw_vector, cos_sim], axis=1).rename({0:"text", 1:"unsoftmaxed_cos_sim"}, axis=1).sort_values("unsoftmaxed_cos_sim", ascending=False).head(5)
+    #cos_sims_every_word = pd.concat([text_raw_vector, cos_sim], axis=1).rename({0:"text", 1:"unsoftmaxed_cos_sim"}, axis=1).sort_values("unsoftmaxed_cos_sim", ascending=False).head(5)
 
 
     batch_score = clip.compute_image_text_similarity_via_raw_text(image_embeds, batch_text_list)
@@ -324,6 +324,6 @@ def PlugAndPlayContrastiveDecodingOneStepFast(model, input_ids, prefix_len, beam
     past_key_values = select_past_key_values(past_key_values, beam_width, selected_idx)
     logits = torch.stack(torch.split(logits, beam_width))[range(bsz), selected_idx, :]
     input_ids_for_class = torch.cat([input_ids_for_class, next_id], dim=-1)
-    return next_id, past_key_values, last_hidden_states, logits, input_ids_for_class, cos_sims_every_word
+    return next_id, past_key_values, last_hidden_states, logits, input_ids_for_class#, cos_sims_every_word
 
 

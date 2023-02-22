@@ -1,4 +1,4 @@
-CUDA_VISIBLE_DEVICES=[4,5,6,7] python ../inference_magic.py\
+CUDA_VISIBLE_DEVICES=[2,3,4] python ../inference_magic.py\
     --language_model_code_path ../language_model/\
     --language_model_name gpt2\
     --clap_path ../clip/\

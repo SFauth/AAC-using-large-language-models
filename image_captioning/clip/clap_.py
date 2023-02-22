@@ -180,7 +180,7 @@ class CLIP():
         print ('CLAP tokenizer initialized')
     
 
-        device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+        self.device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
         precision = 'fp32'
         amodel = 'HTSAT-tiny' # or 'PANN-14'
         tmodel = 'roberta' # the best text encoder in our training
@@ -193,7 +193,7 @@ class CLIP():
             tmodel,
             pretrained,
             precision=precision,
-            device=device,
+            device=self.device,
             enable_fusion=False,
             fusion_type=fusion_type
         )
@@ -204,11 +204,11 @@ class CLIP():
 
         print( 'Turned on eval mode')
 
-        self.logit_scale_a, self.logit_scale_t = self.a_model(None, None, device)
+        self.logit_scale_a, self.logit_scale_t = self.a_model(None, None, self.device)
         self.logit_scale_a = self.logit_scale_a.cpu()
 
-        torch.cuda.empty_cache()
-        print ('Cuda cache emptied')
+        #torch.cuda.empty_cache()
+        #print ('Cuda cache emptied')
 
 
 
@@ -228,6 +228,7 @@ class CLIP():
         # quantize
         audio_waveform = int16_to_float32(float32_to_int16(audio_waveform))
         audio_waveform = torch.from_numpy(audio_waveform).float()
+        audio_waveform = audio_waveform.cuda(self.device)
         audio_dict = {}
 
         # the 'fusion' truncate mode can be changed to 'rand_trunc' if run in unfusion mode
@@ -248,6 +249,8 @@ class CLIP():
          # quantize
         audio_waveform = int16_to_float32(float32_to_int16(sound_instance))
         audio_waveform = torch.from_numpy(audio_waveform).float()
+
+        audio_waveform = audio_waveform.cuda(self.device)
         audio_dict = {}
 
         # the 'fusion' truncate mode can be changed to 'rand_trunc' if run in unfusion mode
@@ -279,12 +282,24 @@ class CLIP():
                 truncation=True,
                 max_length=77,
                 return_tensors="pt",
-            )
-            return {k: v.squeeze(0) for k, v in result.items()}    
+            ).to(self.device)
+        
+            return {k: v.squeeze(0) for k, v in result.items()}  
+
+        def tokenizer_res_to_GPU(tokenizer_output):
+            input_ids_gpu = tokenizer_output["input_ids"].to(self.device)
+            attention_mask_gpu = tokenizer_output["attention_mask"].to(self.device)
+            
+            gpu_dict = {"input_ids" : input_ids_gpu,
+                        "attention_mask": attention_mask_gpu}
+            
+            return gpu_dict  
 
         text_data = tokenizer(text_data)
+
+        text_data_GPU = tokenizer_res_to_GPU(text_data)
         
-        text_embed = self.a_model.get_text_embedding(text_data)
+        text_embed = self.a_model.get_text_embedding(text_data_GPU)
 
         return text_embed
 

@@ -1,5 +1,6 @@
 # coding=utf-8
 import os
+os.environ["CUDA_VISIBLE_DEVICES"]="2"
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -17,7 +18,7 @@ import pandas as pd
 import json
 import logging
 
-os.environ["CUDA_VISIBLE_DEVICES"]="4,5,6,7"
+
 
 logging.getLogger('transformers.generation_utils').disabled = True
 
@@ -59,7 +60,6 @@ if __name__ == '__main__':
     device = torch.device('cuda')
 
     save_path_prefix = args.save_path_prefix
-    import os
     
     if os.path.exists(save_path_prefix):
         pass
@@ -69,7 +69,6 @@ if __name__ == '__main__':
     
 
     print ('Loading data...')
-    import json
 
     with open(args.test_path) as f:
         item_list = json.load(f)
@@ -92,7 +91,7 @@ if __name__ == '__main__':
     from clap_ import CLIP
     clip = CLIP(args.clap_model_name) #ACLP *.pt # er soll hier CLIP aus clip.py laden (dort wird AudioCLIP geladen)
     #if cuda_available:
-   #     clip = clip.to(device)
+     #   clip = clip.to(device)  GETS DONE in clap_.py script!
     #clip.eval()
     print ('CLAP loaded!')
 
@@ -111,7 +110,7 @@ if __name__ == '__main__':
     print ('Language model loaded.')
     clip_text_max_len = 77
 
-    betas = torch.linspace(0.5, 4, steps=2)
+    betas = torch.linspace(0.5, 4, steps=2).cuda()
 
     prompts = ["This is a sound of", "This is the sound of"]
 
@@ -178,7 +177,7 @@ if __name__ == '__main__':
                     output_text_without_prompt_series = pd.Series(output_text_without_prompt)
 
                     one_res_dict['prediction'] = output_text_without_prompt
-                    one_res_dict["beta"] = str(beta.item())
+                    one_res_dict["beta"] = beta.item()
                     one_res_dict["prompt"] = prompt
                     one_res_dict["k"] = args.k
                     one_res_dict["alpha"] = args.alpha
