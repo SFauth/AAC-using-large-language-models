@@ -4,7 +4,11 @@ os.environ["CUDA_VISIBLE_DEVICES"]="2"
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.multiprocessing as mp
+
+#import torch.multiprocessing as mp
+#from torch.utils.data.distributed import DistributedSampler
+#from torch.distributed import init_process_group, destroy_process_group
+
 import argparse, os
 import random
 import numpy as np
@@ -110,12 +114,12 @@ if __name__ == '__main__':
     print ('Language model loaded.')
     clip_text_max_len = 77
 
-    betas = torch.linspace(0.5, 4, steps=2).cuda()
+    betas = torch.linspace(0, 0.5, steps=11).cuda()
 
-    prompts = ["This is a sound of", "This is the sound of"]
+    prompts = ["the sound of", "this is the sound of", "this is a sound of"]
 
     for beta in betas:
-
+        print("Beta: " + str(beta))
         beta = beta
 
         for prompt in prompts:
