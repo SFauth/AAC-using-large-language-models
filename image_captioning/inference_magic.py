@@ -21,7 +21,7 @@ import sys
 import pandas as pd
 import json
 import logging
-
+from sklearn.metrics.pairwise import cosine_similarity
 
 
 logging.getLogger('transformers.generation_utils').disabled = True
@@ -114,9 +114,9 @@ if __name__ == '__main__':
     print ('Language model loaded.')
     clip_text_max_len = 77
 
-    betas = torch.linspace(0, 0.5, steps=11).cuda()
+    betas = torch.linspace(0, 0.5, steps=1).cuda()
 
-    prompts = ["the sound of", "this is the sound of", "this is a sound of"]
+    prompts = ["the sound of"]
 
     for beta in betas:
         print("Beta: " + str(beta))
@@ -176,6 +176,9 @@ if __name__ == '__main__':
                     output_text = generation_model.magic_search(input_ids, args.k, args.alpha, args.decoding_len, 
                         beta, sound_instance, clip, clip_text_max_len)
                     
+                    #output_text = generation_model.magic_search_gt_captions(input_ids, args.k, args.alpha, args.decoding_len, 
+                     #   beta, one_test_dict['captions'], clip, clip_text_max_len) 
+                    
                     last_letter_prompt = prompt[-1]
                     output_text_without_prompt = output_text.split(last_letter_prompt, 1)[1]
                     output_text_without_prompt_series = pd.Series(output_text_without_prompt)
@@ -196,14 +199,28 @@ if __name__ == '__main__':
                     pd.set_option('display.float_format', lambda x: '%.3f' % x)
                     
                     audio_embedding = clip.compute_image_representation_from_image_instance(sound_instance)
+
+                    #audio_embedding = clip.compute_text_representation(one_test_dict['captions']).mean(axis=0).unsqueeze(dim=0)
+
                     captions = one_res_dict["captions"] # GT captions
-                    captions.append(output_text_without_prompt)
+                    captions.append(output_text)
 
                     #one_res_dict["captions"] = one_res_dict["captions"][:-1]
 
                     # get unsoftmaxed cos sims
+
         
                     captions_embs = clip.compute_text_representation(captions)
+
+                    # NICE TO HAVE: INCLUDE ANOTHER STRING LIST ABOVE: ["G1, G2, ... P"]
+                    cos_sim_captions_list = cosine_similarity(captions_embs.cpu().detach().numpy()).round(2).astype(str).tolist()
+                    [row.append('<br>') for row in cos_sim_captions_list]
+                    cos_sim_captions_list = [val for sublist in cos_sim_captions_list for val in sublist]
+                    cos_sim_captions = pd.Series({"cos_sim_captions":cos_sim_captions_list})
+                    cos_sim_captions = pd.DataFrame(cos_sim_captions)[0].apply(' '.join)
+
+
+
                     cos_sim = torch.cosine_similarity(audio_embedding, captions_embs)# unscaled! 
                 #   
 
@@ -211,7 +228,7 @@ if __name__ == '__main__':
                     format_string = "{:.3f}"
                     cos_sim = [format_string.format(i) for i in cos_sim.tolist()]
                     cos_sim_pred = pd.Series({"cos_sim_pred":cos_sim[-1]})
-                    cos_sim = pd.DataFrame(cos_sim[:-1]).apply('    '.join)
+                    cos_sim = pd.DataFrame(cos_sim[:-1]).apply('<br>'.join)
                     
 
                     # STORE THESE IN TABLE 
@@ -225,14 +242,14 @@ if __name__ == '__main__':
                     sound_full_path = os.path.join("../../softlinks/audio_clip_test_data", sound_file_name)
 
                     captions.pop()
-                    captions_table = pd.Series({"captions":' // '.join(captions)})
+                    captions_table = pd.Series({"captions":'<br>'.join(captions)})
 
 
-                    cols = [output_text_without_prompt_series, captions_table, cos_sim_pred, cos_sim,  wav_col]
+                    cols = [output_text_without_prompt_series, captions_table, cos_sim_pred, cos_sim,  cos_sim_captions, wav_col]
 
                     sim_text = pd.DataFrame(pd.concat(cols, axis=0)).T
 
-                    sim_text.columns = ["pred", "captions", "pred_cos_sim", "GT_cos_sims", "Audio"]
+                    sim_text.columns = ["pred", "GT_captions", "sim(pred+prompt, audio)", "sim(GT_caption_i, audio)", "sim([GT_caption_i, prompt], [GT_caption_j, prompt])", "Audio"]
 
 
                     sim_text["Audio"] = sim_text["Audio"].apply(lambda audio_path: f"""<audio controls> <source src="{sound_full_path}" type="audio/wav"> </audio>""")

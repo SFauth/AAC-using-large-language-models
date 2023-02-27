@@ -192,6 +192,70 @@ class SimCTG(nn.Module):
         execution_time = time_diff.total_seconds() * 1000
         #print(self.parse_output_token_list(input_ids_for_class[0]))
         return self.parse_output_token_list(input_ids_for_class[0])
+    
+    @torch.no_grad()
+    def magic_search_gt_captions(self, input_ids, beam_width, alpha, decoding_len, beta, gt_captions, clip, 
+        clip_text_max_len):#, add_token_level_score=False):
+
+        """
+        MAGIC search using the GT captions' embeddings.
+        gt_captions: list of gt_captions (strings)
+        """
+
+        prefix_len = input_ids.size()[1] # number of tokens in prefix. as of now, 6
+
+        from utlis import PlugAndPlayContrastiveDecodingOneStepFast
+        past_key_values, last_hidden_states, logits = None, None, None
+        generated = [item for item in input_ids.tolist()]  # prompt token_ids
+
+        input_ids_for_class = input_ids.clone()
+
+        image_embeds = clip.compute_text_representation(gt_captions).mean(axis=0).unsqueeze(dim=0)
+        #image_embeds = clip.compute_image_representation_from_image_instance(sound_instance)
+
+        start_time = datetime.datetime.now()
+
+        # the maximum supported length of generation for SimCTG is 256
+        # to support longer generated length, you can re-train the SimCTG model with longer sequences
+        decoding_len = decoding_len - prefix_len # maximum length of (prefix + generated continuation) - prefix = max length that can be generated
+
+        unsoftmaxed_cos_sims = []
+
+        break_tokens = ". ! ?"
+
+        break_tokens = self.tokenizer.encode(break_tokens, return_tensors='pt').to("cuda") # specify break_tokens
+
+        for step in range(decoding_len): # model takes sos and prompt as input and produces next word 
+            input_ids, past_key_values, last_hidden_states, logits, input_ids_for_class = \
+            PlugAndPlayContrastiveDecodingOneStepFast(
+                self.model, 
+                input_ids, 
+                prefix_len,
+                beam_width, 
+                alpha, 
+                beta, 
+                self.tokenizer,
+                image_embeds, 
+                clip, 
+                clip_text_max_len,
+                past_key_values,
+                last_hidden_states,
+                logits,
+                first_step=step==0,
+                input_ids_for_class=input_ids_for_class,
+            )
+
+            if input_ids is not None and input_ids in break_tokens:
+                print( f"Stopped after {step} tokens")
+                break
+
+            #unsoftmaxed_cos_sims.append(unsoftmaxed_cos_sim)
+
+        end_time = datetime.datetime.now()
+        time_diff = (end_time - start_time)
+        execution_time = time_diff.total_seconds() * 1000
+        #print(self.parse_output_token_list(input_ids_for_class[0]))
+        return self.parse_output_token_list(input_ids_for_class[0])
 
     def fast_contrastive_search(self, input_ids, beam_width, alpha, decoding_len):
         '''

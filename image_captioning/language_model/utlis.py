@@ -280,26 +280,29 @@ def PlugAndPlayContrastiveDecodingOneStepFast(model, input_ids, prefix_len, beam
     )   # dim: k x n_prompt_tokens + candidate token     for every top k candidate prompt tokens and its token 
 
 
-    batch_text_list = []
-    for one_input_id in input_ids_for_class_:
-        one_text = simctg_tokenizer.decode(one_input_id[prefix_len:][-clip_text_max_len:])
-        """
-        decode: convert token ids to string
-        only decode the tokens after the prompt. on the first step, the candidate token only. 
-        on the second step, the first generated token and the new candidate, ... (all up to the defined max len)
-        """
-        
-        # we only consider the class score of the generated text continuation
-        batch_text_list.append(one_text)
-    #print("Decoded generated words and candidate word: ")
-    #print(batch_text_list)
-    # batch_text_list = ['cat', 'thunderstorm', 'coughing', 'alarm clock', 'car horn']
-    
-    #cos_sim = pd.Series(torch.cosine_similarity(image_embeds, clip.compute_text_representation(batch_text_list)).cpu().detach().numpy())
-    # and batch_text_list
-    #text_raw_vector = pd.Series(batch_text_list)
 
-    #cos_sims_every_word = pd.concat([text_raw_vector, cos_sim], axis=1).rename({0:"text", 1:"unsoftmaxed_cos_sim"}, axis=1).sort_values("unsoftmaxed_cos_sim", ascending=False).head(5)
+    batch_text_list = []
+
+    encode_prompt = True
+
+    if encode_prompt == True:
+
+        for one_input_id in input_ids_for_class_:
+            one_text = simctg_tokenizer.decode(one_input_id)
+            batch_text_list.append(one_text)
+
+    else:    
+
+        for one_input_id in input_ids_for_class_:
+            one_text = simctg_tokenizer.decode(one_input_id[prefix_len:][-clip_text_max_len:])
+            """
+            decode: convert token ids to string
+            only decode the tokens after the prompt. on the first step, the candidate token only. 
+            on the second step, the first generated token and the new candidate, ... (all up to the defined max len)
+            """
+            
+            # we only consider the class score of the generated text continuation
+            batch_text_list.append(one_text)
 
 
     batch_score = clip.compute_image_text_similarity_via_raw_text(image_embeds, batch_text_list)
