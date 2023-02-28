@@ -49,6 +49,8 @@ def parse_config():
     # save configuration
     parser.add_argument("--save_path_prefix", type=str, help="save the result in which directory")
     parser.add_argument("--save_name", type=str, help="the name of the saved file")
+    # data set
+    parser.add_argument("--dataset", type=str, help="specify dataset: clotho or AudioCaps")
     return parser.parse_args()
 
 def get_prompt_id(text, tokenizer):
@@ -77,6 +79,7 @@ if __name__ == '__main__':
     with open(args.test_path) as f:
         item_list = json.load(f)
     print ('Data loaded.')
+    item_list = item_list[0:5]
     print ('Number of test instances is {}'.format(len(item_list)))
     
     # get AudioCLIP
@@ -235,7 +238,15 @@ if __name__ == '__main__':
                     # create col for .wav file
                     wav_col = pd.Series({"Audio":sound_full_path})                
                     sound_file_name = os.path.split(sound_full_path)[1]
-                    sound_full_path = os.path.join("../../softlinks/audio_clip_test_data", sound_file_name)
+
+                    if args.dataset == "clotho":
+                        sound_full_path = os.path.join("../../../../softlinks_to_wav/audio_clip_test_data", sound_file_name)
+
+                    elif args.dataset == "audiocaps":
+                        sound_full_path = os.path.join("../../../../softlinks_to_wav/AudioCaps_data", sound_file_name)
+
+                    else:
+                        pass
 
                     #%% 2b) groundtruth captions
                     captions.pop()
@@ -261,10 +272,18 @@ if __name__ == '__main__':
 
                 #%% create table and result .json
 
-                file_prefix = str(beta.item()) + "_" + prompt.replace(" ", "_") + "_" +"CODETEST_2_"
+                file_prefix = str(beta.item()) + "_" + prompt.replace(" ", "_") + "_"
                 html_filename =  file_prefix + "sim_audio_table.html"
                 sim_audio_table = pd.concat(audio_sim_tables.values())
-                html_path = os.path.join(os.getcwd(), "../inference_result/output_tables/code_testing", html_filename)
+                if args.dataset == "clotho":
+                    html_path = os.path.join(os.getcwd(), "../inference_result/clotho_v2.1/includes_prompt_magic/output_tables/code_testing", html_filename)
+
+                elif args.dataset == "audiocaps":
+                    html_path = os.path.join(os.getcwd(), "../inference_result/AudioCaps/includes_prompt_magic/output_tables/code_testing", html_filename)
+
+                else:
+                    pass
+
                 sim_audio_table.to_html(html_path, escape=False)
             
                 #print ('Inference completed!')

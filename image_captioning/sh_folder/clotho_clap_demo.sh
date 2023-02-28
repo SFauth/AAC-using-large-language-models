@@ -10,5 +10,5 @@ CUDA_VISIBLE_DEVICES=[6,7] python ../inference_magic.py\
     --k 45\
     --alpha 0.1\
     --beta 2.0\
-    --save_path_prefix ../inference_result/clotho_v2.1/magic/output_jsons/code_testing\
+    --save_path_prefix ../inference_result/clotho_v2.1/includes_prompt_magic/output_jsons/code_testing\
     --save_name magic_clotho_v2.1_clap_demo.json
