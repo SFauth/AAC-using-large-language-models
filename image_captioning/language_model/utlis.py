@@ -240,7 +240,7 @@ def plug_and_play_fast_ranking(
 
 def PlugAndPlayContrastiveDecodingOneStepFast(model, input_ids, prefix_len, beam_width, alpha, beta, 
     simctg_tokenizer, image_embeds, clip, clip_text_max_len, past_key_values, last_hidden_states, 
-    logit_for_next_step, first_step=False, input_ids_for_class=None):#, add_token_level_score=False):
+    logit_for_next_step, include_prompt_magic, first_step=False, input_ids_for_class=None):#, add_token_level_score=False):
     '''
         model: the generation model, e.g., gpt2
         input_ids: 1 x seqlen
@@ -283,9 +283,7 @@ def PlugAndPlayContrastiveDecodingOneStepFast(model, input_ids, prefix_len, beam
 
     batch_text_list = []
 
-    encode_prompt = True
-
-    if encode_prompt == True:
+    if include_prompt_magic == "True":
 
         for one_input_id in input_ids_for_class_:
             one_text = simctg_tokenizer.decode(one_input_id)

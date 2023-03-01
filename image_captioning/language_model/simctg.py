@@ -138,7 +138,7 @@ class SimCTG(nn.Module):
 
     @torch.no_grad()
     def magic_search(self, input_ids, beam_width, alpha, decoding_len, beta, sound_instance, clip, 
-        clip_text_max_len):#, add_token_level_score=False):
+        clip_text_max_len, include_prompt_magic):#, add_token_level_score=False):
         prefix_len = input_ids.size()[1] # number of tokens in prefix. as of now, 6
 
         from utlis import PlugAndPlayContrastiveDecodingOneStepFast
@@ -179,6 +179,7 @@ class SimCTG(nn.Module):
                 logits,
                 first_step=step==0,
                 input_ids_for_class=input_ids_for_class,
+                include_prompt_magic=include_prompt_magic
             )
 
             if input_ids is not None and input_ids in break_tokens:
@@ -195,7 +196,7 @@ class SimCTG(nn.Module):
     
     @torch.no_grad()
     def magic_search_gt_captions(self, input_ids, beam_width, alpha, decoding_len, beta, gt_captions, clip, 
-        clip_text_max_len):#, add_token_level_score=False):
+        clip_text_max_len, include_prompt_magic):#, add_token_level_score=False):
 
         """
         MAGIC search using the GT captions' embeddings.
@@ -224,7 +225,7 @@ class SimCTG(nn.Module):
         break_tokens = ". ! ?"
 
         break_tokens = self.tokenizer.encode(break_tokens, return_tensors='pt').to("cuda") # specify break_tokens
-
+        
         for step in range(decoding_len): # model takes sos and prompt as input and produces next word 
             input_ids, past_key_values, last_hidden_states, logits, input_ids_for_class = \
             PlugAndPlayContrastiveDecodingOneStepFast(
@@ -241,8 +242,9 @@ class SimCTG(nn.Module):
                 past_key_values,
                 last_hidden_states,
                 logits,
+                include_prompt_magic=include_prompt_magic,
                 first_step=step==0,
-                input_ids_for_class=input_ids_for_class,
+                input_ids_for_class=input_ids_for_class             
             )
 
             if input_ids is not None and input_ids in break_tokens:
