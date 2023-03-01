@@ -53,6 +53,7 @@ def parse_config():
     parser.add_argument("--dataset", type=str, help="specify dataset: clotho or AudioCaps")
     # prompt
     parser.add_argument("--include_prompt_magic", type=str, help="include prompt in the calculation of the MAGIC score")
+
     return parser.parse_args()
 
 def get_prompt_id(text, tokenizer):
@@ -73,7 +74,9 @@ if __name__ == '__main__':
     with open(args.test_path) as f:
         item_list = json.load(f)
     print ('Data loaded.')
-    item_list = item_list[0:5]
+
+    item_list = item_list[0:100]
+
     print ('Number of test instances is {}'.format(len(item_list)))
     
     # get AudioCLIP
@@ -122,8 +125,6 @@ if __name__ == '__main__':
     betas = betas
     ##################################################
 
-    # CODE TESTING
-    betas = torch.linspace(0.5, 4, steps=1).cuda()
 
     for beta in betas:
         print("Beta: " + str(beta))
@@ -148,6 +149,7 @@ if __name__ == '__main__':
                 p = progressbar.ProgressBar(test_num)
                 p.start()
                 for p_idx in range(test_num):
+
                     p.update(p_idx)
                     one_test_dict = item_list[p_idx]
 
@@ -157,10 +159,9 @@ if __name__ == '__main__':
                         #'file_path':one_test_dict['file_path'],
                         'captions':one_test_dict['captions']  
                     }
+                    
+                    sound_full_path = args.test_image_prefix_path + one_test_dict['sound_name']
 
-                    sound_full_path = args.test_image_prefix_path + '/' + one_test_dict['sound_name']
-
-                    #print(one_test_dict['sound_name'])
                     # create sound instance 
                     sound_instance, _ = librosa.load(sound_full_path, sr=args.sample_rate)
                     
