@@ -10,6 +10,7 @@ CUDA_VISIBLE_DEVICES=[2,3,4] python ../inference_magic.py\
     --k 45\
     --alpha 0.1\
     --beta 2.0\
-    --save_name exp.json\
+    --save_name exp\
     --dataset audiocaps\
-    --include_prompt_magic False
+    --include_prompt_magic False\
+    --experiment code_testing
