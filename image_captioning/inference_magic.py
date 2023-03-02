@@ -1,6 +1,6 @@
 # coding=utf-8
 import os
-os.environ["CUDA_VISIBLE_DEVICES"]="2"
+#os.environ["CUDA_VISIBLE_DEVICES"]="2"
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -75,7 +75,7 @@ if __name__ == '__main__':
         item_list = json.load(f)
     print ('Data loaded.')
 
-    item_list = item_list[0:100]
+    #item_list = item_list[0:100]
 
     print ('Number of test instances is {}'.format(len(item_list)))
     
@@ -119,11 +119,6 @@ if __name__ == '__main__':
     betas = torch.concat([betas_1, betas_2]).unique()
 
     prompts = ["The sound of" ,"This is a sound of", "This is the sound of"]
-
-    ##### EXP 1: REMAINING CLOTHO EXCLUDING KW2CNOF###
-    prompts = ["The sound of"]
-    betas = betas
-    ##################################################
 
 
     for beta in betas:
@@ -312,11 +307,21 @@ if __name__ == '__main__':
                 print ('HTML_path: {}'.format(html_path))
                 print ('Results json path: {}'.format(result_jsons_full_save_path))
 
+                if os.path.exists(os.path.dirname(html_path)):
+                    pass
+                else: # recursively construct directory
+                    os.makedirs(os.path.dirname(html_path), exist_ok=True)
+
                 sim_audio_table.to_html(html_path, escape=False)
             
                 #print ('Inference completed!')
 
                 #print ('full save path is {}'.format(full_save_path))
+
+                if os.path.exists(os.path.dirname(result_jsons_full_save_path)):
+                    pass
+                else: # recursively construct directory
+                    os.makedirs(os.path.dirname(result_jsons_full_save_path), exist_ok=True)
                 
                 with open(result_jsons_full_save_path, 'w') as outfile:
                     json.dump(result_list, outfile, indent=4)
