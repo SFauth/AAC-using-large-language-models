@@ -13,4 +13,4 @@ CUDA_VISIBLE_DEVICES="2" python ../inference_magic.py\
     --save_name exp\
     --dataset audiocaps\
     --include_prompt_magic False\
-    --experiment code_testing
+    --experiment hyperparam_experiments

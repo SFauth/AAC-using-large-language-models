@@ -255,7 +255,7 @@ if __name__ == '__main__':
                     sound_file_name = os.path.split(sound_full_path)[1]
 
                     if args.dataset == "clotho":
-                        sound_full_path = os.path.join("../../../../softlinks_to_wav/audio_clip_test_data", sound_file_name)
+                        sound_full_path = os.path.join("../../../../softlinks_to_wav/evaluation_data_files", sound_file_name)
 
                     elif args.dataset == "audiocaps":
                         sound_full_path = os.path.join("../../../../softlinks_to_wav/AudioCaps_data", sound_file_name)

@@ -10,6 +10,7 @@ import pandas as pd
 import torchaudio
 import torchvision
 import numpy as np
+import torch.nn.functional as F
 
 from CLAP.src.open_clip import create_model
 #from CLAP.src.training.data import get_audio_features
