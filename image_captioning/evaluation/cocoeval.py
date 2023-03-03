@@ -16,8 +16,13 @@ def parse_config():
 if __name__ == '__main__':
     args = parse_config()
 
-    file_pattern = os.path.join(args.result_file_path, '*.json')
-    result_files = glob.glob(file_pattern)
+    result_files = []
+
+    for f in glob.glob(os.path.join(args.result_file_path, '**/*.json'), recursive=True):
+        
+        if "hyperparam_experiments" in f:
+            result_files.append(f)
+            #print(f)
 
     result_dicts = []
 
