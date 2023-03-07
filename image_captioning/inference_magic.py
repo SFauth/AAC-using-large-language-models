@@ -114,10 +114,10 @@ if __name__ == '__main__':
     print ('Language model loaded.')
     clip_text_max_len = 77
 
-    betas_1 = torch.linspace(0.5, 4, steps=11).cuda()
-    betas_2 = torch.linspace(0, 0.5, steps=11).cuda()
-    betas = torch.concat([betas_1, betas_2]).unique()
-
+    #betas_1 = torch.linspace(0.5, 4, steps=11).cuda()
+    #betas_2 = torch.linspace(0, 0.5, steps=11).cuda()
+    #betas = torch.concat([betas_1, betas_2]).unique()
+    betas = torch.linspace(1, 2, steps=11).cuda()
     prompts = ["The sound of" ,"This is a sound of", "This is the sound of"]
 
 
@@ -179,11 +179,11 @@ if __name__ == '__main__':
                         input_ids: gets token id of the SOS token 
                         """
 
-                        output_text = generation_model.magic_search(input_ids, args.k, args.alpha, args.decoding_len, 
-                            beta, sound_instance, clip, clip_text_max_len, args.include_prompt_magic)
+                        #output_text = generation_model.magic_search(input_ids, args.k, args.alpha, args.decoding_len, 
+                         #   beta, sound_instance, clip, clip_text_max_len, args.include_prompt_magic)
                         
-                        #output_text = generation_model.magic_search_gt_captions(input_ids, args.k, args.alpha, args.decoding_len, 
-                        #   beta, one_test_dict['captions'], clip, clip_text_max_len) 
+                        output_text = generation_model.magic_search_gt_captions(input_ids, args.k, args.alpha, args.decoding_len, 
+                           beta, one_test_dict['captions'], clip, clip_text_max_len,  args.include_prompt_magic) 
                         
                         last_letter_prompt = prompt[-1]
                         output_text_series = pd.Series(output_text)

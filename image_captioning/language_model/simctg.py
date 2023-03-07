@@ -139,6 +139,11 @@ class SimCTG(nn.Module):
     @torch.no_grad()
     def magic_search(self, input_ids, beam_width, alpha, decoding_len, beta, sound_instance, clip, 
         clip_text_max_len, include_prompt_magic):#, add_token_level_score=False):
+
+        """
+        Vanilla magic search
+        """
+
         prefix_len = input_ids.size()[1] # number of tokens in prefix. as of now, 6
 
         from utlis import PlugAndPlayContrastiveDecodingOneStepFast
