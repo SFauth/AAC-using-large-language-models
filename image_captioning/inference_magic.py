@@ -272,6 +272,17 @@ if __name__ == '__main__':
                         captions.pop()
                         captions_table = pd.Series({"captions":'<br>'.join(captions)})
 
+                        #%% 7) metrics
+
+                        # compute the metrics
+
+                        # expects results json (a list of dicts)DDDDDDDDDDDDDDDDDDd
+                        cocoEval = COCOEvalCap_obs(one_res_dict=one_res_dict)
+                        cocoEval.evaluate()
+                        metrics = pd.DataFrame(cocoEval.metrics).apply(lambda x: x.round(2), axis=0)
+                        metrics = metrics.fillna(0).apply(lambda x: x.sum()).to_frame().T
+
+
                         #%% FINALIZE TABLE
 
                         pd.set_option('display.float_format', lambda x: '%.3f' % x)
@@ -284,19 +295,13 @@ if __name__ == '__main__':
 
                         #%% 6b) playable audio
                         sim_text["Audio"] = sim_text["Audio"].apply(lambda audio_path: f"""<audio controls> <source src="{sound_full_path}" type="audio/wav"> </audio>""")
-                        audio_sim_tables[str(item_list[p_idx]["sound_name"])] = sim_text,
+
+                        sim_text = pd.concat([sim_text, metrics], axis=1)
+                        
+                        audio_sim_tables[str(item_list[p_idx]["sound_name"])] = sim_text
+
+                        
                     
-                        #%% 7) metrics
-
-                        # compute the metrics
-
-                        # expects results json (a list of dicts)DDDDDDDDDDDDDDDDDDd
-                        cocoEval = COCOEvalCap_obs(one_res_dict=one_res_dict)
-                        cocoEval.evaluate()
-                        print("Metrics: ")
-                        print(cocoEval.metrics)
-                        # store in col
-
                     except: 
                         next
 
