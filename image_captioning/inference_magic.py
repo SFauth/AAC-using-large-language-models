@@ -1,6 +1,7 @@
 # coding=utf-8
 import os
 #os.environ["CUDA_VISIBLE_DEVICES"]="2"
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -23,6 +24,7 @@ import json
 import logging
 from sklearn.metrics.pairwise import cosine_similarity
 
+from evaluation.pycocoevalcap.eval import COCOEvalCap_obs
 
 logging.getLogger('transformers.generation_utils').disabled = True
 
@@ -67,7 +69,6 @@ if __name__ == '__main__':
     cuda_available = torch.cuda.is_available()
     args = parse_config()
     device = torch.device('cuda')
-
 
     print ('Loading data...')
 
@@ -158,32 +159,32 @@ if __name__ == '__main__':
                     sound_full_path = args.test_image_prefix_path + one_test_dict['sound_name']
 
                     # create sound instance 
-                    try:
-                        sound_instance, _ = librosa.load(sound_full_path, sr=args.sample_rate)
+                    #try:
+                    sound_instance, _ = librosa.load(sound_full_path, sr=args.sample_rate)
 
+                
                     
-                        
-                        # tokenize 
-                        input_ids = get_prompt_id(prompt, generation_model.tokenizer) 
-                        
-                        """
-                        input ids: vector containing tokens of prompt [50257, 271, 6597, 10651, 286, 257]
-                        """
+                    # tokenize 
+                    input_ids = get_prompt_id(prompt, generation_model.tokenizer) 
+                    
+                    """
+                    input ids: vector containing tokens of prompt [50257, 271, 6597, 10651, 286, 257]
+                    """
 
-                        if cuda_available:
-                            input_ids = input_ids.cuda(device)
+                    if cuda_available:
+                        input_ids = input_ids.cuda(device)
 
-                        #try:
+                    try:
 
                         """
                         input_ids: gets token id of the SOS token 
                         """
 
-                        #output_text = generation_model.magic_search(input_ids, args.k, args.alpha, args.decoding_len, 
-                         #   beta, sound_instance, clip, clip_text_max_len, args.include_prompt_magic)
+                        output_text = generation_model.magic_search(input_ids, args.k, args.alpha, args.decoding_len, 
+                            beta, sound_instance, clip, clip_text_max_len, args.include_prompt_magic)
                         
-                        output_text = generation_model.magic_search_gt_captions(input_ids, args.k, args.alpha, args.decoding_len, 
-                           beta, one_test_dict['captions'], clip, clip_text_max_len,  args.include_prompt_magic) 
+                        #output_text = generation_model.magic_search_gt_captions(input_ids, args.k, args.alpha, args.decoding_len, 
+                            #  beta, one_test_dict['captions'], clip, clip_text_max_len,  args.include_prompt_magic) 
                         
                         last_letter_prompt = prompt[-1]
                         output_text_series = pd.Series(output_text)
@@ -213,6 +214,7 @@ if __name__ == '__main__':
                         4) cosine similarity of the [GT_caption_i] and the [audio]
                         5) cosine similarity of the [GT captions_i] and the [prediction] (all with each other; matrix)
                         6) playable audio
+                        7) metrics for current observation
                         DISCLAIMER: the prediction in 3) and 5) contain the prompt, if include_magic_prompt == True
                         """
 
@@ -282,7 +284,18 @@ if __name__ == '__main__':
 
                         #%% 6b) playable audio
                         sim_text["Audio"] = sim_text["Audio"].apply(lambda audio_path: f"""<audio controls> <source src="{sound_full_path}" type="audio/wav"> </audio>""")
-                        audio_sim_tables[str(item_list[p_idx]["sound_name"])] = sim_text
+                        audio_sim_tables[str(item_list[p_idx]["sound_name"])] = sim_text,
+                    
+                        #%% 7) metrics
+
+                        # compute the metrics
+
+                        # expects results json (a list of dicts)DDDDDDDDDDDDDDDDDDd
+                        cocoEval = COCOEvalCap_obs(one_res_dict=one_res_dict)
+                        cocoEval.evaluate()
+                        print("Metrics: ")
+                        print(cocoEval.metrics)
+                        # store in col
 
                     except: 
                         next
