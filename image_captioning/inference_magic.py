@@ -25,6 +25,7 @@ import logging
 from sklearn.metrics.pairwise import cosine_similarity
 
 from evaluation.pycocoevalcap.eval import COCOEvalCap_obs
+from evaluation.pycocoevalcap.eval import COCOEvalCap_list
 
 logging.getLogger('transformers.generation_utils').disabled = True
 
@@ -214,7 +215,7 @@ if __name__ == '__main__':
                     4) cosine similarity of the [GT_caption_i] and the [audio]
                     5) cosine similarity of the [GT captions_i] and the [prediction] (all with each other; matrix)
                     6) playable audio
-                    7) metrics for current observation
+                    7) metrics for the current observation or the whole run (first row)
                     DISCLAIMER: the prediction in 3) and 5) contain the prompt, if include_magic_prompt == True
                     """
 
@@ -283,7 +284,7 @@ if __name__ == '__main__':
                     metrics = metrics.fillna(0).apply(lambda x: x.sum()).to_frame().T
 
 
-                    #%% FINALIZE TABLE
+                    #%% COMBINE TABLE COMPONENTS
 
                     pd.set_option('display.float_format', lambda x: '%.3f' % x)
 
@@ -307,12 +308,24 @@ if __name__ == '__main__':
 
                 p.finish()
 
+                #%% add NLG metrics for whole run to table
+
+                cocoEval_final = COCOEvalCap_list(result_list)
+                cocoEval_final.evaluate()
+                final_metrics = pd.DataFrame(cocoEval_final.metrics).apply(lambda x: x.round(2), axis=0)
+                final_metrics = final_metrics.fillna(0).apply(lambda x: x.sum()).to_frame().T
+                # is this the average? differences to row values can be explained, as we round every row value
+                # we only round the final value once, here at the end
+                
+
                 #%% create table and result .json                    
 
                 save_name_results_json = args.save_name
                 file_prefix = str(beta.item()) + "_" + prompt.replace(" ", "_") + "_" + save_name_results_json
                 html_filename =  file_prefix + "_" "results.html"
                 sim_audio_table = pd.concat(audio_sim_tables.values())
+                sim_audio_table = pd.concat([final_metrics, sim_audio_table], axis=0)
+
                 if args.dataset == "clotho":
                     html_path = os.path.join(os.getcwd(), "../inference_result/clotho_v2.1" , table_subfolder, "output_tables", args.experiment, html_filename)
                     result_jsons_full_save_path = os.path.join(os.getcwd(), "../inference_result/clotho_v2.1", table_subfolder, "output_jsons", args.experiment, file_prefix + ".json")
