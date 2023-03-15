@@ -26,15 +26,29 @@ val_fct = CrossEntropyLoss(reduction='none') # defining validation loss function
 class SimCTG(nn.Module):
     def __init__(self, model_name, sos_token=None, pad_token=None):
         super(SimCTG, self).__init__()
-        from transformers import AutoTokenizer, GPT2LMHeadModel  #GPT2LMHeadModel: 
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        from transformers import AutoTokenizer #GPT2LMHeadModel: 
+        
         #self.sos_token, self.sos_token_id = self.add_special_token(sos_token)
         #print ('sos token is {}, sos token id is {}'.format(self.sos_token, self.sos_token_id))
         #self.pad_token, self.pad_token_id = self.add_special_token(pad_token)
         #print ('pad token is {}, pad token id is {}'.format(self.pad_token, self.pad_token_id))
-        self.eos_token, self.eos_token_id = self.tokenizer.bos_token, self.tokenizer.bos_token_id
-        print ('eos token is {}, eos token id is {}'.format(self.eos_token, self.eos_token_id))
-        self.model = GPT2LMHeadModel.from_pretrained(model_name) # GPT2LMHeadModel vs. GPT2Model??
+        
+        self.model_name = model_name
+
+        if model_name == "gpt2":
+            from transformers import GPT2LMHeadModel
+            self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+            self.eos_token, self.eos_token_id = self.tokenizer.bos_token, self.tokenizer.bos_token_id
+            print ('eos token is {}, eos token id is {}'.format(self.eos_token, self.eos_token_id))
+            self.model = GPT2LMHeadModel.from_pretrained(model_name) # GPT2LMHeadModel vs. GPT2Model??
+
+        elif model_name == "facebook/opt-1.3b":
+            from transformers import AutoModelForCausalLM
+            self.tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=False)
+            self.eos_token, self.eos_token_id = self.tokenizer.bos_token, self.tokenizer.bos_token_id
+            print ('eos token is {}, eos token id is {}'.format(self.eos_token, self.eos_token_id))
+            self.model = AutoModelForCausalLM.from_pretrained(model_name)
+
         self.vocab_size = len(self.tokenizer)
         print ('Resizing model embedding...')
         self.model.resize_token_embeddings(len(self.tokenizer)) 
@@ -127,14 +141,19 @@ class SimCTG(nn.Module):
     def parse_output_token_list(self, output):
         output = output.tolist()
         res_list = []
-        for token_id in output:
 
+        if output[0] == self.eos_token_id: 
+            output = output[1:]        
+         
+        for token_id in output:
             if token_id == self.eos_token_id:
                 break
             else:
                 res_list.append(token_id)
         text = self.tokenizer.decode(res_list).strip()
+                
         return ' '.join(text.split()).strip()
+
 
     @torch.no_grad()
     def magic_search(self, input_ids, beam_width, alpha, decoding_len, beta, sound_instance, clip, 
@@ -196,8 +215,8 @@ class SimCTG(nn.Module):
         end_time = datetime.datetime.now()
         time_diff = (end_time - start_time)
         execution_time = time_diff.total_seconds() * 1000
-        #print(self.parse_output_token_list(input_ids_for_class[0]))
-        return self.parse_output_token_list(input_ids_for_class[0])
+
+        return self.parse_output_token_list(input_ids_for_class[0]) # [0] to squeeze the tensor
     
     @torch.no_grad()
     def magic_search_gt_captions(self, input_ids, beam_width, alpha, decoding_len, beta, gt_captions, clip, 

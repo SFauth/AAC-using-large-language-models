@@ -260,9 +260,16 @@ def PlugAndPlayContrastiveDecodingOneStepFast(model, input_ids, prefix_len, beam
 
     # compute the new hidden ### HERE  ##
     past_key_values = enlarge_past_key_values(past_key_values, beam_width)
+
+    if "OPTForCausalLM" in str(type(model)):
+        attention_mask = torch.ones(beam_width, 1 + seqlen, device='cuda')
+
+    else: 
+        attention_mask = torch.ones_like(top_k_ids.view(-1, 1))
+
     output = model(
         input_ids=top_k_ids.view(-1, 1) ,
-        attention_mask=torch.ones_like(top_k_ids.view(-1, 1)),
+        attention_mask=attention_mask,
         past_key_values=past_key_values,
         output_hidden_states=True,
         use_cache=True,

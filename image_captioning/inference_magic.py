@@ -174,136 +174,136 @@ if __name__ == '__main__':
                     if cuda_available:
                         input_ids = input_ids.cuda(device)
 
-                    try:
+                    #try:
 
-                        """
-                        input_ids: gets token id of the SOS token 
-                        """
+                    """
+                    input_ids: gets token id of the SOS token 
+                    """
 
-                        output_text = generation_model.magic_search(input_ids, args.k, args.alpha, args.decoding_len, 
-                            beta, sound_instance, clip, clip_text_max_len, args.include_prompt_magic)
-                        
-                        #output_text = generation_model.magic_search_gt_captions(input_ids, args.k, args.alpha, args.decoding_len, 
-                            #  beta, one_test_dict['captions'], clip, clip_text_max_len,  args.include_prompt_magic) 
-                        
-                        last_letter_prompt = prompt[-1]
-                        output_text_series = pd.Series(output_text)
-                        output_text_without_prompt = output_text.split(last_letter_prompt, 1)[1]
-                        output_text_without_prompt_series = pd.Series(output_text_without_prompt)
+                    output_text = generation_model.magic_search(input_ids, args.k, args.alpha, args.decoding_len, 
+                        beta, sound_instance, clip, clip_text_max_len, args.include_prompt_magic)
+                    
+                    #output_text = generation_model.magic_search_gt_captions(input_ids, args.k, args.alpha, args.decoding_len, 
+                        #  beta, one_test_dict['captions'], clip, clip_text_max_len,  args.include_prompt_magic) 
+                    
+                    last_letter_prompt = prompt[-1]
+                    output_text_series = pd.Series(output_text)
+                    output_text_without_prompt = output_text.split(last_letter_prompt, 1)[1]
+                    output_text_without_prompt_series = pd.Series(output_text_without_prompt)
 
-                        one_res_dict['prediction'] = output_text_without_prompt # always without prompt, as prompt is other entry
-                        one_res_dict["beta"] = beta.item()
-                        one_res_dict["prompt"] = prompt
-                        one_res_dict["k"] = args.k
-                        one_res_dict["alpha"] = args.alpha
-                        one_res_dict["decoding_len"] = args.decoding_len
-                        one_res_dict["clip_text_max_len"] = clip_text_max_len
-                        one_res_dict["n_test_samples"] = test_num
-                        one_res_dict["included_prompt_in_magic"] = args.include_prompt_magic
-                        one_res_dict["dataset"] = args.dataset
-                        one_res_dict["CLAP_type"] = os.path.split(args.clap_model_name)[-1]
+                    one_res_dict['prediction'] = output_text_without_prompt # always without prompt, as prompt is other entry
+                    one_res_dict["beta"] = beta.item()
+                    one_res_dict["prompt"] = prompt
+                    one_res_dict["k"] = args.k
+                    one_res_dict["alpha"] = args.alpha
+                    one_res_dict["decoding_len"] = args.decoding_len
+                    one_res_dict["clip_text_max_len"] = clip_text_max_len
+                    one_res_dict["n_test_samples"] = test_num
+                    one_res_dict["included_prompt_in_magic"] = args.include_prompt_magic
+                    one_res_dict["dataset"] = args.dataset
+                    one_res_dict["CLAP_type"] = os.path.split(args.clap_model_name)[-1]
 
-                        result_list.append(one_res_dict)
-
-
-                        """
-                        This section produces the __output table__ in 'inference_result/similaritites_sounds' containing the:
-                        1) untokenized prediction (without the prompt)
-                        2) groundtruth captions
-                        3) cosine similarity of the [prediction] and the [audio]
-                        4) cosine similarity of the [GT_caption_i] and the [audio]
-                        5) cosine similarity of the [GT captions_i] and the [prediction] (all with each other; matrix)
-                        6) playable audio
-                        7) metrics for current observation
-                        DISCLAIMER: the prediction in 3) and 5) contain the prompt, if include_magic_prompt == True
-                        """
-
-                        #%% 2a) groundtruth captions and prediction
-
-                        captions = one_res_dict["captions"] # GT captions
-                        
-                        if args.include_prompt_magic == "True":
-                            captions.append(output_text)
-                            pred = output_text_series
-                            table_subfolder = "includes_prompt_magic"
-                        
-                        else: 
-                            captions.append(output_text_without_prompt)
-                            pred = output_text_without_prompt_series
-                            table_subfolder = "excludes_prompt_magic"
+                    result_list.append(one_res_dict)
 
 
-                        #%% 5) cosine similarity of the [GT captions_i] and the [prediction] (all with each other; matrix)
-                        # includes prompt if specified in flag
-                        # CHECK THIS COLUUUUUUUUUUUUUUUUUMN IN TABLE AND ITS CAPTION !!
-                        # NICE TO HAVE: INCLUDE ANOTHER STRING LIST ABOVE: ["G1, G2, ... P"]
-                        captions_embs = clip.compute_text_representation(captions)
-                        cos_sim_captions_list = cosine_similarity(captions_embs.cpu().detach().numpy()).round(2).astype(str).tolist()
-                        [row.append('<br>') for row in cos_sim_captions_list]
-                        cos_sim_captions_list = [val for sublist in cos_sim_captions_list for val in sublist]
-                        cos_sim_captions = pd.Series({"cos_sim_captions":cos_sim_captions_list})
-                        cos_sim_captions = pd.DataFrame(cos_sim_captions)[0].apply(' '.join)
+                    """
+                    This section produces the __output table__ in 'inference_result/similaritites_sounds' containing the:
+                    1) untokenized prediction (without the prompt)
+                    2) groundtruth captions
+                    3) cosine similarity of the [prediction] and the [audio]
+                    4) cosine similarity of the [GT_caption_i] and the [audio]
+                    5) cosine similarity of the [GT captions_i] and the [prediction] (all with each other; matrix)
+                    6) playable audio
+                    7) metrics for current observation
+                    DISCLAIMER: the prediction in 3) and 5) contain the prompt, if include_magic_prompt == True
+                    """
+
+                    #%% 2a) groundtruth captions and prediction
+
+                    captions = one_res_dict["captions"] # GT captions
+                    
+                    if args.include_prompt_magic == "True":
+                        captions.append(output_text)
+                        pred = output_text_series
+                        table_subfolder = "includes_prompt_magic"
+                    
+                    else: 
+                        captions.append(output_text_without_prompt)
+                        pred = output_text_without_prompt_series
+                        table_subfolder = "excludes_prompt_magic"
 
 
-                        #%% 3) 4) cosine similarity of the [GT_caption_i] and the [audio] and [prediction] and the [audio]
-                        audio_embedding = clip.compute_image_representation_from_image_instance(sound_instance)
-                        cos_sim = torch.cosine_similarity(audio_embedding, captions_embs)# unscaled!                   
-                        cos_sim = cos_sim.cpu().detach().numpy()
-                        format_string = "{:.3f}"
-                        cos_sim = [format_string.format(i) for i in cos_sim.tolist()]
-                        cos_sim_pred = pd.Series({"cos_sim_pred":cos_sim[-1]})
-                        cos_sim = pd.DataFrame(cos_sim[:-1]).apply('<br>'.join)
-                
-                        #%% 6b) playable audio
-                        # create col for .wav file
-                        wav_col = pd.Series({"Audio":sound_full_path})                
-                        sound_file_name = os.path.split(sound_full_path)[1]
-
-                        if args.dataset == "clotho":
-                            sound_full_path = os.path.join("../../../../softlinks_to_wav/evaluation_data_files", sound_file_name)
-
-                        elif args.dataset == "audiocaps":
-                            sound_full_path = os.path.join("../../../../softlinks_to_wav/AudioCaps_data", sound_file_name)
-
-                        else:
-                            pass
-
-                        #%% 2b) groundtruth captions
-                        captions.pop()
-                        captions_table = pd.Series({"captions":'<br>'.join(captions)})
-
-                        #%% 7) metrics
-
-                        # compute the metrics
-
-                        # expects results json (a list of dicts)DDDDDDDDDDDDDDDDDDd
-                        cocoEval = COCOEvalCap_obs(one_res_dict=one_res_dict)
-                        cocoEval.evaluate()
-                        metrics = pd.DataFrame(cocoEval.metrics).apply(lambda x: x.round(2), axis=0)
-                        metrics = metrics.fillna(0).apply(lambda x: x.sum()).to_frame().T
+                    #%% 5) cosine similarity of the [GT captions_i] and the [prediction] (all with each other; matrix)
+                    # includes prompt if specified in flag
+                    # CHECK THIS COLUUUUUUUUUUUUUUUUUMN IN TABLE AND ITS CAPTION !!
+                    # NICE TO HAVE: INCLUDE ANOTHER STRING LIST ABOVE: ["G1, G2, ... P"]
+                    captions_embs = clip.compute_text_representation(captions)
+                    cos_sim_captions_list = cosine_similarity(captions_embs.cpu().detach().numpy()).round(2).astype(str).tolist()
+                    [row.append('<br>') for row in cos_sim_captions_list]
+                    cos_sim_captions_list = [val for sublist in cos_sim_captions_list for val in sublist]
+                    cos_sim_captions = pd.Series({"cos_sim_captions":cos_sim_captions_list})
+                    cos_sim_captions = pd.DataFrame(cos_sim_captions)[0].apply(' '.join)
 
 
-                        #%% FINALIZE TABLE
+                    #%% 3) 4) cosine similarity of the [GT_caption_i] and the [audio] and [prediction] and the [audio]
+                    audio_embedding = clip.compute_image_representation_from_image_instance(sound_instance)
+                    cos_sim = torch.cosine_similarity(audio_embedding, captions_embs)# unscaled!                   
+                    cos_sim = cos_sim.cpu().detach().numpy()
+                    format_string = "{:.3f}"
+                    cos_sim = [format_string.format(i) for i in cos_sim.tolist()]
+                    cos_sim_pred = pd.Series({"cos_sim_pred":cos_sim[-1]})
+                    cos_sim = pd.DataFrame(cos_sim[:-1]).apply('<br>'.join)
+            
+                    #%% 6b) playable audio
+                    # create col for .wav file
+                    wav_col = pd.Series({"Audio":sound_full_path})                
+                    sound_file_name = os.path.split(sound_full_path)[1]
 
-                        pd.set_option('display.float_format', lambda x: '%.3f' % x)
+                    if args.dataset == "clotho":
+                        sound_full_path = os.path.join("../../../../softlinks_to_wav/evaluation_data_files", sound_file_name)
 
-                        cols = [pred, captions_table, cos_sim_pred, cos_sim,  cos_sim_captions, wav_col]
+                    elif args.dataset == "audiocaps":
+                        sound_full_path = os.path.join("../../../../softlinks_to_wav/AudioCaps_data", sound_file_name)
 
-                        sim_text = pd.DataFrame(pd.concat(cols, axis=0)).T
+                    else:
+                        pass
 
-                        sim_text.columns = ["pred", "GT_captions", "sim(pred, audio)", "sim(GT_caption_i, audio)", "sim(GT_caption_i, GT_caption_j, pred]) , while j!=i", "Audio"]
+                    #%% 2b) groundtruth captions
+                    captions.pop()
+                    captions_table = pd.Series({"captions":'<br>'.join(captions)})
 
-                        #%% 6b) playable audio
-                        sim_text["Audio"] = sim_text["Audio"].apply(lambda audio_path: f"""<audio controls> <source src="{sound_full_path}" type="audio/wav"> </audio>""")
+                    #%% 7) metrics
 
-                        sim_text = pd.concat([sim_text, metrics], axis=1)
-                        
-                        audio_sim_tables[str(item_list[p_idx]["sound_name"])] = sim_text
+                    # compute the metrics
+
+                    # expects results json (a list of dicts)DDDDDDDDDDDDDDDDDDd
+                    cocoEval = COCOEvalCap_obs(one_res_dict=one_res_dict)
+                    cocoEval.evaluate()
+                    metrics = pd.DataFrame(cocoEval.metrics).apply(lambda x: x.round(2), axis=0)
+                    metrics = metrics.fillna(0).apply(lambda x: x.sum()).to_frame().T
+
+
+                    #%% FINALIZE TABLE
+
+                    pd.set_option('display.float_format', lambda x: '%.3f' % x)
+
+                    cols = [pred, captions_table, cos_sim_pred, cos_sim,  cos_sim_captions, wav_col]
+
+                    sim_text = pd.DataFrame(pd.concat(cols, axis=0)).T
+
+                    sim_text.columns = ["pred", "GT_captions", "sim(pred, audio)", "sim(GT_caption_i, audio)", "sim(GT_caption_i, GT_caption_j, pred]) , while j!=i", "Audio"]
+
+                    #%% 6b) playable audio
+                    sim_text["Audio"] = sim_text["Audio"].apply(lambda audio_path: f"""<audio controls> <source src="{sound_full_path}" type="audio/wav"> </audio>""")
+
+                    sim_text = pd.concat([sim_text, metrics], axis=1)
+
+                    audio_sim_tables[str(item_list[p_idx]["sound_name"])] = sim_text
 
                         
                     
-                    except: 
-                        next
+                    #except: 
+                        #next
 
                 p.finish()
 

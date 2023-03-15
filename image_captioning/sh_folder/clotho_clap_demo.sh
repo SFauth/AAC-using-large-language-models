@@ -1,6 +1,6 @@
 CUDA_VISIBLE_DEVICES="7" python ../inference_magic.py\
     --language_model_code_path ../language_model/\
-    --language_model_name gpt2\
+    --language_model_name facebook/opt-1.3b\
     --clap_path ../clip/\
     --clap_model_name ../clip/CLAP/assets/checkpoints/no_fusion_no_keyword_to_caption.pt\
     --test_image_prefix_path ../softlinks/evaluation_data_files/\
