@@ -313,13 +313,16 @@ class CLIP():
         # CLAP, but text_embed's norm != 1 
         #logits_per_audio = self.logit_scale_a * image_embeds @ text_embeds.t().detach().cpu()
         
-        # Mine like MAGIC
+        # Mine like MAGIC   # 50 too big; variance always too high and only 1 value gets high weight and rest none
+                            # 25 good, max pretty close!
+                            # 20 variance pretty close!
 
-        logits_per_text = self.logit_scale_a * torch.cosine_similarity(image_embeds, text_embeds) 
+        self.logit_scale_a = torch.tensor([25], device="cuda")
+
+        logits_per_text = self.logit_scale_a * torch.cosine_similarity(image_embeds, text_embeds)
+
         logits_per_image = torch.unsqueeze(logits_per_text.t(), 0)
         
-        
-
         return logits_per_image.softmax(dim=-1)  # 1 x len(text_list)
 
 

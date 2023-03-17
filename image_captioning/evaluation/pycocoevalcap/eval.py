@@ -7,6 +7,7 @@ from .cider.cider import Cider
 from .spice.spice import Spice
 import json
 import ipdb
+import pandas as pd
 
 class COCOEvalCap:
     def __init__(self, path):
@@ -138,18 +139,37 @@ class COCOEvalCap_list:
         # Compute scores
         # =================================================
 
-        self.metrics = []
+        self.sample_metrics = []
+        self.final_metrics = []
 
         for scorer, method in scorers:
 
+            # score (for whole run): [B1, B2, B3, B4]
+            # scores: B1(sample_1, sample_2 ,..., sample_N), B2(sample_1, sample_2, ..., sample_N)
+
             score, scores = scorer.compute_score(gts, res)
 
+
             if type(method) != list:
-                current_metric = {method:score}
-                self.metrics.append(current_metric)
+
+                if method == "SPICE":
+
+                    current_metric = [scores[metric_nr]["All"]["f"] for metric_nr in range(len(scores))]
+                    self.sample_metrics.append({method:current_metric})
+                    current_metric = {method:score}
+                    self.final_metrics.append(current_metric)
+                    
+                else:
+                    current_metric = {method:score}
+                    self.final_metrics.append(current_metric)
+                    self.sample_metrics.append({method:scores})
+
 
             else:    
-                self.metrics.append(dict(zip(method, score)))
+                self.final_metrics.append(dict(zip(method, score)))
+
+                sample_metrics = {method[metric_nr]: scores[metric_nr] for metric_nr in range(len(scores))}
+                self.sample_metrics.append(sample_metrics)   
 
             if type(method) == list:
                 for sc, scs, m in zip(score, scores, method):

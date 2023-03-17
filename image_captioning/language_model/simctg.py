@@ -251,7 +251,7 @@ class SimCTG(nn.Module):
         break_tokens = self.tokenizer.encode(break_tokens, return_tensors='pt').to("cuda") # specify break_tokens
         
         for step in range(decoding_len): # model takes sos and prompt as input and produces next word 
-            input_ids, past_key_values, last_hidden_states, logits, input_ids_for_class = \
+            input_ids, past_key_values, last_hidden_states, logits, input_ids_for_class, var_magic_scores, var_model_conf = \
             PlugAndPlayContrastiveDecodingOneStepFast(
                 self.model, 
                 input_ids, 
@@ -281,7 +281,7 @@ class SimCTG(nn.Module):
         time_diff = (end_time - start_time)
         execution_time = time_diff.total_seconds() * 1000
         #print(self.parse_output_token_list(input_ids_for_class[0]))
-        return self.parse_output_token_list(input_ids_for_class[0])
+        return self.parse_output_token_list(input_ids_for_class[0]), var_magic_scores, var_model_conf
 
     def fast_contrastive_search(self, input_ids, beam_width, alpha, decoding_len):
         '''

@@ -1,4 +1,4 @@
-CUDA_VISIBLE_DEVICES="3" python ../inference_magic.py\
+CUDA_VISIBLE_DEVICES="6" python ../inference_magic.py\
     --language_model_code_path ../language_model/\
     --language_model_name gpt2\
     --clap_path ../clip/\
@@ -10,7 +10,7 @@ CUDA_VISIBLE_DEVICES="3" python ../inference_magic.py\
     --k 45\
     --alpha 0.1\
     --beta 2.0\
-    --save_name gt_caption_guidance\
+    --save_name gt_caption_guidance_gpt2_kappa_100\
     --dataset audiocaps\
     --include_prompt_magic False\
     --experiment code_testing

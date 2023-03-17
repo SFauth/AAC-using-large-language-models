@@ -1,0 +1,13 @@
+[
+  {
+    "image_id": "PageFlip5.wav",
+    "test": "a heart attack i 'm not sure if i",
+    "refs": [
+      "a person flipping quickly the pages of a book",
+      "a person is flipping quickly the pages of a book",
+      "a person is moving around and then pages through a book",
+      "a thump leads to the turning of a page swatting precedes the turning of additional pages followed by continuous swatting",
+      "the office clerk is filling papers into different folders in the cabinet"
+    ]
+  }
+]

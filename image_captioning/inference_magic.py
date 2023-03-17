@@ -113,250 +113,280 @@ if __name__ == '__main__':
     if cuda_available:
         generation_model = generation_model.to(device)
     generation_model.eval()  # set model to evaluation (test mode, i.e. no training)
+
     print ('Language model loaded.')
     clip_text_max_len = 77
+
+    item_list = item_list[0:3]
 
     #betas_1 = torch.linspace(0.5, 4, steps=11).cuda()
     #betas_2 = torch.linspace(0, 0.5, steps=11).cuda()
     #betas = torch.concat([betas_1, betas_2]).unique()
-    betas = torch.linspace(1, 2, steps=11).cuda()
-    prompts = ["The sound of" ,"This is a sound of", "This is the sound of"]
+    #betas = torch.linspace(1, 2, steps=11).cuda()
+    #prompts = ["The sound of" ,"This is a sound of", "This is the sound of"]
 
+    temperatures = torch.linspace(15, 35, steps=11).cuda()
+    betas = torch.tensor([0.15], device="cuda")
+    prompts = ["this is the sound of"]
 
-    for beta in betas:
-        print("Beta: " + str(beta))
-        beta = beta
+    for temperature in temperatures:
+        print("Temperature: " + str(temperature))
+        clip.logit_scale_a = temperature
 
-        for prompt in prompts:
+        for beta in betas:
+            print("Beta: " + str(beta))
+            beta = beta
 
-            prompt = prompt
-    
+            for prompt in prompts:
 
-            result_list = []
-            invalid_num = 0
-            print ('----------------------------------------------------------------')
-            with torch.no_grad():
-                test_num = len(item_list)
-                #test_num = 10
-                print ('Number of inference instances is {}'.format(test_num))
-                print ('Alpha: {0}, Beta: {1}, k: {2}'.format(args.alpha, beta, args.k))
-                
-                audio_sim_tables = {} # create dict to story output tables
+                prompt = prompt
+        
 
-                p = progressbar.ProgressBar(test_num)
-                p.start()
-                for p_idx in range(test_num):
-
-                    p.update(p_idx)
-                    one_test_dict = item_list[p_idx]
-
-                    one_res_dict = {
-                        'split':one_test_dict['split'],
-                        'sound_name':one_test_dict['sound_name'],
-                        #'file_path':one_test_dict['file_path'],
-                        'captions':one_test_dict['captions']  
-                    }
+                result_list = []
+                invalid_num = 0
+                print ('----------------------------------------------------------------')
+                with torch.no_grad():
+                    test_num = len(item_list)
+                    #test_num = 10
+                    print ('Number of inference instances is {}'.format(test_num))
+                    print ('Alpha: {0}, Beta: {1}, k: {2}'.format(args.alpha, beta, args.k))
                     
-                    sound_full_path = args.test_image_prefix_path + one_test_dict['sound_name']
+                    audio_sim_tables = {} # create dict to story output tables
 
-                    # create sound instance 
-                    #try:
-                    sound_instance, _ = librosa.load(sound_full_path, sr=args.sample_rate)
+                    var_magic_scores_list = []
+                    var_model_conf_list = []
 
-                
+                    p = progressbar.ProgressBar(test_num)
+                    p.start()
+                    for p_idx in range(test_num):
+
+                        p.update(p_idx)
+                        one_test_dict = item_list[p_idx]
+
+                        one_res_dict = {
+                            'split':one_test_dict['split'],
+                            'sound_name':one_test_dict['sound_name'],
+                            #'file_path':one_test_dict['file_path'],
+                            'captions':one_test_dict['captions']  
+                        }
+                        
+                        sound_full_path = args.test_image_prefix_path + one_test_dict['sound_name']
+
+                        # create sound instance 
+                        try:
+                            sound_instance, _ = librosa.load(sound_full_path, sr=args.sample_rate)
+
+                        
+                            
+                            # tokenize 
+                            input_ids = get_prompt_id(prompt, generation_model.tokenizer) 
+                            
+                            """
+                            input ids: vector containing tokens of prompt [50257, 271, 6597, 10651, 286, 257]
+                            """
+
+                            if cuda_available:
+                                input_ids = input_ids.cuda(device)
+
+                            #try:
+
+                            """
+                            input_ids: gets token id of the SOS token 
+                            """
+
+                            #output_text = generation_model.magic_search(input_ids, args.k, args.alpha, args.decoding_len, 
+                            #   beta, sound_instance, clip, clip_text_max_len, args.include_prompt_magic)
+                            
+                            output_text, var_magic_scores, var_model_conf = generation_model.magic_search_gt_captions(input_ids, args.k, args.alpha, args.decoding_len, 
+                                beta, one_test_dict['captions'], clip, clip_text_max_len,  args.include_prompt_magic) 
+                            
+                            var_magic_scores_list.append(var_magic_scores)
+                            var_model_conf_list.append(var_model_conf)
+
+                            last_letter_prompt = prompt[-1]
+                            output_text_series = pd.Series(output_text)
+                            output_text_without_prompt = output_text.split(last_letter_prompt, 1)[1]
+                            output_text_without_prompt_series = pd.Series(output_text_without_prompt)
+
+                            one_res_dict['prediction'] = output_text_without_prompt # always without prompt, as prompt is other entry
+                            one_res_dict["beta"] = beta.item()
+                            one_res_dict["prompt"] = prompt
+                            one_res_dict["k"] = args.k
+                            one_res_dict["alpha"] = args.alpha
+                            one_res_dict["decoding_len"] = args.decoding_len
+                            one_res_dict["clip_text_max_len"] = clip_text_max_len
+                            one_res_dict["n_test_samples"] = test_num
+                            one_res_dict["included_prompt_in_magic"] = args.include_prompt_magic
+                            one_res_dict["dataset"] = args.dataset
+                            one_res_dict["CLAP_type"] = os.path.split(args.clap_model_name)[-1]
+
+                            result_list.append(one_res_dict)
+
+
+                            """
+                            This section produces the __output table__ in 'inference_result/similaritites_sounds' containing the:
+                            1) untokenized prediction (without the prompt)
+                            2) groundtruth captions
+                            3) cosine similarity of the [prediction] and the [audio]
+                            4) cosine similarity of the [GT_caption_i] and the [audio]
+                            5) cosine similarity of the [GT captions_i] and the [prediction] (all with each other; matrix)
+                            6) playable audio
+                            7) metrics for the current observation or the whole run (first row)
+                            DISCLAIMER: the prediction in 3) and 5) contain the prompt, if include_magic_prompt == True
+                            """
+
+                            #%% 2a) groundtruth captions and prediction
+
+                            captions = one_res_dict["captions"] # GT captions
+                            
+                            if args.include_prompt_magic == "True":
+                                captions.append(output_text)
+                                pred = output_text_series
+                                table_subfolder = "includes_prompt_magic"
+                            
+                            else: 
+                                captions.append(output_text_without_prompt)
+                                pred = output_text_without_prompt_series
+                                table_subfolder = "excludes_prompt_magic"
+
+
+                            #%% 5) cosine similarity of the [GT captions_i] and the [prediction] (all with each other; matrix)
+                            # includes prompt if specified in flag
+                            # CHECK THIS COLUUUUUUUUUUUUUUUUUMN IN TABLE AND ITS CAPTION !!
+                            # NICE TO HAVE: INCLUDE ANOTHER STRING LIST ABOVE: ["G1, G2, ... P"]
+                            captions_embs = clip.compute_text_representation(captions)
+                            cos_sim_captions_list = cosine_similarity(captions_embs.cpu().detach().numpy()).round(2).astype(str).tolist()
+                            [row.append('<br>') for row in cos_sim_captions_list]
+                            cos_sim_captions_list = [val for sublist in cos_sim_captions_list for val in sublist]
+                            cos_sim_captions = pd.Series({"cos_sim_captions":cos_sim_captions_list})
+                            cos_sim_captions = pd.DataFrame(cos_sim_captions)[0].apply(' '.join)
+
+
+                            #%% 3) 4) cosine similarity of the [GT_caption_i] and the [audio] and [prediction] and the [audio]
+                            audio_embedding = clip.compute_image_representation_from_image_instance(sound_instance)
+                            cos_sim = torch.cosine_similarity(audio_embedding, captions_embs)# unscaled!                   
+                            cos_sim = cos_sim.cpu().detach().numpy()
+                            format_string = "{:.3f}"
+                            cos_sim = [format_string.format(i) for i in cos_sim.tolist()]
+                            cos_sim_pred = pd.Series({"cos_sim_pred":cos_sim[-1]})
+                            cos_sim = pd.DataFrame(cos_sim[:-1]).apply('<br>'.join)
                     
-                    # tokenize 
-                    input_ids = get_prompt_id(prompt, generation_model.tokenizer) 
+                            #%% 6b) playable audio
+                            # create col for .wav file
+                            wav_col = pd.Series({"Audio":sound_full_path})                
+                            sound_file_name = os.path.split(sound_full_path)[1]
+
+                            if args.dataset == "clotho":
+                                sound_full_path = os.path.join("../../../../softlinks_to_wav/evaluation_data_files", sound_file_name)
+
+                            elif args.dataset == "audiocaps":
+                                sound_full_path = os.path.join("../../../../softlinks_to_wav/AudioCaps_data", sound_file_name)
+
+                            else:
+                                pass
+
+                            #%% 2b) groundtruth captions
+                            captions.pop()
+                            captions_table = pd.Series({"captions":'<br>'.join(captions)})
+
+                            #%% 7) metrics
+
+                            # compute the metrics
+
+                            # expects results json (a list of dicts)DDDDDDDDDDDDDDDDDDd
+                            """
+                            cocoEval = COCOEvalCap_obs(one_res_dict=one_res_dict)
+                            cocoEval.evaluate()
+                            metrics = pd.DataFrame(cocoEval.metrics).apply(lambda x: x.round(2), axis=0)
+                            metrics = metrics.fillna(0).apply(lambda x: x.sum()).to_frame().T
+                            """
+
+                            #%% COMBINE TABLE COMPONENTS
+
+                            pd.set_option('display.float_format', lambda x: '%.3f' % x)
+
+                            cols = [pred, captions_table, cos_sim_pred, cos_sim,  cos_sim_captions, wav_col]
+
+                            sim_text = pd.DataFrame(pd.concat(cols, axis=0)).T
+
+                            sim_text.columns = ["pred", "GT_captions", "sim(pred, audio)", "sim(GT_caption_i, audio)", "sim(GT_caption_i, GT_caption_j, pred]) , while j!=i", "Audio"]
+
+                            #%% 6b) playable audio
+                            sim_text["Audio"] = sim_text["Audio"].apply(lambda audio_path: f"""<audio controls> <source src="{sound_full_path}" type="audio/wav"> </audio>""")
+
+                            #sim_text = pd.concat([sim_text, metrics], axis=1)
+
+                            audio_sim_tables[str(item_list[p_idx]["sound_name"])] = sim_text
+
+                            
+                        
+                        except: 
+                            next
+
+                    p.finish()
+
+                    #%% add NLG metrics for whole run to table
+
+                    cocoEval_final = COCOEvalCap_list(result_list)
+                    cocoEval_final.evaluate()
+
+                    final_metrics = pd.DataFrame(cocoEval_final.final_metrics)
+                    final_metrics = final_metrics.fillna(0).apply(lambda x: x.sum()).to_frame().T.apply(lambda x: x.round(2), axis=0)
+
+                    sample_metrics = pd.concat([pd.DataFrame.from_dict(metric) for metric in cocoEval_final.sample_metrics], axis=1)
+
+
+                    #%% get variances of softmaxed magic scores and model confidence
+
+                    var_magic_scores = torch.tensor(var_magic_scores_list).cuda().unsqueeze(1)
+                    var_model_conf = torch.tensor(var_model_conf_list).cuda().unsqueeze(1)
+                    vars = torch.cat([var_magic_scores, var_model_conf], axis=-1)
                     
-                    """
-                    input ids: vector containing tokens of prompt [50257, 271, 6597, 10651, 286, 257]
-                    """
 
-                    if cuda_available:
-                        input_ids = input_ids.cuda(device)
+                    #%% create table and result .json                    
 
-                    #try:
+                    save_name_results_json = args.save_name
+                    file_prefix = str(beta.item()) + "_" + prompt.replace(" ", "_") + "_" + save_name_results_json
+                    html_filename =  file_prefix + "_" "results.html"
+                    sim_audio_table = pd.concat(audio_sim_tables.values())
+                    sim_audio_table = pd.concat([sample_metrics.reset_index(drop=True),\
+                                                sim_audio_table.reset_index(drop=True)], axis=1)
+                    sim_audio_table = pd.concat([final_metrics, sim_audio_table], axis=0)
 
-                    """
-                    input_ids: gets token id of the SOS token 
-                    """
-
-                    output_text = generation_model.magic_search(input_ids, args.k, args.alpha, args.decoding_len, 
-                        beta, sound_instance, clip, clip_text_max_len, args.include_prompt_magic)
-                    
-                    #output_text = generation_model.magic_search_gt_captions(input_ids, args.k, args.alpha, args.decoding_len, 
-                        #  beta, one_test_dict['captions'], clip, clip_text_max_len,  args.include_prompt_magic) 
-                    
-                    last_letter_prompt = prompt[-1]
-                    output_text_series = pd.Series(output_text)
-                    output_text_without_prompt = output_text.split(last_letter_prompt, 1)[1]
-                    output_text_without_prompt_series = pd.Series(output_text_without_prompt)
-
-                    one_res_dict['prediction'] = output_text_without_prompt # always without prompt, as prompt is other entry
-                    one_res_dict["beta"] = beta.item()
-                    one_res_dict["prompt"] = prompt
-                    one_res_dict["k"] = args.k
-                    one_res_dict["alpha"] = args.alpha
-                    one_res_dict["decoding_len"] = args.decoding_len
-                    one_res_dict["clip_text_max_len"] = clip_text_max_len
-                    one_res_dict["n_test_samples"] = test_num
-                    one_res_dict["included_prompt_in_magic"] = args.include_prompt_magic
-                    one_res_dict["dataset"] = args.dataset
-                    one_res_dict["CLAP_type"] = os.path.split(args.clap_model_name)[-1]
-
-                    result_list.append(one_res_dict)
-
-
-                    """
-                    This section produces the __output table__ in 'inference_result/similaritites_sounds' containing the:
-                    1) untokenized prediction (without the prompt)
-                    2) groundtruth captions
-                    3) cosine similarity of the [prediction] and the [audio]
-                    4) cosine similarity of the [GT_caption_i] and the [audio]
-                    5) cosine similarity of the [GT captions_i] and the [prediction] (all with each other; matrix)
-                    6) playable audio
-                    7) metrics for the current observation or the whole run (first row)
-                    DISCLAIMER: the prediction in 3) and 5) contain the prompt, if include_magic_prompt == True
-                    """
-
-                    #%% 2a) groundtruth captions and prediction
-
-                    captions = one_res_dict["captions"] # GT captions
-                    
-                    if args.include_prompt_magic == "True":
-                        captions.append(output_text)
-                        pred = output_text_series
-                        table_subfolder = "includes_prompt_magic"
-                    
-                    else: 
-                        captions.append(output_text_without_prompt)
-                        pred = output_text_without_prompt_series
-                        table_subfolder = "excludes_prompt_magic"
-
-
-                    #%% 5) cosine similarity of the [GT captions_i] and the [prediction] (all with each other; matrix)
-                    # includes prompt if specified in flag
-                    # CHECK THIS COLUUUUUUUUUUUUUUUUUMN IN TABLE AND ITS CAPTION !!
-                    # NICE TO HAVE: INCLUDE ANOTHER STRING LIST ABOVE: ["G1, G2, ... P"]
-                    captions_embs = clip.compute_text_representation(captions)
-                    cos_sim_captions_list = cosine_similarity(captions_embs.cpu().detach().numpy()).round(2).astype(str).tolist()
-                    [row.append('<br>') for row in cos_sim_captions_list]
-                    cos_sim_captions_list = [val for sublist in cos_sim_captions_list for val in sublist]
-                    cos_sim_captions = pd.Series({"cos_sim_captions":cos_sim_captions_list})
-                    cos_sim_captions = pd.DataFrame(cos_sim_captions)[0].apply(' '.join)
-
-
-                    #%% 3) 4) cosine similarity of the [GT_caption_i] and the [audio] and [prediction] and the [audio]
-                    audio_embedding = clip.compute_image_representation_from_image_instance(sound_instance)
-                    cos_sim = torch.cosine_similarity(audio_embedding, captions_embs)# unscaled!                   
-                    cos_sim = cos_sim.cpu().detach().numpy()
-                    format_string = "{:.3f}"
-                    cos_sim = [format_string.format(i) for i in cos_sim.tolist()]
-                    cos_sim_pred = pd.Series({"cos_sim_pred":cos_sim[-1]})
-                    cos_sim = pd.DataFrame(cos_sim[:-1]).apply('<br>'.join)
-            
-                    #%% 6b) playable audio
-                    # create col for .wav file
-                    wav_col = pd.Series({"Audio":sound_full_path})                
-                    sound_file_name = os.path.split(sound_full_path)[1]
-
+   
                     if args.dataset == "clotho":
-                        sound_full_path = os.path.join("../../../../softlinks_to_wav/evaluation_data_files", sound_file_name)
+                        html_path = os.path.join(os.getcwd(), "../inference_result", args.language_model_name, "clotho_v2.1" , table_subfolder, "output_tables", args.experiment, html_filename)
+                        result_jsons_full_save_path = os.path.join(os.getcwd(), "../inference_result", args.language_model_name, "clotho_v2.1", table_subfolder, "output_jsons", args.experiment, file_prefix + ".json")
+                        print("Saving in Clotho results")
 
                     elif args.dataset == "audiocaps":
-                        sound_full_path = os.path.join("../../../../softlinks_to_wav/AudioCaps_data", sound_file_name)
+                        html_path = os.path.join(os.getcwd(), "../inference_result", args.language_model_name, "AudioCaps", table_subfolder, "output_tables", args.experiment, html_filename)
+                        result_jsons_full_save_path = os.path.join(os.getcwd(), "../inference_result", args.language_model_name, "AudioCaps", table_subfolder, "output_jsons", args.experiment, file_prefix + ".json")
+                        print("Saving in AudioCaps results")
 
                     else:
                         pass
 
-                    #%% 2b) groundtruth captions
-                    captions.pop()
-                    captions_table = pd.Series({"captions":'<br>'.join(captions)})
+                    print ('HTML_path: {}'.format(html_path))
+                    print ('Results json path: {}'.format(result_jsons_full_save_path))
 
-                    #%% 7) metrics
+                    if os.path.exists(os.path.dirname(html_path)):
+                        pass
+                    else: # recursively construct directory
+                        os.makedirs(os.path.dirname(html_path), exist_ok=True)
 
-                    # compute the metrics
+                    sim_audio_table.to_html(html_path, escape=False)
+                
+                    #print ('Inference completed!')
 
-                    # expects results json (a list of dicts)DDDDDDDDDDDDDDDDDDd
-                    cocoEval = COCOEvalCap_obs(one_res_dict=one_res_dict)
-                    cocoEval.evaluate()
-                    metrics = pd.DataFrame(cocoEval.metrics).apply(lambda x: x.round(2), axis=0)
-                    metrics = metrics.fillna(0).apply(lambda x: x.sum()).to_frame().T
+                    #print ('full save path is {}'.format(full_save_path))
 
-
-                    #%% COMBINE TABLE COMPONENTS
-
-                    pd.set_option('display.float_format', lambda x: '%.3f' % x)
-
-                    cols = [pred, captions_table, cos_sim_pred, cos_sim,  cos_sim_captions, wav_col]
-
-                    sim_text = pd.DataFrame(pd.concat(cols, axis=0)).T
-
-                    sim_text.columns = ["pred", "GT_captions", "sim(pred, audio)", "sim(GT_caption_i, audio)", "sim(GT_caption_i, GT_caption_j, pred]) , while j!=i", "Audio"]
-
-                    #%% 6b) playable audio
-                    sim_text["Audio"] = sim_text["Audio"].apply(lambda audio_path: f"""<audio controls> <source src="{sound_full_path}" type="audio/wav"> </audio>""")
-
-                    sim_text = pd.concat([sim_text, metrics], axis=1)
-
-                    audio_sim_tables[str(item_list[p_idx]["sound_name"])] = sim_text
-
-                        
+                    if os.path.exists(os.path.dirname(result_jsons_full_save_path)):
+                        pass
+                    else: # recursively construct directory
+                        os.makedirs(os.path.dirname(result_jsons_full_save_path), exist_ok=True)
                     
-                    #except: 
-                        #next
+                    with open(result_jsons_full_save_path, 'w') as outfile:
+                        json.dump(result_list, outfile, indent=4)
 
-                p.finish()
-
-                #%% add NLG metrics for whole run to table
-
-                cocoEval_final = COCOEvalCap_list(result_list)
-                cocoEval_final.evaluate()
-                final_metrics = pd.DataFrame(cocoEval_final.metrics).apply(lambda x: x.round(2), axis=0)
-                final_metrics = final_metrics.fillna(0).apply(lambda x: x.sum()).to_frame().T
-                # is this the average? differences to row values can be explained, as we round every row value
-                # we only round the final value once, here at the end
-                
-
-                #%% create table and result .json                    
-
-                save_name_results_json = args.save_name
-                file_prefix = str(beta.item()) + "_" + prompt.replace(" ", "_") + "_" + save_name_results_json
-                html_filename =  file_prefix + "_" "results.html"
-                sim_audio_table = pd.concat(audio_sim_tables.values())
-                sim_audio_table = pd.concat([final_metrics, sim_audio_table], axis=0)
-
-                if args.dataset == "clotho":
-                    html_path = os.path.join(os.getcwd(), "../inference_result/clotho_v2.1" , table_subfolder, "output_tables", args.experiment, html_filename)
-                    result_jsons_full_save_path = os.path.join(os.getcwd(), "../inference_result/clotho_v2.1", table_subfolder, "output_jsons", args.experiment, file_prefix + ".json")
-                    print("Saving in Clotho results")
-
-                elif args.dataset == "audiocaps":
-                    html_path = os.path.join(os.getcwd(), "../inference_result/AudioCaps", table_subfolder, "output_tables", args.experiment, html_filename)
-                    result_jsons_full_save_path = os.path.join(os.getcwd(), "../inference_result/AudioCaps", table_subfolder, "output_jsons", args.experiment, file_prefix + ".json")
-                    print("Saving in AudioCaps results")
-
-                else:
-                    pass
-
-                print ('HTML_path: {}'.format(html_path))
-                print ('Results json path: {}'.format(result_jsons_full_save_path))
-
-                if os.path.exists(os.path.dirname(html_path)):
-                    pass
-                else: # recursively construct directory
-                    os.makedirs(os.path.dirname(html_path), exist_ok=True)
-
-                sim_audio_table.to_html(html_path, escape=False)
-            
-                #print ('Inference completed!')
-
-                #print ('full save path is {}'.format(full_save_path))
-
-                if os.path.exists(os.path.dirname(result_jsons_full_save_path)):
-                    pass
-                else: # recursively construct directory
-                    os.makedirs(os.path.dirname(result_jsons_full_save_path), exist_ok=True)
-                
-                with open(result_jsons_full_save_path, 'w') as outfile:
-                    json.dump(result_list, outfile, indent=4)
+                    #torch.save(vars, os.path.join(os.getcwd(), "../inference_result/AudioCaps", table_subfolder, "output_jsons", 'variances_magic_model_conf.pt'))
