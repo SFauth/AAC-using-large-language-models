@@ -10,7 +10,7 @@ CUDA_VISIBLE_DEVICES="7" python ../inference_magic.py\
     --k 45\
     --alpha 0.1\
     --beta 2.0\
-    --save_name temperature_exp\
+    --save_name sweep_incl_temperature\
     --dataset audiocaps\
     --include_prompt_magic False\
     --experiment hyperparam_experiments

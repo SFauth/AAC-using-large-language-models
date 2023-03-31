@@ -11,6 +11,7 @@ import argparse
 def parse_config():
     parser = argparse.ArgumentParser()
     parser.add_argument("--result_file_path", type=str, help="the folder where the result file paths are stored in")
+    parser.add_argument("--prefix", type=str, help="file prefix for the json file that contains all metrics")
     return parser.parse_args()
 
 if __name__ == '__main__':
@@ -47,7 +48,7 @@ if __name__ == '__main__':
         
         result_dicts.append(res_dict)
 
-    filename = "test_" + datetime.today().strftime('%Y_%m_%d_%H_%M_%S') + ".json"
+    filename = str(args.prefix) + datetime.today().strftime('%Y_%m_%d_%H_%M_%S') + ".json"
     with open (filename, "w", encoding="utf-8") as f:
         json.dump(result_dicts, f, ensure_ascii=False, indent=4)
 

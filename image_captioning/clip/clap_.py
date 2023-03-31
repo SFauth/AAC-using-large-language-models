@@ -317,7 +317,7 @@ class CLIP():
                             # 25 good, max pretty close!
                             # 20 variance pretty close!
 
-        self.logit_scale_a = torch.tensor([25], device="cuda")
+        #self.logit_scale_a = torch.tensor([25], device="cuda")
 
         logits_per_text = self.logit_scale_a * torch.cosine_similarity(image_embeds, text_embeds)
 

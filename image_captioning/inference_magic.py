@@ -77,7 +77,7 @@ if __name__ == '__main__':
         item_list = json.load(f)
     print ('Data loaded.')
 
-    #item_list = item_list[0:100]
+    #item_list = item_list[0:3]
 
     print ('Number of test instances is {}'.format(len(item_list)))
     
@@ -117,21 +117,23 @@ if __name__ == '__main__':
     print ('Language model loaded.')
     clip_text_max_len = 77
 
-    item_list = item_list[0:3]
+    #item_list = item_list[0:3]
 
-    #betas_1 = torch.linspace(0.5, 4, steps=11).cuda()
+    betas = torch.linspace(0.5, 4, steps=11).cuda()
     #betas_2 = torch.linspace(0, 0.5, steps=11).cuda()
     #betas = torch.concat([betas_1, betas_2]).unique()
     #betas = torch.linspace(1, 2, steps=11).cuda()
-    #prompts = ["The sound of" ,"This is a sound of", "This is the sound of"]
+    prompts = ["The sound of" ,"This is a sound of", "This is the sound of"]
 
-    temperatures = torch.linspace(15, 35, steps=11).cuda()
-    betas = torch.tensor([0.15], device="cuda")
-    prompts = ["this is the sound of"]
+    temperatures = torch.linspace(35, 42.5, steps=6).cuda()
+    #temperatures = torch.linspace(42.5, 50, steps=6).cuda()
+
+    #betas = torch.tensor([0.15], device="cuda")
+    #prompts = ["this is the sound of"]
 
     for temperature in temperatures:
         print("Temperature: " + str(temperature))
-        clip.logit_scale_a = temperature
+        clip.logit_scale_a = temperature.unsqueeze(dim=0)
 
         for beta in betas:
             print("Beta: " + str(beta))
@@ -194,11 +196,11 @@ if __name__ == '__main__':
                             input_ids: gets token id of the SOS token 
                             """
 
-                            #output_text = generation_model.magic_search(input_ids, args.k, args.alpha, args.decoding_len, 
-                            #   beta, sound_instance, clip, clip_text_max_len, args.include_prompt_magic)
+                            output_text, var_magic_scores, var_model_conf = generation_model.magic_search(input_ids, args.k, args.alpha, args.decoding_len, 
+                                beta, sound_instance, clip, clip_text_max_len, args.include_prompt_magic)
                             
-                            output_text, var_magic_scores, var_model_conf = generation_model.magic_search_gt_captions(input_ids, args.k, args.alpha, args.decoding_len, 
-                                beta, one_test_dict['captions'], clip, clip_text_max_len,  args.include_prompt_magic) 
+                            #output_text, var_magic_scores, var_model_conf = generation_model.magic_search_gt_captions(input_ids, args.k, args.alpha, args.decoding_len, 
+                                #   beta, one_test_dict['captions'], clip, clip_text_max_len,  args.include_prompt_magic) 
                             
                             var_magic_scores_list.append(var_magic_scores)
                             var_model_conf_list.append(var_model_conf)
@@ -219,6 +221,7 @@ if __name__ == '__main__':
                             one_res_dict["included_prompt_in_magic"] = args.include_prompt_magic
                             one_res_dict["dataset"] = args.dataset
                             one_res_dict["CLAP_type"] = os.path.split(args.clap_model_name)[-1]
+                            one_res_dict["temperature"] = temperature.item()
 
                             result_list.append(one_res_dict)
 
@@ -277,13 +280,16 @@ if __name__ == '__main__':
                             sound_file_name = os.path.split(sound_full_path)[1]
 
                             if args.dataset == "clotho":
-                                sound_full_path = os.path.join("../../../../softlinks_to_wav/evaluation_data_files", sound_file_name)
+                                sound_full_path = os.path.join("../../../../../softlinks_to_wav/evaluation_data_files", sound_file_name)
 
                             elif args.dataset == "audiocaps":
-                                sound_full_path = os.path.join("../../../../softlinks_to_wav/AudioCaps_data", sound_file_name)
+                                sound_full_path = os.path.join("../../../../../softlinks_to_wav/AudioCaps_data", sound_file_name)
 
                             else:
                                 pass
+
+                            if args.language_model_name == "facebook/opt-1.3b":
+                                sound_full_path = os.path.join("..", sound_full_path)
 
                             #%% 2b) groundtruth captions
                             captions.pop()
@@ -318,17 +324,21 @@ if __name__ == '__main__':
 
                             audio_sim_tables[str(item_list[p_idx]["sound_name"])] = sim_text
 
+                                
                             
-                        
                         except: 
-                            next
+                           next
 
                     p.finish()
 
                     #%% add NLG metrics for whole run to table
 
                     cocoEval_final = COCOEvalCap_list(result_list)
-                    cocoEval_final.evaluate()
+                    
+                    try:
+                        cocoEval_final.evaluate()
+                    except:
+                        print("Metric calc failed")
 
                     final_metrics = pd.DataFrame(cocoEval_final.final_metrics)
                     final_metrics = final_metrics.fillna(0).apply(lambda x: x.sum()).to_frame().T.apply(lambda x: x.round(2), axis=0)
@@ -346,7 +356,7 @@ if __name__ == '__main__':
                     #%% create table and result .json                    
 
                     save_name_results_json = args.save_name
-                    file_prefix = str(beta.item()) + "_" + prompt.replace(" ", "_") + "_" + save_name_results_json
+                    file_prefix = str(beta.item()) + "_" + prompt.replace(" ", "_") + "_" + "kappa" + "_" + str(one_res_dict["temperature"]) + "_" + save_name_results_json
                     html_filename =  file_prefix + "_" "results.html"
                     sim_audio_table = pd.concat(audio_sim_tables.values())
                     sim_audio_table = pd.concat([sample_metrics.reset_index(drop=True),\
