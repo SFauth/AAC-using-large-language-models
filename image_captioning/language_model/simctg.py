@@ -156,7 +156,7 @@ class SimCTG(nn.Module):
 
 
     @torch.no_grad()
-    def magic_search(self, input_ids, beam_width, alpha, decoding_len, beta, sound_instance, clip, 
+    def magic_search(self, input_ids, beam_width, alpha, decoding_len, beta, audio_embeds, clip, 
         clip_text_max_len, include_prompt_magic):#, add_token_level_score=False):
 
         """
@@ -171,7 +171,7 @@ class SimCTG(nn.Module):
 
         input_ids_for_class = input_ids.clone()
 
-        image_embeds = clip.encode_audio(sound_instance)
+        image_embeds = audio_embeds
 
         start_time = datetime.datetime.now()
 

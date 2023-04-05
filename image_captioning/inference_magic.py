@@ -21,7 +21,7 @@ import librosa
 import sys
 import pandas as pd
 import json
-import logging
+import openai
 from re import sub
 from tqdm import tqdm
 from sklearn.metrics import accuracy_score
@@ -65,6 +65,25 @@ def parse_config():
 def get_prompt_id(text, tokenizer):
     tokens = tokenizer(text, return_tensors="pt").input_ids   # gets token id's for the text: e.g. hello I am cool [50257, 281, 6597, 10651, 286, 257]
     return tokens
+
+def get_chat_gpt_answer(chat_gpt_prompt):
+
+    chat_gpt_response = openai.ChatCompletion.create(
+                                                model="gpt-3.5-turbo",
+                                                messages=[
+                                                    {"role": "user", "content": chat_gpt_prompt}
+                                                ])
+                            
+    return chat_gpt_response["choices"][0]["message"]["content"]
+
+
+def clean_generated_sound_list(raw_answer_string):
+
+    split_string = raw_answer_string.split("\n")
+
+    # keep everything following a space, a full-stop and a number
+
+    return [sub(r"^\d+\. ", "", sound) for sound in split_string]
 
 import argparse
 if __name__ == '__main__':
@@ -118,6 +137,31 @@ if __name__ == '__main__':
      #   clip = clip.to(device)  GETS DONE in clap_.py script!
     #clip.eval()
     print ('WavCaps Model loaded!')
+
+    openai.api_key = os.environ['openai_api_key']
+
+    print ('OpenAI API Key set!')
+
+    l_sounding_objects = 2
+
+    chat_gpt_prompt = "Generate a list of" + str(l_sounding_objects) + "sounding objects"
+    raw_answer_string = get_chat_gpt_answer(chat_gpt_prompt)
+    sounding_objects = clean_generated_sound_list(raw_answer_string)
+    print(sounding_objects)
+
+    m_variations = 2
+
+    var_sounding_objs = []
+
+    for object in sounding_objects:
+        intermediate_chat_gpt_prompt = "Generate " + str(m_variations) + " variations of the sounding object " + str(object) + " with different verbs and adjectives" 
+        print(intermediate_chat_gpt_prompt)
+        raw_answer_string = get_chat_gpt_answer(intermediate_chat_gpt_prompt)
+        var_sounding_objs.append(clean_generated_sound_list(raw_answer_string))
+
+    sounding_objects_text_embeds = clip.encode_text(sounding_objects)
+
+    print ('Successfuly created initial sounding object list')
 
     print ('Loading off-the-shelf language model...')
     import sys
@@ -204,8 +248,18 @@ if __name__ == '__main__':
                                 pad_length = 32000 * 10 - sound_instance.shape[-1]
                                 sound_instance = F.pad(sound_instance, [0, pad_length], "constant", 0.0)
                                 
+                            # create prompt with audio tags from ChatGPT
+
+                            audio_embeds = clip.encode_audio(sound_instance)
+                            # SHOULD WE DO SOFTMAX HERE?!
+                            top_l_object_indices = torch.cosine_similarity([audio_embeds, sounding_objects_text_embeds]).indices
+                            top_l_objects = [sounding_objects[index] for index in top_l_object_indices]
+                            last_key_index = len(top_l_objects) - 1
+                            top_l_objects_one_string = "{0}, and {1}".format(", ".join(top_l_objects[:last_key_index]), top_l_objects[last_key_index])
                             
-                            # tokenize 
+                            temp_prompt = "We heard " + top_l_objects_one_string + ". " + prompt
+                            
+                            # tokenize prompt
                             input_ids = get_prompt_id(prompt, generation_model.tokenizer) 
                             
                             """
@@ -222,7 +276,7 @@ if __name__ == '__main__':
                             """
 
                             output_text, var_magic_scores, var_model_conf = generation_model.magic_search(input_ids, args.k, args.alpha, args.decoding_len, 
-                                beta, sound_instance, clip, clip_text_max_len, args.include_prompt_magic)
+                                beta, audio_embeds, clip, clip_text_max_len, args.include_prompt_magic)
                             
                             #output_text, var_magic_scores, var_model_conf = generation_model.magic_search_gt_captions(input_ids, args.k, args.alpha, args.decoding_len, 
                                 #   beta, one_test_dict['captions'], clip, clip_text_max_len,  args.include_prompt_magic) 
