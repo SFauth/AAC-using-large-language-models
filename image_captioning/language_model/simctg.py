@@ -171,7 +171,7 @@ class SimCTG(nn.Module):
 
         input_ids_for_class = input_ids.clone()
 
-        image_embeds = clip.compute_image_representation_from_image_instance(sound_instance)
+        image_embeds = clip.encode_audio(sound_instance)
 
         start_time = datetime.datetime.now()
 

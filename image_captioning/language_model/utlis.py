@@ -315,7 +315,11 @@ def PlugAndPlayContrastiveDecodingOneStepFast(model, input_ids, prefix_len, beam
             batch_text_list.append(one_text)
 
 
-    batch_score = clip.compute_image_text_similarity_via_raw_text(image_embeds, batch_text_list)
+    text_embeds = clip.encode_text(batch_text_list)
+    scaled_cos_sim = clip.logit_scale_a * torch.cosine_similarity(image_embeds, text_embeds)
+    scaled_cos_sim = torch.unsqueeze(scaled_cos_sim.t(), 0)
+    batch_score = scaled_cos_sim.softmax(dim=-1)
+
     # does CLAP get normalized? 
 
     selected_idx, var_magic_scores, var_model_conf = plug_and_play_fast_ranking(  # does beam search

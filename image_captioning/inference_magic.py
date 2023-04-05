@@ -22,10 +22,13 @@ import sys
 import pandas as pd
 import json
 import logging
+from re import sub
+from tqdm import tqdm
+from sklearn.metrics import accuracy_score
 from sklearn.metrics.pairwise import cosine_similarity
-
 from evaluation.pycocoevalcap.eval import COCOEvalCap_obs
 from evaluation.pycocoevalcap.eval import COCOEvalCap_list
+from ruamel import yaml
 
 logging.getLogger('transformers.generation_utils').disabled = True
 
@@ -85,7 +88,7 @@ if __name__ == '__main__':
     import sys
     sys.path.append(args.clap_path)  # define path to clap class
 
-    print ('Loading CLAP...')
+    print ('Loading WavCaps Model...')
 
     seed = 4182
     random.seed(seed)
@@ -94,12 +97,27 @@ if __name__ == '__main__':
     torch.cuda.manual_seed_all(seed)
     np.random.seed(seed)
 
-    from clap_ import CLIP
-    clip = CLIP(args.clap_model_name) #ACLP *.pt # er soll hier CLIP aus clip.py laden (dort wird AudioCLIP geladen)
+
+    from models.ase_model import ASE
+    from data_handling.text_transform import text_preprocess
+
+    with open("/home/sfauth/code/MAGIC/image_captioning/clip/WavCaps/retrieval/settings/inference.yaml", "r") as f:
+        config = yaml.safe_load(f)
+
+    clip = ASE(config)
+    if cuda_available:
+        clip = clip.to(device)  
+    cp_path = args.clap_model_name
+    cp = torch.load(cp_path)
+    clip.load_state_dict(cp['model'])
+    clip.eval()
+
+    #from clap_ import CLIP
+    #clip = CLIP(args.clap_model_name) #ACLP *.pt # er soll hier CLIP aus clip.py laden (dort wird AudioCLIP geladen)
     #if cuda_available:
      #   clip = clip.to(device)  GETS DONE in clap_.py script!
     #clip.eval()
-    print ('CLAP loaded!')
+    print ('WavCaps Model loaded!')
 
     print ('Loading off-the-shelf language model...')
     import sys
@@ -117,7 +135,7 @@ if __name__ == '__main__':
     print ('Language model loaded.')
     clip_text_max_len = 77
 
-    item_list = random.choices(item_list, k=100)
+    #item_list = random.choices(item_list, k=100)
 
     betas = torch.linspace(0.5, 4, steps=11).cuda()
     #betas_2 = torch.linspace(0, 0.5, steps=11).cuda()
@@ -179,9 +197,13 @@ if __name__ == '__main__':
 
                         # create sound instance 
                         try:
-                            sound_instance, _ = librosa.load(sound_full_path, sr=args.sample_rate)
+                            sound_instance, _ = librosa.load(sound_full_path, sr=args.sample_rate, mono=True)
 
-                        
+                            sound_instance = torch.tensor(sound_instance).unsqueeze(0).to(device)
+                            if sound_instance.shape[-1] < 32000 * 10:
+                                pad_length = 32000 * 10 - sound_instance.shape[-1]
+                                sound_instance = F.pad(sound_instance, [0, pad_length], "constant", 0.0)
+                                
                             
                             # tokenize 
                             input_ids = get_prompt_id(prompt, generation_model.tokenizer) 
@@ -259,7 +281,7 @@ if __name__ == '__main__':
                             #%% 5) cosine similarity of the [GT captions_i] and the [prediction] (all with each other; matrix)
                             # includes prompt if specified in flag
  
-                            captions_embs = clip.compute_text_representation(captions)
+                            captions_embs = clip.encode_text(captions)
                             cos_sim_captions_list = cosine_similarity(captions_embs.cpu().detach().numpy()).round(2).astype(str).tolist()
                             [row.append('<br>') for row in cos_sim_captions_list]
                             cos_sim_captions_list = [val for sublist in cos_sim_captions_list for val in sublist]
@@ -268,7 +290,7 @@ if __name__ == '__main__':
 
 
                             #%% 3) 4) cosine similarity of the [GT_caption_i] and the [audio] and [prediction] and the [audio]
-                            audio_embedding = clip.compute_image_representation_from_image_instance(sound_instance)
+                            audio_embedding = clip.encode_audio(sound_instance)
                             cos_sim = torch.cosine_similarity(audio_embedding, captions_embs)# unscaled!                   
                             cos_sim = cos_sim.cpu().detach().numpy()
                             format_string = "{:.3f}"
