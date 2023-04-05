@@ -43,6 +43,15 @@ if __name__ == '__main__':
         for k in keys_to_remove:
             del all_res_dict[0][k]
 
+        if "gpt2" in result_file:
+            all_res_dict[0]["model"] = "gpt2"
+
+        elif "opt-1.3b" in result_file:
+            all_res_dict[0]["model"] = "opt-1.3b"
+
+        else:
+            pass
+
         for hyperparam in all_res_dict[0].keys():
             res_dict[str(hyperparam)] = all_res_dict[0][str(hyperparam)]
         

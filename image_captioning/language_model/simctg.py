@@ -205,7 +205,7 @@ class SimCTG(nn.Module):
                 input_ids_for_class=input_ids_for_class,
                 include_prompt_magic=include_prompt_magic
             )
-
+            
             if input_ids is not None and input_ids in break_tokens:
                 print( f"Stopped after {step} tokens")
                 break

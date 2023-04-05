@@ -117,19 +117,22 @@ if __name__ == '__main__':
     print ('Language model loaded.')
     clip_text_max_len = 77
 
-    #item_list = item_list[0:3]
+    item_list = random.choices(item_list, k=100)
 
     betas = torch.linspace(0.5, 4, steps=11).cuda()
     #betas_2 = torch.linspace(0, 0.5, steps=11).cuda()
     #betas = torch.concat([betas_1, betas_2]).unique()
     #betas = torch.linspace(1, 2, steps=11).cuda()
+    #betas = torch.tensor([0.5]).cuda()
     prompts = ["The sound of" ,"This is a sound of", "This is the sound of"]
-
-    temperatures = torch.linspace(35, 42.5, steps=6).cuda()
+    
+    #temperatures = torch.linspace(35, 42.5, steps=6).cuda()
     #temperatures = torch.linspace(42.5, 50, steps=6).cuda()
+    temperatures = torch.linspace(18.6612, 35, steps=6).cuda()
+    #temperatures = torch.linspace(35, 35, steps=1).cuda()
 
     #betas = torch.tensor([0.15], device="cuda")
-    #prompts = ["this is the sound of"]
+    #prompts = ["I can hear"]
 
     for temperature in temperatures:
         print("Temperature: " + str(temperature))
@@ -209,7 +212,7 @@ if __name__ == '__main__':
                             output_text_series = pd.Series(output_text)
                             output_text_without_prompt = output_text.split(last_letter_prompt, 1)[1]
                             output_text_without_prompt_series = pd.Series(output_text_without_prompt)
-
+                            
                             one_res_dict['prediction'] = output_text_without_prompt # always without prompt, as prompt is other entry
                             one_res_dict["beta"] = beta.item()
                             one_res_dict["prompt"] = prompt
@@ -255,8 +258,7 @@ if __name__ == '__main__':
 
                             #%% 5) cosine similarity of the [GT captions_i] and the [prediction] (all with each other; matrix)
                             # includes prompt if specified in flag
-                            # CHECK THIS COLUUUUUUUUUUUUUUUUUMN IN TABLE AND ITS CAPTION !!
-                            # NICE TO HAVE: INCLUDE ANOTHER STRING LIST ABOVE: ["G1, G2, ... P"]
+ 
                             captions_embs = clip.compute_text_representation(captions)
                             cos_sim_captions_list = cosine_similarity(captions_embs.cpu().detach().numpy()).round(2).astype(str).tolist()
                             [row.append('<br>') for row in cos_sim_captions_list]
@@ -342,6 +344,8 @@ if __name__ == '__main__':
 
                     final_metrics = pd.DataFrame(cocoEval_final.final_metrics)
                     final_metrics = final_metrics.fillna(0).apply(lambda x: x.sum()).to_frame().T.apply(lambda x: x.round(2), axis=0)
+                    mean_metrics = final_metrics.mean(axis=1).rename("Mean_NLG_M")
+                    final_metrics = pd.concat([mean_metrics, final_metrics], axis=1)
 
                     sample_metrics = pd.concat([pd.DataFrame.from_dict(metric) for metric in cocoEval_final.sample_metrics], axis=1)
 
@@ -356,7 +360,7 @@ if __name__ == '__main__':
                     #%% create table and result .json                    
 
                     save_name_results_json = args.save_name
-                    file_prefix = str(beta.item()) + "_" + prompt.replace(" ", "_") + "_" + "kappa" + "_" + str(one_res_dict["temperature"]) + "_" + save_name_results_json
+                    file_prefix = str(beta.item()) + "_" + prompt.replace(" ", "_") + "_" + "kappa" + "_" + str(temperature.item()) + "_" + "mean_metrics" + "_" + str(mean_metrics.item()) + "_" +save_name_results_json
                     html_filename =  file_prefix + "_" "results.html"
                     sim_audio_table = pd.concat(audio_sim_tables.values())
                     sim_audio_table = pd.concat([sample_metrics.reset_index(drop=True),\
