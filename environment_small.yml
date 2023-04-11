@@ -1,0 +1,23 @@
+name: MAGIC
+channels:
+  - pytorch
+  - bioconda
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  - torch
+  - argparse
+  - numpy
+  - pandas
+  - progressbar
+  - time
+  - PIL
+  - librosa
+  - sys
+  - json
+  - openai
+  - regex
+  - tqdm
+  - sklearn
+  - ruamel

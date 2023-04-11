@@ -10,7 +10,7 @@ import torch.nn.functional as F
 #from torch.utils.data.distributed import DistributedSampler
 #from torch.distributed import init_process_group, destroy_process_group
 
-import argparse, os
+import argparse
 import random
 import numpy as np
 import time
@@ -81,9 +81,15 @@ def clean_generated_sound_list(raw_answer_string):
 
     split_string = raw_answer_string.split("\n")
 
-    # keep everything following a space, a full-stop and a number
+    # keep everything following a space, a full-stop / opening round bracket and a number
 
-    return [sub(r"^\d+\. ", "", sound) for sound in split_string]
+    pattern_1 = r"^\d+\. "
+    pattern_2 = r"^\d+\) "
+
+    after_pattern_1 = [sub(pattern_1, "", sound) for sound in split_string] 
+    after_pattern_2 = [sub(pattern_2, "", sound) for sound in after_pattern_1]
+
+    return after_pattern_2
 
 import argparse
 if __name__ == '__main__':
@@ -104,7 +110,7 @@ if __name__ == '__main__':
     print ('Number of test instances is {}'.format(len(item_list)))
     
     # get AudioCLIP
-    import sys
+
     sys.path.append(args.clap_path)  # define path to clap class
 
     print ('Loading WavCaps Model...')
@@ -137,32 +143,46 @@ if __name__ == '__main__':
      #   clip = clip.to(device)  GETS DONE in clap_.py script!
     #clip.eval()
     print ('WavCaps Model loaded!')
-
+    
     openai.api_key = os.environ['openai_api_key']
 
     print ('OpenAI API Key set!')
 
-    l_sounding_objects = 2
+    l_sounding_objects = 10
 
-    chat_gpt_prompt = "Generate a list of" + str(l_sounding_objects) + "sounding objects"
+    chat_gpt_prompt = "Generate a list of" + str(l_sounding_objects) + "sounding objects that are not musical instruments. I only want nouns!"
+    print ('Getting first sounding object list...')
     raw_answer_string = get_chat_gpt_answer(chat_gpt_prompt)
     sounding_objects = clean_generated_sound_list(raw_answer_string)
-    print(sounding_objects)
 
-    m_variations = 2
+    with open('object_list.txt', 'w') as file:
+        file.writelines("%s\n" % item for item in sounding_objects)
+
+    print ('Written first sounding object list to file!')
+
+    m_variations = 1000
 
     var_sounding_objs = []
-
-    for object in sounding_objects:
-        intermediate_chat_gpt_prompt = "Generate " + str(m_variations) + " variations of the sounding object " + str(object) + " with different verbs and adjectives" 
-        print(intermediate_chat_gpt_prompt)
+    print ('Getting second sounding object list...')
+    for object in tqdm(sounding_objects):
+        intermediate_chat_gpt_prompt = 'Generate ' + str(m_variations) + ' variations of the sounding object ' + '"' + str(object) + '" ' + "with different verbs such that there are two words in total"
         raw_answer_string = get_chat_gpt_answer(intermediate_chat_gpt_prompt)
         var_sounding_objs.append(clean_generated_sound_list(raw_answer_string))
+
+    var_sounding_objs = sum(var_sounding_objs, [])
+
+    with open('var_object_list.txt', 'w') as file:
+        file.writelines("%s\n" % item for item in var_sounding_objs)
+    
+    print ('Saved object list, stopping program')
+    sys.exit()
+
+    # batching for text encoding
 
     sounding_objects_text_embeds = clip.encode_text(sounding_objects)
 
     print ('Successfuly created initial sounding object list')
-
+    
     print ('Loading off-the-shelf language model...')
     import sys
     sys.path.append(args.language_model_code_path)
@@ -187,11 +207,11 @@ if __name__ == '__main__':
     #betas = torch.linspace(1, 2, steps=11).cuda()
     #betas = torch.tensor([0.5]).cuda()
     prompts = ["The sound of" ,"This is a sound of", "This is the sound of"]
-    
+    #prompts = ["The sound of"]
     #temperatures = torch.linspace(35, 42.5, steps=6).cuda()
     #temperatures = torch.linspace(42.5, 50, steps=6).cuda()
     temperatures = torch.linspace(18.6612, 35, steps=6).cuda()
-    #temperatures = torch.linspace(35, 35, steps=1).cuda()
+    #temperatures = torch.linspace(18.6612, 18.6612, steps=1).cuda()
 
     #betas = torch.tensor([0.15], device="cuda")
     #prompts = ["I can hear"]
@@ -251,7 +271,9 @@ if __name__ == '__main__':
                             # create prompt with audio tags from ChatGPT
 
                             audio_embeds = clip.encode_audio(sound_instance)
+                            
                             # SHOULD WE DO SOFTMAX HERE?!
+                            # do batching here
                             top_l_object_indices = torch.cosine_similarity([audio_embeds, sounding_objects_text_embeds]).indices
                             top_l_objects = [sounding_objects[index] for index in top_l_object_indices]
                             last_key_index = len(top_l_objects) - 1
