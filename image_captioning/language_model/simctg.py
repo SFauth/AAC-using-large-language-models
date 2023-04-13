@@ -203,12 +203,15 @@ class SimCTG(nn.Module):
                 logits,
                 first_step=step==0,
                 input_ids_for_class=input_ids_for_class,
-                include_prompt_magic=include_prompt_magic
+                include_prompt_magic=include_prompt_magic,
+                step=step
             )
-            
+            # somehow penalize generation of break tokens and sos
+            """
             if input_ids is not None and input_ids in break_tokens:
                 print( f"Stopped after {step} tokens")
                 break
+                """
 
             #unsoftmaxed_cos_sims.append(unsoftmaxed_cos_sim)
 

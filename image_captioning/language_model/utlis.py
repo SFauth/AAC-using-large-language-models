@@ -203,7 +203,10 @@ def plug_and_play_fast_ranking(
     alpha, 
     beta, 
     batch_class_score,
-    beam_width,  # choose k (=beam_width) candidates for being our best word
+    beam_width, # choose k (=beam_width) candidates for being our best word
+    top_k_ids,
+    tokenizer,
+    step  
 ):
     '''
         context_hidden: beam_width x context_len x embed_dim   ; for each word in every candidate's context get embedding vector
@@ -227,9 +230,34 @@ def plug_and_play_fast_ranking(
     #print(batch_class_score.view([beam_width]))
     #print("sum of magic scores: ")
     #print(torch.sum(batch_class_score.view([beam_width])))
+    
     scores = (1.0 - alpha) * next_top_k_probs - alpha * scores + beta * batch_class_score.view([beam_width])
-    scores = torch.stack(torch.split(scores, beam_width))
-    selected_idx = scores.max(dim=-1)[1]
+    scores = torch.stack(torch.split(scores, beam_width)).squeeze()
+
+    # Many tokens (high step), low penalty. Few tokens (low step), high penalty for EOS token or break tokens
+    # check if token is in list of [EOS, BREAK TOKENS]; if yes, decrease score!
+    scores_and_indices = scores.topk(next_top_k_ids.shape[1])
+    
+
+    top_k_tokens = torch.tensor([top_k_ids.squeeze()[index] for index in scores_and_indices.indices.squeeze()], device='cuda')
+    tokens_to_penalize = tokenizer.encode(". ! ?", return_tensors='pt').cuda().squeeze() # includes sos and eos in gpt2 and opt
+    base_penalty = 0
+    sequential_penalty = 0.05
+    penalty =  base_penalty + sequential_penalty * step # penalty is a function of the step. The lower the step, the higher the penalty
+
+    penalized_scores = []
+    for k, token in enumerate(top_k_tokens):
+
+        if token in tokens_to_penalize:
+            #penalized_scores[k] = scores[k] * penalty
+            penalized_scores.append(scores[k] * penalty)
+
+        else:
+            penalized_scores.append(scores[k])
+
+    penalized_scores = torch.tensor(penalized_scores, device='cuda')
+
+    selected_idx = penalized_scores.max(dim=-1)[1]
     
     # save unsoftmaxed cos sim of every iteration and the respective untokenized bits
 
@@ -245,7 +273,7 @@ def plug_and_play_fast_ranking(
 
 def PlugAndPlayContrastiveDecodingOneStepFast(model, input_ids, prefix_len, beam_width, alpha, beta, 
     simctg_tokenizer, image_embeds, clip, clip_text_max_len, past_key_values, last_hidden_states, 
-    logit_for_next_step, include_prompt_magic, first_step=False, input_ids_for_class=None):#, add_token_level_score=False):
+    logit_for_next_step, include_prompt_magic, step, first_step=False, input_ids_for_class=None):#, add_token_level_score=False):
     '''
         model: the generation model, e.g., gpt2
         input_ids: 1 x seqlen
@@ -296,7 +324,7 @@ def PlugAndPlayContrastiveDecodingOneStepFast(model, input_ids, prefix_len, beam
     batch_text_list = []
 
     if include_prompt_magic == "True":
-
+        # magic score is computed for the prompt + proposed_word 
         for one_input_id in input_ids_for_class_:
             one_text = simctg_tokenizer.decode(one_input_id)
             batch_text_list.append(one_text)
@@ -331,6 +359,9 @@ def PlugAndPlayContrastiveDecodingOneStepFast(model, input_ids, prefix_len, beam
         beta, 
         batch_score,
         beam_width,
+        top_k_ids,
+        simctg_tokenizer,
+        step,
     )       
 
     # prepare for the next step

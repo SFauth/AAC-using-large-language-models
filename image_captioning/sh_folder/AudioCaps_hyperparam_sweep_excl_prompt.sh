@@ -1,6 +1,6 @@
-CUDA_VISIBLE_DEVICES="1" python ../inference_magic.py\
+CUDA_VISIBLE_DEVICES="2" python ../inference_magic.py\
     --language_model_code_path ../language_model/\
-    --language_model_name gpt2\
+    --language_model_name facebook/opt-1.3b\
     --clap_path ../clip/WavCaps/retrieval/\
     --clap_model_name ../clip/WavCaps/retrieval/assets/HTSAT-BERT-FT-AudioCaps.pt\
     --test_image_prefix_path ../softlinks/AudioCaps_data/\

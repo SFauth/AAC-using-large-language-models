@@ -21,7 +21,6 @@ import librosa
 import sys
 import pandas as pd
 import json
-import openai
 from re import sub
 from tqdm import tqdm
 from sklearn.metrics import accuracy_score
@@ -59,37 +58,15 @@ def parse_config():
     parser.add_argument("--dataset", type=str, help="specify dataset: clotho or AudioCaps")
     # prompt
     parser.add_argument("--include_prompt_magic", type=str, help="include prompt in the calculation of the MAGIC score")
+    # keywords
+    parser.add_argument("--path_to_keywords", type=str, help="creates an intermediate prompt using keywords")
+
 
     return parser.parse_args()
 
 def get_prompt_id(text, tokenizer):
     tokens = tokenizer(text, return_tensors="pt").input_ids   # gets token id's for the text: e.g. hello I am cool [50257, 281, 6597, 10651, 286, 257]
     return tokens
-
-def get_chat_gpt_answer(chat_gpt_prompt):
-
-    chat_gpt_response = openai.ChatCompletion.create(
-                                                model="gpt-3.5-turbo",
-                                                messages=[
-                                                    {"role": "user", "content": chat_gpt_prompt}
-                                                ])
-                            
-    return chat_gpt_response["choices"][0]["message"]["content"]
-
-
-def clean_generated_sound_list(raw_answer_string):
-
-    split_string = raw_answer_string.split("\n")
-
-    # keep everything following a space, a full-stop / opening round bracket and a number
-
-    pattern_1 = r"^\d+\. "
-    pattern_2 = r"^\d+\) "
-
-    after_pattern_1 = [sub(pattern_1, "", sound) for sound in split_string] 
-    after_pattern_2 = [sub(pattern_2, "", sound) for sound in after_pattern_1]
-
-    return after_pattern_2
 
 import argparse
 if __name__ == '__main__':
@@ -144,45 +121,6 @@ if __name__ == '__main__':
     #clip.eval()
     print ('WavCaps Model loaded!')
     
-    openai.api_key = os.environ['openai_api_key']
-
-    print ('OpenAI API Key set!')
-
-    l_sounding_objects = 10
-
-    chat_gpt_prompt = "Generate a list of" + str(l_sounding_objects) + "sounding objects that are not musical instruments. I only want nouns!"
-    print ('Getting first sounding object list...')
-    raw_answer_string = get_chat_gpt_answer(chat_gpt_prompt)
-    sounding_objects = clean_generated_sound_list(raw_answer_string)
-
-    with open('object_list.txt', 'w') as file:
-        file.writelines("%s\n" % item for item in sounding_objects)
-
-    print ('Written first sounding object list to file!')
-
-    m_variations = 1000
-
-    var_sounding_objs = []
-    print ('Getting second sounding object list...')
-    for object in tqdm(sounding_objects):
-        intermediate_chat_gpt_prompt = 'Generate ' + str(m_variations) + ' variations of the sounding object ' + '"' + str(object) + '" ' + "with different verbs such that there are two words in total"
-        raw_answer_string = get_chat_gpt_answer(intermediate_chat_gpt_prompt)
-        var_sounding_objs.append(clean_generated_sound_list(raw_answer_string))
-
-    var_sounding_objs = sum(var_sounding_objs, [])
-
-    with open('var_object_list.txt', 'w') as file:
-        file.writelines("%s\n" % item for item in var_sounding_objs)
-    
-    print ('Saved object list, stopping program')
-    sys.exit()
-
-    # batching for text encoding
-
-    sounding_objects_text_embeds = clip.encode_text(sounding_objects)
-
-    print ('Successfuly created initial sounding object list')
-    
     print ('Loading off-the-shelf language model...')
     import sys
     sys.path.append(args.language_model_code_path)
@@ -199,20 +137,33 @@ if __name__ == '__main__':
     print ('Language model loaded.')
     clip_text_max_len = 77
 
+    # prepare keywords
+
+    if args.path_to_keywords != None:
+
+
+        keywords = list(pd.read_csv(args.path_to_keywords)["display_name"])
+
+        with torch.no_grad():
+            keyword_embeds = clip.encode_text(keywords)
+    else:
+        print('No keywords used! ')
+    
+
     #item_list = random.choices(item_list, k=100)
 
-    betas = torch.linspace(0.5, 4, steps=11).cuda()
-    #betas_2 = torch.linspace(0, 0.5, steps=11).cuda()
+    #betas = torch.linspace(0.5, 4, steps=11).cuda()
+    #betas = torch.linspace(0, 0.5, steps=11).cuda()
     #betas = torch.concat([betas_1, betas_2]).unique()
     #betas = torch.linspace(1, 2, steps=11).cuda()
-    #betas = torch.tensor([0.5]).cuda()
-    prompts = ["The sound of" ,"This is a sound of", "This is the sound of"]
-    #prompts = ["The sound of"]
+    betas = torch.tensor([0.5]).cuda()
+    #prompts = ["The sound of" ,"This is a sound of", "This is the sound of"]
+    prompts = ["This is the sound of"]  # ALLE LAUFEN MIT GPT2; SONST NOCH NOCH MIT OPT LAUFEN LASSEN!
     #temperatures = torch.linspace(35, 42.5, steps=6).cuda()
     #temperatures = torch.linspace(42.5, 50, steps=6).cuda()
     temperatures = torch.linspace(18.6612, 35, steps=6).cuda()
     #temperatures = torch.linspace(18.6612, 18.6612, steps=1).cuda()
-
+    top_keywords = torch.tensor([3]).cuda()
     #betas = torch.tensor([0.15], device="cuda")
     #prompts = ["I can hear"]
 
@@ -227,207 +178,224 @@ if __name__ == '__main__':
             for prompt in prompts:
 
                 prompt = prompt
-        
+                
+                for l in top_keywords:
 
-                result_list = []
-                invalid_num = 0
-                print ('----------------------------------------------------------------')
-                with torch.no_grad():
-                    test_num = len(item_list)
-                    #test_num = 10
-                    print ('Number of inference instances is {}'.format(test_num))
-                    print ('Alpha: {0}, Beta: {1}, k: {2}'.format(args.alpha, beta, args.k))
-                    
-                    audio_sim_tables = {} # create dict to story output tables
-
-                    var_magic_scores_list = []
-                    var_model_conf_list = []
-
-                    p = progressbar.ProgressBar(test_num)
-                    p.start()
-                    for p_idx in range(test_num):
-
-                        p.update(p_idx)
-                        one_test_dict = item_list[p_idx]
-
-                        one_res_dict = {
-                            'split':one_test_dict['split'],
-                            'sound_name':one_test_dict['sound_name'],
-                            #'file_path':one_test_dict['file_path'],
-                            'captions':one_test_dict['captions']  
-                        }
+                    result_list = []
+                    invalid_num = 0
+                    print ('----------------------------------------------------------------')
+                    with torch.no_grad():
+                        test_num = len(item_list)
+                        #test_num = 10
+                        print ('Number of inference instances is {}'.format(test_num))
+                        print ('Alpha: {0}, Beta: {1}, k: {2}'.format(args.alpha, beta, args.k))
                         
-                        sound_full_path = args.test_image_prefix_path + one_test_dict['sound_name']
+                        audio_sim_tables = {} # create dict to story output tables
 
-                        # create sound instance 
-                        try:
-                            sound_instance, _ = librosa.load(sound_full_path, sr=args.sample_rate, mono=True)
+                        var_magic_scores_list = []
+                        var_model_conf_list = []
 
-                            sound_instance = torch.tensor(sound_instance).unsqueeze(0).to(device)
-                            if sound_instance.shape[-1] < 32000 * 10:
-                                pad_length = 32000 * 10 - sound_instance.shape[-1]
-                                sound_instance = F.pad(sound_instance, [0, pad_length], "constant", 0.0)
+                        p = progressbar.ProgressBar(test_num)
+                        p.start()
+                        for p_idx in range(test_num):
+
+                            p.update(p_idx)
+                            one_test_dict = item_list[p_idx]
+
+                            one_res_dict = {
+                                'split':one_test_dict['split'],
+                                'sound_name':one_test_dict['sound_name'],
+                                #'file_path':one_test_dict['file_path'],
+                                'captions':one_test_dict['captions']  
+                            }
+                            
+                            sound_full_path = args.test_image_prefix_path + one_test_dict['sound_name']
+
+                            # create sound instance 
+                            try:
+                                sound_instance, _ = librosa.load(sound_full_path, sr=args.sample_rate, mono=True)
+
+                                sound_instance = torch.tensor(sound_instance).unsqueeze(0).to(device)
+                                if sound_instance.shape[-1] < 32000 * 10:
+                                    pad_length = 32000 * 10 - sound_instance.shape[-1]
+                                    sound_instance = F.pad(sound_instance, [0, pad_length], "constant", 0.0)
+                                    
+                                # create prompt with audio tags from ChatGPT
+
+                                audio_embeds = clip.encode_audio(sound_instance)
                                 
-                            # create prompt with audio tags from ChatGPT
+                                # SHOULD WE DO SOFTMAX HERE?!
+                                # Where is top l sampling of best keywords? 
+                                #                             
+                                if ((args.path_to_keywords != None) and (l != 0)):
+                                    
+                                    keyword_sounds_sims = torch.cosine_similarity(audio_embeds, keyword_embeds)
+                                    top_l_indices = torch.topk(keyword_sounds_sims, k=3).indices
+                                    top_l_objects = [keywords[index] for index in top_l_indices]
+                                    last_key_index = len(top_l_objects) - 1
 
-                            audio_embeds = clip.encode_audio(sound_instance)
-                            
-                            # SHOULD WE DO SOFTMAX HERE?!
-                            # do batching here
-                            top_l_object_indices = torch.cosine_similarity([audio_embeds, sounding_objects_text_embeds]).indices
-                            top_l_objects = [sounding_objects[index] for index in top_l_object_indices]
-                            last_key_index = len(top_l_objects) - 1
-                            top_l_objects_one_string = "{0}, and {1}".format(", ".join(top_l_objects[:last_key_index]), top_l_objects[last_key_index])
-                            
-                            temp_prompt = "We heard " + top_l_objects_one_string + ". " + prompt
-                            
-                            # tokenize prompt
-                            input_ids = get_prompt_id(prompt, generation_model.tokenizer) 
-                            
-                            """
-                            input ids: vector containing tokens of prompt [50257, 271, 6597, 10651, 286, 257]
-                            """
+                                    if top_l_objects[last_key_index][0] in 'aeiouAEIOU':
+                                        last_object_with_article = "an " + top_l_objects[last_key_index]
 
-                            if cuda_available:
-                                input_ids = input_ids.cuda(device)
+                                    else: 
+                                        last_object_with_article = "a " + top_l_objects[last_key_index]
 
-                            #try:
-
-                            """
-                            input_ids: gets token id of the SOS token 
-                            """
-
-                            output_text, var_magic_scores, var_model_conf = generation_model.magic_search(input_ids, args.k, args.alpha, args.decoding_len, 
-                                beta, audio_embeds, clip, clip_text_max_len, args.include_prompt_magic)
-                            
-                            #output_text, var_magic_scores, var_model_conf = generation_model.magic_search_gt_captions(input_ids, args.k, args.alpha, args.decoding_len, 
-                                #   beta, one_test_dict['captions'], clip, clip_text_max_len,  args.include_prompt_magic) 
-                            
-                            var_magic_scores_list.append(var_magic_scores)
-                            var_model_conf_list.append(var_model_conf)
-
-                            last_letter_prompt = prompt[-1]
-                            output_text_series = pd.Series(output_text)
-                            output_text_without_prompt = output_text.split(last_letter_prompt, 1)[1]
-                            output_text_without_prompt_series = pd.Series(output_text_without_prompt)
-                            
-                            one_res_dict['prediction'] = output_text_without_prompt # always without prompt, as prompt is other entry
-                            one_res_dict["beta"] = beta.item()
-                            one_res_dict["prompt"] = prompt
-                            one_res_dict["k"] = args.k
-                            one_res_dict["alpha"] = args.alpha
-                            one_res_dict["decoding_len"] = args.decoding_len
-                            one_res_dict["clip_text_max_len"] = clip_text_max_len
-                            one_res_dict["n_test_samples"] = test_num
-                            one_res_dict["included_prompt_in_magic"] = args.include_prompt_magic
-                            one_res_dict["dataset"] = args.dataset
-                            one_res_dict["CLAP_type"] = os.path.split(args.clap_model_name)[-1]
-                            one_res_dict["temperature"] = temperature.item()
-
-                            result_list.append(one_res_dict)
-
-
-                            """
-                            This section produces the __output table__ in 'inference_result/similaritites_sounds' containing the:
-                            1) untokenized prediction (without the prompt)
-                            2) groundtruth captions
-                            3) cosine similarity of the [prediction] and the [audio]
-                            4) cosine similarity of the [GT_caption_i] and the [audio]
-                            5) cosine similarity of the [GT captions_i] and the [prediction] (all with each other; matrix)
-                            6) playable audio
-                            7) metrics for the current observation or the whole run (first row)
-                            DISCLAIMER: the prediction in 3) and 5) contain the prompt, if include_magic_prompt == True
-                            """
-
-                            #%% 2a) groundtruth captions and prediction
-
-                            captions = one_res_dict["captions"] # GT captions
-                            
-                            if args.include_prompt_magic == "True":
-                                captions.append(output_text)
-                                pred = output_text_series
-                                table_subfolder = "includes_prompt_magic"
-                            
-                            else: 
-                                captions.append(output_text_without_prompt)
-                                pred = output_text_without_prompt_series
-                                table_subfolder = "excludes_prompt_magic"
-
-
-                            #%% 5) cosine similarity of the [GT captions_i] and the [prediction] (all with each other; matrix)
-                            # includes prompt if specified in flag
- 
-                            captions_embs = clip.encode_text(captions)
-                            cos_sim_captions_list = cosine_similarity(captions_embs.cpu().detach().numpy()).round(2).astype(str).tolist()
-                            [row.append('<br>') for row in cos_sim_captions_list]
-                            cos_sim_captions_list = [val for sublist in cos_sim_captions_list for val in sublist]
-                            cos_sim_captions = pd.Series({"cos_sim_captions":cos_sim_captions_list})
-                            cos_sim_captions = pd.DataFrame(cos_sim_captions)[0].apply(' '.join)
-
-
-                            #%% 3) 4) cosine similarity of the [GT_caption_i] and the [audio] and [prediction] and the [audio]
-                            audio_embedding = clip.encode_audio(sound_instance)
-                            cos_sim = torch.cosine_similarity(audio_embedding, captions_embs)# unscaled!                   
-                            cos_sim = cos_sim.cpu().detach().numpy()
-                            format_string = "{:.3f}"
-                            cos_sim = [format_string.format(i) for i in cos_sim.tolist()]
-                            cos_sim_pred = pd.Series({"cos_sim_pred":cos_sim[-1]})
-                            cos_sim = pd.DataFrame(cos_sim[:-1]).apply('<br>'.join)
-                    
-                            #%% 6b) playable audio
-                            # create col for .wav file
-                            wav_col = pd.Series({"Audio":sound_full_path})                
-                            sound_file_name = os.path.split(sound_full_path)[1]
-
-                            if args.dataset == "clotho":
-                                sound_full_path = os.path.join("../../../../../softlinks_to_wav/evaluation_data_files", sound_file_name)
-
-                            elif args.dataset == "audiocaps":
-                                sound_full_path = os.path.join("../../../../../softlinks_to_wav/AudioCaps_data", sound_file_name)
-
-                            else:
-                                pass
-
-                            if args.language_model_name == "facebook/opt-1.3b":
-                                sound_full_path = os.path.join("..", sound_full_path)
-
-                            #%% 2b) groundtruth captions
-                            captions.pop()
-                            captions_table = pd.Series({"captions":'<br>'.join(captions)})
-
-                            #%% 7) metrics
-
-                            # compute the metrics
-
-                            # expects results json (a list of dicts)DDDDDDDDDDDDDDDDDDd
-                            """
-                            cocoEval = COCOEvalCap_obs(one_res_dict=one_res_dict)
-                            cocoEval.evaluate()
-                            metrics = pd.DataFrame(cocoEval.metrics).apply(lambda x: x.round(2), axis=0)
-                            metrics = metrics.fillna(0).apply(lambda x: x.sum()).to_frame().T
-                            """
-
-                            #%% COMBINE TABLE COMPONENTS
-
-                            pd.set_option('display.float_format', lambda x: '%.3f' % x)
-
-                            cols = [pred, captions_table, cos_sim_pred, cos_sim,  cos_sim_captions, wav_col]
-
-                            sim_text = pd.DataFrame(pd.concat(cols, axis=0)).T
-
-                            sim_text.columns = ["pred", "GT_captions", "sim(pred, audio)", "sim(GT_caption_i, audio)", "sim(GT_caption_i, GT_caption_j, pred]) , while j!=i", "Audio"]
-
-                            #%% 6b) playable audio
-                            sim_text["Audio"] = sim_text["Audio"].apply(lambda audio_path: f"""<audio controls> <source src="{sound_full_path}" type="audio/wav"> </audio>""")
-
-                            #sim_text = pd.concat([sim_text, metrics], axis=1)
-
-                            audio_sim_tables[str(item_list[p_idx]["sound_name"])] = sim_text
-
+                                    top_l_objects_one_string = "{0}, and {1}".format(", ".join(top_l_objects[:last_key_index]), last_object_with_article)
+                                    
+                                    temp_prompt = "We heard " + top_l_objects_one_string + ". " + prompt
                                 
-                            
-                        except: 
-                           next
+                                    # tokenize prompt
+                                    input_ids = get_prompt_id(temp_prompt, generation_model.tokenizer) 
+
+                                else:
+
+                                    input_ids = get_prompt_id(prompt, generation_model.tokenizer) 
+                                
+                                """
+                                input ids: vector containing tokens of prompt [50257, 271, 6597, 10651, 286, 257]
+                                """
+
+                                if cuda_available:
+                                    input_ids = input_ids.cuda(device)
+
+                                #try:
+
+                                """
+                                input_ids: gets token id of the SOS token 
+                                """
+
+                                output_text, var_magic_scores, var_model_conf = generation_model.magic_search(input_ids, args.k, args.alpha, args.decoding_len, 
+                                    beta, audio_embeds, clip, clip_text_max_len, args.include_prompt_magic)
+                                
+                                #output_text, var_magic_scores, var_model_conf = generation_model.magic_search_gt_captions(input_ids, args.k, args.alpha, args.decoding_len, 
+                                    #   beta, one_test_dict['captions'], clip, clip_text_max_len,  args.include_prompt_magic) 
+                                
+                                var_magic_scores_list.append(var_magic_scores)
+                                var_model_conf_list.append(var_model_conf)
+
+                                last_letter_prompt = prompt[-1]
+                                output_text_series = pd.Series(output_text)
+                                output_text_without_prompt = output_text.split(last_letter_prompt, 1)[1]
+                                output_text_without_prompt_series = pd.Series(output_text_without_prompt)
+                                
+                                one_res_dict['prediction'] = output_text_without_prompt # always without prompt, as prompt is other entry
+                                one_res_dict["beta"] = beta.item()
+                                one_res_dict["prompt"] = prompt
+                                one_res_dict["k"] = args.k
+                                one_res_dict["alpha"] = args.alpha
+                                one_res_dict["decoding_len"] = args.decoding_len
+                                one_res_dict["clip_text_max_len"] = clip_text_max_len
+                                one_res_dict["n_test_samples"] = test_num
+                                one_res_dict["included_prompt_in_magic"] = args.include_prompt_magic
+                                one_res_dict["dataset"] = args.dataset
+                                one_res_dict["CLAP_type"] = os.path.split(args.clap_model_name)[-1]
+                                one_res_dict["temperature"] = temperature.item()
+                                one_res_dict["l"] = l.item()
+
+                                result_list.append(one_res_dict)
+
+
+                                """
+                                This section produces the __output table__ in 'inference_result/similaritites_sounds' containing the:
+                                1) untokenized prediction (without the prompt)
+                                2) groundtruth captions
+                                3) cosine similarity of the [prediction] and the [audio]
+                                4) cosine similarity of the [GT_caption_i] and the [audio]
+                                5) cosine similarity of the [GT captions_i] and the [prediction] (all with each other; matrix)
+                                6) playable audio
+                                7) metrics for the current observation or the whole run (first row)
+                                DISCLAIMER: the prediction in 3) and 5) contain the prompt, if include_magic_prompt == True
+                                """
+
+                                #%% 2a) groundtruth captions and prediction
+
+                                captions = one_res_dict["captions"] # GT captions
+                                
+                                if args.include_prompt_magic == "True":
+                                    captions.append(output_text)
+                                    pred = output_text_series
+                                    table_subfolder = "includes_prompt_magic"
+                                
+                                else: 
+                                    captions.append(output_text_without_prompt)
+                                    pred = output_text_without_prompt_series
+                                    table_subfolder = "excludes_prompt_magic"
+
+
+                                #%% 5) cosine similarity of the [GT captions_i] and the [prediction] (all with each other; matrix)
+                                # includes prompt if specified in flag
+    
+                                captions_embs = clip.encode_text(captions)
+                                cos_sim_captions_list = cosine_similarity(captions_embs.cpu().detach().numpy()).round(2).astype(str).tolist()
+                                [row.append('<br>') for row in cos_sim_captions_list]
+                                cos_sim_captions_list = [val for sublist in cos_sim_captions_list for val in sublist]
+                                cos_sim_captions = pd.Series({"cos_sim_captions":cos_sim_captions_list})
+                                cos_sim_captions = pd.DataFrame(cos_sim_captions)[0].apply(' '.join)
+
+
+                                #%% 3) 4) cosine similarity of the [GT_caption_i] and the [audio] and [prediction] and the [audio]
+                                audio_embedding = clip.encode_audio(sound_instance)
+                                cos_sim = torch.cosine_similarity(audio_embedding, captions_embs)# unscaled!                   
+                                cos_sim = cos_sim.cpu().detach().numpy()
+                                format_string = "{:.3f}"
+                                cos_sim = [format_string.format(i) for i in cos_sim.tolist()]
+                                cos_sim_pred = pd.Series({"cos_sim_pred":cos_sim[-1]})
+                                cos_sim = pd.DataFrame(cos_sim[:-1]).apply('<br>'.join)
+                        
+                                #%% 6b) playable audio
+                                # create col for .wav file
+                                wav_col = pd.Series({"Audio":sound_full_path})                
+                                sound_file_name = os.path.split(sound_full_path)[1]
+
+                                if args.dataset == "clotho":
+                                    sound_full_path = os.path.join("../../../../../softlinks_to_wav/evaluation_data_files", sound_file_name)
+
+                                elif args.dataset == "audiocaps":
+                                    sound_full_path = os.path.join("../../../../../softlinks_to_wav/AudioCaps_data", sound_file_name)
+
+                                else:
+                                    pass
+
+                                if args.language_model_name == "facebook/opt-1.3b":
+                                    sound_full_path = os.path.join("..", sound_full_path)
+
+                                #%% 2b) groundtruth captions
+                                captions.pop()
+                                captions_table = pd.Series({"captions":'<br>'.join(captions)})
+
+                                #%% 7) metrics
+
+                                # compute the metrics
+
+                                # expects results json (a list of dicts)DDDDDDDDDDDDDDDDDDd
+                                """
+                                cocoEval = COCOEvalCap_obs(one_res_dict=one_res_dict)
+                                cocoEval.evaluate()
+                                metrics = pd.DataFrame(cocoEval.metrics).apply(lambda x: x.round(2), axis=0)
+                                metrics = metrics.fillna(0).apply(lambda x: x.sum()).to_frame().T
+                                """
+
+                                #%% COMBINE TABLE COMPONENTS
+
+                                pd.set_option('display.float_format', lambda x: '%.3f' % x)
+
+                                cols = [pred, captions_table, cos_sim_pred, cos_sim,  cos_sim_captions, wav_col]
+
+                                sim_text = pd.DataFrame(pd.concat(cols, axis=0)).T
+
+                                sim_text.columns = ["pred", "GT_captions", "sim(pred, audio)", "sim(GT_caption_i, audio)", "sim(GT_caption_i, GT_caption_j, pred]) , while j!=i", "Audio"]
+
+                                #%% 6b) playable audio
+                                sim_text["Audio"] = sim_text["Audio"].apply(lambda audio_path: f"""<audio controls> <source src="{sound_full_path}" type="audio/wav"> </audio>""")
+
+                                #sim_text = pd.concat([sim_text, metrics], axis=1)
+
+                                audio_sim_tables[str(item_list[p_idx]["sound_name"])] = sim_text
+
+                                    
+                                
+                            except: 
+                                next
 
                     p.finish()
 
