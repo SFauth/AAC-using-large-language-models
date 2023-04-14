@@ -21,7 +21,8 @@ import librosa
 import sys
 import pandas as pd
 import json
-from re import sub
+from datetime import datetime
+from re import sub, search
 from tqdm import tqdm
 from sklearn.metrics import accuracy_score
 from sklearn.metrics.pairwise import cosine_similarity
@@ -152,25 +153,27 @@ if __name__ == '__main__':
 
     #item_list = random.choices(item_list, k=100)
 
-    #betas = torch.linspace(0.5, 4, steps=11).cuda()
-    #betas = torch.linspace(0, 0.5, steps=11).cuda()
-    #betas = torch.concat([betas_1, betas_2]).unique()
+    betas_1 = torch.linspace(0.5, 4, steps=11).cuda()
+    betas_2 = torch.linspace(0, 0.5, steps=11).cuda()
+    betas = torch.concat([betas_1, betas_2]).unique()
     #betas = torch.linspace(1, 2, steps=11).cuda()
-    betas = torch.tensor([0.5]).cuda()
+
     #prompts = ["The sound of" ,"This is a sound of", "This is the sound of"]
-    prompts = ["This is the sound of"]  # ALLE LAUFEN MIT GPT2; SONST NOCH NOCH MIT OPT LAUFEN LASSEN!
-    #temperatures = torch.linspace(35, 42.5, steps=6).cuda()
-    #temperatures = torch.linspace(42.5, 50, steps=6).cuda()
-    temperatures = torch.linspace(18.6612, 35, steps=6).cuda()
-    #temperatures = torch.linspace(18.6612, 18.6612, steps=1).cuda()
-    top_keywords = torch.tensor([3]).cuda()
-    #betas = torch.tensor([0.15], device="cuda")
-    #prompts = ["I can hear"]
+    prompts = ["This is the sound of"]  # alle 3 prompts mit beiden LM's = 6 GPU's
+
+    temperatures_1 = torch.linspace(10, 35, steps=6).cuda()
+    temperatures_2 = torch.linspace(18.6612, 18.6612, steps=1).cuda()
+    temperatures = torch.concat([temperatures_1, temperatures_2]).unique()
+
+    top_keywords = torch.tensor([1, 2, 3, 4]).cuda()
+
     keywords_prompts = ["We heard ", "There is a ", "There was a ", "A "]
 
     include_prompt_magic = [True, False]
 
-    alphas = torch.tensor([0.1]).cuda()
+    alphas = torch.linspace(0, 1, steps=11).cuda()
+
+    end_penaltys = torch.linspace(0.1, 0.16, steps=6).cuda()
 
     hyperparam_grid = itertools.product(betas,
                                         prompts,
@@ -178,7 +181,8 @@ if __name__ == '__main__':
                                         top_keywords,
                                         keywords_prompts,
                                         include_prompt_magic,
-                                        alphas)
+                                        alphas,
+                                        end_penaltys)
                                         
     
     for hyperparam in hyperparam_grid:
@@ -190,6 +194,16 @@ if __name__ == '__main__':
         keyword_prompt = hyperparam[4]
         include_prompt_magic = hyperparam[5]
         alpha = hyperparam[6]
+        end_penalty = hyperparam[7]
+
+        """
+        beta = torch.linspace(0.5, 0.5, steps=1).cuda()
+        clip.logit_scale_a = torch.linspace(18.6612, 18.6612, steps=1).cuda().unsqueeze(dim=0)
+        l = torch.tensor([1]).cuda()
+        keyword_prompt = "We heard "
+        include_prompt_magic = True
+        alpha = torch.linspace(0.1, 0.1, steps=1).cuda()
+        """
 
         print("Beta: " + str(np.round(beta.item(),1)) \
               + " , Prompt: "  + prompt \
@@ -197,7 +211,8 @@ if __name__ == '__main__':
                     + ", l_keywords: " + str(l.item()) \
                         + ", keyword_prompt: " + str(keyword_prompt) \
                             +", include_prompt_in_MAGIC_search: " + str(include_prompt_magic) \
-                                +", Alpha: " + str(np.round(alpha.item(),1)))
+                                +", Alpha: " + str(np.round(alpha.item(),1)) \
+                                    +", end_penalty : " + str(np.round(end_penalty.item(),5)))
 
         result_list = []
         invalid_num = 0
@@ -277,7 +292,7 @@ if __name__ == '__main__':
                     """
 
                     output_text, var_magic_scores, var_model_conf = generation_model.magic_search(input_ids, args.k, alpha, args.decoding_len, 
-                        beta, audio_embeds, clip, clip_text_max_len, include_prompt_magic)
+                        beta, audio_embeds, clip, clip_text_max_len, include_prompt_magic, end_penalty)
                     
                     #output_text, var_magic_scores, var_model_conf = generation_model.magic_search_gt_captions(input_ids, args.k, args.alpha, args.decoding_len, 
                         #   beta, one_test_dict['captions'], clip, clip_text_max_len,  args.include_prompt_magic) 
@@ -285,16 +300,17 @@ if __name__ == '__main__':
                     var_magic_scores_list.append(var_magic_scores)
                     var_model_conf_list.append(var_model_conf)
 
-                    last_letter_prompt = prompt[-1]
+                    # keep all which is preceeded by prompt
+                    res = search(prompt + r"\s+(.*)", output_text)
+                    output_text_without_prompt = res.group(1)
                     output_text_series = pd.Series(output_text)
-                    output_text_without_prompt = output_text.split(last_letter_prompt, 1)[1]
                     output_text_without_prompt_series = pd.Series(output_text_without_prompt)
                     
                     one_res_dict['prediction'] = output_text_without_prompt # always without prompt, as prompt is other entry
                     one_res_dict["beta"] = beta.item()
                     one_res_dict["prompt"] = prompt
                     one_res_dict["k"] = args.k
-                    one_res_dict["alpha"] = alpha
+                    one_res_dict["alpha"] = alpha.item()
                     one_res_dict["decoding_len"] = args.decoding_len
                     one_res_dict["clip_text_max_len"] = clip_text_max_len
                     one_res_dict["n_test_samples"] = test_num
@@ -304,6 +320,7 @@ if __name__ == '__main__':
                     one_res_dict["temperature"] = clip.logit_scale_a.item()
                     one_res_dict["l"] = l.item()
                     one_res_dict["keyword_prompt"] = keyword_prompt
+                    one_res_dict["end_penalty"] = end_penalty.item()
 
                     result_list.append(one_res_dict)
 
@@ -324,9 +341,9 @@ if __name__ == '__main__':
 
                     captions = one_res_dict["captions"] # GT captions
                     
-                    if args.include_prompt_magic == "True":
-                        captions.append(output_text)
-                        pred = output_text_series
+                    if include_prompt_magic == True:
+                        captions.append(output_text_without_prompt)
+                        pred = output_text_without_prompt_series
                         table_subfolder = "includes_prompt_magic"
                     
                     else: 
@@ -439,7 +456,24 @@ if __name__ == '__main__':
         #%% create table and result .json                    
 
         save_name_results_json = args.save_name
-        file_prefix = str(np.round(beta.item(),1)) + "_" + prompt.replace(" ", "_") + "_" + "kappa" + "_" + str(np.round(clip.logit_scale_a.item(),1)) + "_" + "mean_metrics" + "_" + str(np.round(mean_metrics.item(),2)) + "_" +save_name_results_json
+
+        file_prefix = str(np.round(mean_metrics.item(),3)) + \
+                                        "_" + \
+                                           datetime.today().strftime('%Y-%m-%d %H:%M:%S') + \
+                                                "_" + \
+                                                    save_name_results_json
+        """
+        file_prefix = "beta_" + str(np.round(beta.item(),1)) + \
+            "_alpha_" + str(np.round(alpha.item(),1)) + \
+                "_" + prompt.replace(" ", "_") + "_" + \
+                      "kappa" + "_" + str(np.round(clip.logit_scale_a.item(),1)) + "_" \
+                      + "l_" + str(np.round(l.item(),1)) +"_" \
+                        + "end_" + str(np.round(end_penalty.item(),5)) +"_" \
+                            + "kw_prompt_" + keyword_prompt.replace(" ", "_") + "_" \
+                                + "mean_metrics" + "_" \
+                                    + str(np.round(mean_metrics.item(),2)) + \
+                                        "_" + save_name_results_json
+        """
         html_filename =  file_prefix + ".html"
         sim_audio_table = pd.concat(audio_sim_tables.values())
         sim_audio_table = pd.concat([sample_metrics.reset_index(drop=True),\

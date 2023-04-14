@@ -157,7 +157,7 @@ class SimCTG(nn.Module):
 
     @torch.no_grad()
     def magic_search(self, input_ids, beam_width, alpha, decoding_len, beta, audio_embeds, clip, 
-        clip_text_max_len, include_prompt_magic):#, add_token_level_score=False):
+        clip_text_max_len, include_prompt_magic, end_penalty):#, add_token_level_score=False):
 
         """
         Vanilla magic search
@@ -204,14 +204,15 @@ class SimCTG(nn.Module):
                 first_step=step==0,
                 input_ids_for_class=input_ids_for_class,
                 include_prompt_magic=include_prompt_magic,
-                step=step
+                step=step,
+                end_penalty=end_penalty
             )
             # somehow penalize generation of break tokens and sos
-            """
+            
             if input_ids is not None and input_ids in break_tokens:
                 print( f"Stopped after {step} tokens")
                 break
-                """
+                
 
             #unsoftmaxed_cos_sims.append(unsoftmaxed_cos_sim)
 

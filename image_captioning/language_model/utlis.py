@@ -206,7 +206,8 @@ def plug_and_play_fast_ranking(
     beam_width, # choose k (=beam_width) candidates for being our best word
     top_k_ids,
     tokenizer,
-    step  
+    step,
+    end_penalty
 ):
     '''
         context_hidden: beam_width x context_len x embed_dim   ; for each word in every candidate's context get embedding vector
@@ -242,7 +243,7 @@ def plug_and_play_fast_ranking(
     top_k_tokens = torch.tensor([top_k_ids.squeeze()[index] for index in scores_and_indices.indices.squeeze()], device='cuda')
     tokens_to_penalize = tokenizer.encode(". ! ?", return_tensors='pt').cuda().squeeze() # includes sos and eos in gpt2 and opt
     base_penalty = 0
-    sequential_penalty = 0.05
+    sequential_penalty = end_penalty
     penalty =  base_penalty + sequential_penalty * step # penalty is a function of the step. The lower the step, the higher the penalty
 
     penalized_scores = []
@@ -273,7 +274,7 @@ def plug_and_play_fast_ranking(
 
 def PlugAndPlayContrastiveDecodingOneStepFast(model, input_ids, prefix_len, beam_width, alpha, beta, 
     simctg_tokenizer, image_embeds, clip, clip_text_max_len, past_key_values, last_hidden_states, 
-    logit_for_next_step, include_prompt_magic, step, first_step=False, input_ids_for_class=None):#, add_token_level_score=False):
+    logit_for_next_step, include_prompt_magic, step, end_penalty, first_step=False, input_ids_for_class=None):#, add_token_level_score=False):
     '''
         model: the generation model, e.g., gpt2
         input_ids: 1 x seqlen
@@ -362,6 +363,7 @@ def PlugAndPlayContrastiveDecodingOneStepFast(model, input_ids, prefix_len, beam
         top_k_ids,
         simctg_tokenizer,
         step,
+        end_penalty
     )       
 
     # prepare for the next step
