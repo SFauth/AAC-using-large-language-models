@@ -6,6 +6,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+
 #import torch.multiprocessing as mp
 #from torch.utils.data.distributed import DistributedSampler
 #from torch.distributed import init_process_group, destroy_process_group
@@ -69,6 +70,9 @@ def get_prompt_id(text, tokenizer):
     tokens = tokenizer(text, return_tensors="pt").input_ids   # gets token id's for the text: e.g. hello I am cool [50257, 281, 6597, 10651, 286, 257]
     return tokens
 
+
+
+
 import argparse
 if __name__ == '__main__':
     if torch.cuda.is_available():
@@ -121,7 +125,7 @@ if __name__ == '__main__':
      #   clip = clip.to(device)  GETS DONE in clap_.py script!
     #clip.eval()
     print ('WavCaps Model loaded!')
-    
+
     print ('Loading off-the-shelf language model...')
     import sys
     sys.path.append(args.language_model_code_path)
@@ -145,6 +149,10 @@ if __name__ == '__main__':
 
         keywords = list(pd.read_csv(args.path_to_keywords)["display_name"])
 
+        # Create one entry for every tag (split "Male speech, man speaking" to "Male speech", "man speaking")
+
+        keywords = [tag.strip() for tag in keywords for tag in tag.split(',')]
+        
         with torch.no_grad():
             keyword_embeds = clip.encode_text(keywords)
     else:
@@ -153,27 +161,39 @@ if __name__ == '__main__':
 
     #item_list = random.choices(item_list, k=100)
 
-    betas_1 = torch.linspace(0.5, 4, steps=11).cuda()
-    betas_2 = torch.linspace(0, 0.5, steps=11).cuda()
-    betas = torch.concat([betas_1, betas_2]).unique()
-    #betas = torch.linspace(1, 2, steps=11).cuda()
+    #betas_1 = torch.linspace(0.1, 1, steps=3).cuda()
+    #betas_2 = torch.linspace(2, 2, steps=1).cuda()
+    #betas = torch.concat([betas_1, betas_2]).unique()
+    #betas = torch.linspace(0, 4, steps=3).cuda()
+    #betas = torch.linspace(0.1, 0.25, steps=5).cuda()
+    #betas = torch.linspace(0.3, 0.5, steps=5).cuda()
+    #betas = torch.linspace(0.5, 1, steps=5).cuda()
+    #betas = torch.linspace(1.1, 1.5, steps=5).cuda()
+    betas = torch.linspace(1.6, 1.9, steps=4).cuda()
 
     #prompts = ["The sound of" ,"This is a sound of", "This is the sound of"]
     prompts = ["This is the sound of"]  # alle 3 prompts mit beiden LM's = 6 GPU's
+    # Best prompt: This is a sound of
+    # beta: 0.1 bis 2 sweep
+    # top_keywords: 2
+    # alphas: 0 bis 0.1 sweep
+    # 
 
-    temperatures_1 = torch.linspace(10, 35, steps=6).cuda()
+    temperatures_1 = torch.linspace(10, 25, steps=2).cuda()
     temperatures_2 = torch.linspace(18.6612, 18.6612, steps=1).cuda()
     temperatures = torch.concat([temperatures_1, temperatures_2]).unique()
 
-    top_keywords = torch.tensor([1, 2, 3, 4]).cuda()
+    #temperatures = torch.linspace(10, 10, steps=1).cuda()
 
-    keywords_prompts = ["We heard ", "There is a ", "There was a ", "A "]
+    top_keywords = torch.tensor([1, 2]).cuda()
 
-    include_prompt_magic = [True, False]
+    keywords_prompts = ["There is a "]
 
-    alphas = torch.linspace(0, 1, steps=11).cuda()
+    include_prompt_magic = [False]
 
-    end_penaltys = torch.linspace(0.1, 0.16, steps=6).cuda()
+    alphas = torch.linspace(0.02, 0.1, steps=3).cuda()
+
+    end_penaltys = torch.linspace(0.1, 0.16, steps=3).cuda()
 
     hyperparam_grid = itertools.product(betas,
                                         prompts,
@@ -183,8 +203,10 @@ if __name__ == '__main__':
                                         include_prompt_magic,
                                         alphas,
                                         end_penaltys)
-                                        
     
+    #print('Trying out {} hyperparameter combinations!'.format(len(list(hyperparam_grid))))
+
+
     for hyperparam in hyperparam_grid:
         
         beta = hyperparam[0]

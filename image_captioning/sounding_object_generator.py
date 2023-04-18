@@ -4,9 +4,10 @@ import openai
 from re import sub
 import os
 from tqdm import tqdm
-import threading
+from joblib import Parallel, delayed
+import pandas as pd
+import time
 
-openai.api_key = os.environ['openai_api_key']
 
 
 def get_chat_gpt_answer(chat_gpt_prompt):
@@ -33,6 +34,45 @@ def clean_generated_sound_list(raw_answer_string):
     after_pattern_2 = [sub(pattern_2, "", sound) for sound in after_pattern_1]
 
     return after_pattern_2
+
+def extend_AC_list_one_sample(prompt_first_part,
+                   prompt_2nd_part,
+                   keyword,
+                   m_variations_wanted):
+     
+
+    sounding_objects = [] 
+    chat_gpt_prompt = prompt_first_part + str(m_variations_wanted) + prompt_2nd_part + str(keyword)
+    raw_answer_string = get_chat_gpt_answer(chat_gpt_prompt)
+    sounding_objects.extend(clean_generated_sound_list(raw_answer_string))
+    return sounding_objects
+
+
+def extend_AC_list(keyword_list,
+                   prompt_first_part,
+                   prompt_2nd_part,
+                   m_variations_wanted,
+                   save_name=None):
+
+    time.sleep(60)
+    object_list_string = ", ".join(keyword_list)
+    sounding_objects = [] 
+
+    chat_gpt_prompt = prompt_first_part + str(m_variations_wanted) + prompt_2nd_part + object_list_string
+    raw_answer_string = get_chat_gpt_answer(chat_gpt_prompt)
+    sounding_objects.extend(clean_generated_sound_list(raw_answer_string))
+    print("Current batch's objects generated")
+
+    sounding_objects_no_duplicates = list(set(sounding_objects))
+
+    if save_name != None:
+
+        with open(save_name, 'w') as file:
+                file.writelines("%s\n" % item for item in sounding_objects_no_duplicates)
+    
+    #queue_obj.put(sounding_objects_no_duplicates)
+
+    return sounding_objects_no_duplicates
 
 
 def generate_objects(last_part_prompt,
@@ -74,9 +114,65 @@ def generate_objects(last_part_prompt,
 
     return sounding_objects_no_duplicates
 
+
+# extend keywords with chat gpt
+
+
+
 #%% inference
 if __name__ == '__main__':
 
+    openai.api_key = os.getenv("openai_api_key")
+
+    print('Extend keyword list using ChatGPT...')      
+
+    keywords = list(pd.read_csv("data/AudioSet/class_labels_indices.csv")["display_name"])
+    keywords = [tag.strip() for tag in keywords for tag in tag.split(',')]
+
+    print('Successfully read in initial keyword list')
+
+    m_variations_wanted=3
+    l_sounding_objects_per_batch=20
+    
+    def batch(keyword_list, batch_size):
+        return [keyword_list[i:i+batch_size] for i in range(0, len(keyword_list), batch_size)]
+    
+    keywords_batched = batch(keywords[:40],
+                                l_sounding_objects_per_batch)        
+
+
+    generated_keywords = Parallel(n_jobs=3)(
+        delayed(extend_AC_list)(batch,
+                                "Create ",
+                                " variations\
+                                each object in the following list of audio tags, adding adjectives.\
+                                    Each variation is not longer than 4 words!",
+                                    m_variations_wanted) for batch in keywords_batched)
+
+    generated_keywords_list = [item for sublist in generated_keywords for item in sublist]
+    separated_keywords = [keyword.split(",") for keyword in generated_keywords_list if "," in keyword]
+    separated_keywords = [item for sublist in separated_keywords for item in sublist]
+
+    listing_keywords_list = [keyword[2:] for keyword in generated_keywords_list if keyword.startswith("- ")]
+    prompts_removed_keywords_list = [keyword.split(": ")[1] for keyword in separated_keywords if ":" in keyword]
+
+    remaining_keywords = [keyword for keyword in generated_keywords_list if ":" not in keyword and not keyword.startswith("- ") and "," not in keyword]
+    remaining_keywords.extend(prompts_removed_keywords_list)
+    remaining_keywords.extend(listing_keywords_list)
+
+    keywords.extend(remaining_keywords)
+
+    ext_keywords = list(set(keywords))
+
+    save_name = "./data/sounding_objects/extended_audioset_tags.txt"
+
+    with open(save_name, 'w') as file:
+            file.writelines("%s\n" % item for item in ext_keywords)    
+
+    print('Printed file to txt!')
+
+
+    """
     # Create initial sounding object list
 
     print ('Generate initial sounding obejct list ...')
@@ -105,7 +201,7 @@ if __name__ == '__main__':
     # Create variations of every object
 
     variations_per_object_wanted = 10
-    """
+    
     all_objects = []
 
     for object in tqdm(sounding_objects):
@@ -118,7 +214,7 @@ if __name__ == '__main__':
                                         save_name=os.path.join('sounding_objects', object + "_variations.txt"),
                                         enable_tqdm=False)
         all_objects.extend(current_variations)
-    """
+    
 
     threads = []
 
@@ -136,3 +232,4 @@ if __name__ == '__main__':
 
     for t in threads:
         t.join()
+    """
