@@ -61,7 +61,12 @@ def parse_config():
     # prompt
     parser.add_argument("--include_prompt_magic", type=str, help="include prompt in the calculation of the MAGIC score")
     # keywords
-    parser.add_argument("--path_to_keywords", type=str, help="creates an intermediate prompt using keywords")
+    parser.add_argument("--path_to_AudioSet_keywords", type=str, help="creates an intermediate prompt using AudioSet keywords")
+    parser.add_argument("--path_to_ChatGPT_keywords", type=str, help="creates an intermediate prompt using AudioSet+ChatGPT keywords")
+
+    # latex table
+    parser.add_argument("--latex_table_description", type=str, help="creates a LaTeX table containing NLG \
+                        metrics and the specified table description (what has been done to get the table)")
 
 
     return parser.parse_args()
@@ -144,14 +149,26 @@ if __name__ == '__main__':
 
     # prepare keywords
 
-    if args.path_to_keywords != None:
+    if args.path_to_AudioSet_keywords != None and args.path_to_ChatGPT_keywords == None:
 
 
-        keywords = list(pd.read_csv(args.path_to_keywords)["display_name"])
+        print('Using AudioSet file as keyword list')
+        keywords = list(pd.read_csv(args.path_to_AudioSet_keywords)["display_name"])
 
         # Create one entry for every tag (split "Male speech, man speaking" to "Male speech", "man speaking")
 
         keywords = [tag.strip() for tag in keywords for tag in tag.split(',')]
+
+        with torch.no_grad():
+            keyword_embeds = clip.encode_text(keywords)
+
+    elif "chatgpt" in args.path_to_ChatGPT_keywords:
+
+        print('Using AudioSet+ChatGPT files as keyword list')
+        keywords_raw = list(pd.read_csv(args.path_to_AudioSet_keywords)["display_name"])
+        keywords_raw = [tag.strip() for tag in keywords_raw for tag in tag.split(',')]
+        chatgpt_keywords = pd.read_csv(args.path_to_ChatGPT_keywords, header=None)[0].tolist()
+        keywords = list(set(keywords_raw + chatgpt_keywords))
         
         with torch.no_grad():
             keyword_embeds = clip.encode_text(keywords)
@@ -169,31 +186,31 @@ if __name__ == '__main__':
     #betas = torch.linspace(0.3, 0.5, steps=5).cuda()
     #betas = torch.linspace(0.5, 1, steps=5).cuda()
     #betas = torch.linspace(1.1, 1.5, steps=5).cuda()
-    betas = torch.linspace(1.6, 1.9, steps=4).cuda()
+    betas = torch.linspace(0.1, 2, steps=2).cuda()
 
     #prompts = ["The sound of" ,"This is a sound of", "This is the sound of"]
-    prompts = ["This is the sound of"]  # alle 3 prompts mit beiden LM's = 6 GPU's
+    prompts = ["This is a sound of"] 
     # Best prompt: This is a sound of
     # beta: 0.1 bis 2 sweep
     # top_keywords: 2
     # alphas: 0 bis 0.1 sweep
     # 
 
-    temperatures_1 = torch.linspace(10, 25, steps=2).cuda()
-    temperatures_2 = torch.linspace(18.6612, 18.6612, steps=1).cuda()
-    temperatures = torch.concat([temperatures_1, temperatures_2]).unique()
+    #temperatures_1 = torch.linspace(10, 25, steps=2).cuda()
+    #temperatures_2 = torch.linspace(18.6612, 18.6612, steps=1).cuda()
+    #temperatures = torch.concat([temperatures_1, temperatures_2]).unique()
 
-    #temperatures = torch.linspace(10, 10, steps=1).cuda()
+    temperatures = torch.linspace(10, 25, steps=2).cuda()
 
-    top_keywords = torch.tensor([1, 2]).cuda()
+    top_keywords = torch.tensor([3, 4, 5, 6, 7, 8, 9, 10]).cuda()
 
     keywords_prompts = ["There is a "]
 
     include_prompt_magic = [False]
 
-    alphas = torch.linspace(0.02, 0.1, steps=3).cuda()
+    alphas = torch.linspace(0, 0.1, steps=3).cuda()
 
-    end_penaltys = torch.linspace(0.1, 0.16, steps=3).cuda()
+    end_penaltys = torch.linspace(0.16, 0.16, steps=1).cuda()
 
     hyperparam_grid = itertools.product(betas,
                                         prompts,
@@ -525,6 +542,10 @@ if __name__ == '__main__':
             os.makedirs(os.path.dirname(html_path), exist_ok=True)
 
         sim_audio_table.to_html(html_path, escape=False)
+
+        #if args.latex_table_description != None:
+
+        #    sim_audio_table.to_latex
     
         #print ('Inference completed!')
 

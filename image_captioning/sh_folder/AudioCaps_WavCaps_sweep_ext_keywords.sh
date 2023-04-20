@@ -1,4 +1,4 @@
-CUDA_VISIBLE_DEVICES="0" python ../inference_magic.py\
+CUDA_VISIBLE_DEVICES="1" python ../inference_magic.py\
     --language_model_code_path ../language_model/\
     --language_model_name facebook/opt-1.3b\
     --clap_path ../clip/WavCaps/retrieval/\
@@ -14,4 +14,5 @@ CUDA_VISIBLE_DEVICES="0" python ../inference_magic.py\
     --dataset audiocaps\
     --include_prompt_magic False\
     --experiment hyperparam_experiments\
-    --path_to_keywords ../data/AudioSet/class_labels_indices.csv
+    --path_to_AudioSet_keywords ../data/AudioSet/class_labels_indices.csv\
+    --path_to_ChatGPT_keywords ../data/sounding_objects/chatgpt_audio_tags.csv

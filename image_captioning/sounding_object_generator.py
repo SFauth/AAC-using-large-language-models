@@ -10,8 +10,16 @@ import time
 
 
 
-def get_chat_gpt_answer(chat_gpt_prompt):
+def get_chat_gpt_answer(chat_gpt_prompt, system_behavior_message=None):
 
+    if system_behavior_message!=None:
+           chat_gpt_response = openai.ChatCompletion.create(
+                                                model="gpt-3.5-turbo",
+                                                messages=[
+                                                    {"role": "system", "content": system_behavior_message},
+                                                    {"role": "user", "content": chat_gpt_prompt}
+                                                ])       
+           
     chat_gpt_response = openai.ChatCompletion.create(
                                                 model="gpt-3.5-turbo",
                                                 messages=[
@@ -122,8 +130,6 @@ def generate_objects(last_part_prompt,
 #%% inference
 if __name__ == '__main__':
 
-    openai.api_key = os.getenv("openai_api_key")
-
     print('Extend keyword list using ChatGPT...')      
 
     keywords = list(pd.read_csv("data/AudioSet/class_labels_indices.csv")["display_name"])
@@ -137,7 +143,7 @@ if __name__ == '__main__':
     def batch(keyword_list, batch_size):
         return [keyword_list[i:i+batch_size] for i in range(0, len(keyword_list), batch_size)]
     
-    keywords_batched = batch(keywords[:40],
+    keywords_batched = batch(keywords,
                                 l_sounding_objects_per_batch)        
 
 
@@ -145,16 +151,27 @@ if __name__ == '__main__':
         delayed(extend_AC_list)(batch,
                                 "Create ",
                                 " variations\
-                                each object in the following list of audio tags, adding adjectives.\
-                                    Each variation is not longer than 4 words!",
+                                of each object in the following list of audio tags, while\
+                                each variation is not longer than 4 words! Do not skip!\
+                                    list of audio tags=",
                                     m_variations_wanted) for batch in keywords_batched)
+    
+    save_name = "./data/sounding_objects/chatgpt_audio_tags_prompt_2.txt"
+
+    with open(save_name, 'w') as file:
+            file.writelines("%s\n" % item for item in generated_keywords)    
+
+    import sys
+    sys.exit()
+    
+    #%% clean data
 
     generated_keywords_list = [item for sublist in generated_keywords for item in sublist]
     separated_keywords = [keyword.split(",") for keyword in generated_keywords_list if "," in keyword]
     separated_keywords = [item for sublist in separated_keywords for item in sublist]
 
     listing_keywords_list = [keyword[2:] for keyword in generated_keywords_list if keyword.startswith("- ")]
-    prompts_removed_keywords_list = [keyword.split(": ")[1] for keyword in separated_keywords if ":" in keyword]
+    prompts_removed_keywords_list = [keyword.split(": ")[1] for keyword in separated_keywords if ": " in keyword]
 
     remaining_keywords = [keyword for keyword in generated_keywords_list if ":" not in keyword and not keyword.startswith("- ") and "," not in keyword]
     remaining_keywords.extend(prompts_removed_keywords_list)
@@ -233,3 +250,4 @@ if __name__ == '__main__':
     for t in threads:
         t.join()
     """
+# %%
