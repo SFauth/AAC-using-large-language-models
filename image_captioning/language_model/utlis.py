@@ -267,10 +267,7 @@ def plug_and_play_fast_ranking(
 
     # RETURN both var of batch_class_score and next_top_k_probs
 
-    var_magic_scores = batch_class_score.view([beam_width]).var()
-    var_model_conf = next_top_k_probs.var()
-
-    return selected_idx, var_magic_scores, var_model_conf
+    return selected_idx
 
 def PlugAndPlayContrastiveDecodingOneStepFast(model, input_ids, prefix_len, beam_width, alpha, beta, 
     simctg_tokenizer, image_embeds, clip, clip_text_max_len, past_key_values, last_hidden_states, 
@@ -343,15 +340,22 @@ def PlugAndPlayContrastiveDecodingOneStepFast(model, input_ids, prefix_len, beam
             # we only consider the class score of the generated text continuation
             batch_text_list.append(one_text)
 
+    with torch.no_grad():
 
-    text_embeds = clip.encode_text(batch_text_list)
+        if "AudioCLIP" in str(type(clip)):
+            batch_text_list_ = [[candidate] for candidate in batch_text_list]
+            text_embeds = clip.encode_text(batch_text_list_)   
+        
+        else: 
+            text_embeds = clip.encode_text(batch_text_list)   
+        
     scaled_cos_sim = clip.logit_scale_a * torch.cosine_similarity(image_embeds, text_embeds)
     scaled_cos_sim = torch.unsqueeze(scaled_cos_sim.t(), 0)
     batch_score = scaled_cos_sim.softmax(dim=-1)
 
     # does CLAP get normalized? 
 
-    selected_idx, var_magic_scores, var_model_conf = plug_and_play_fast_ranking(  # does beam search
+    selected_idx = plug_and_play_fast_ranking(  # does beam search
         context_hidden, 
         next_hidden, 
         top_k_ids, 
@@ -374,6 +378,6 @@ def PlugAndPlayContrastiveDecodingOneStepFast(model, input_ids, prefix_len, beam
     past_key_values = select_past_key_values(past_key_values, beam_width, selected_idx)
     logits = torch.stack(torch.split(logits, beam_width))[range(bsz), selected_idx, :]
     input_ids_for_class = torch.cat([input_ids_for_class, next_id], dim=-1)
-    return next_id, past_key_values, last_hidden_states, logits, input_ids_for_class, var_magic_scores, var_model_conf #, cos_sims_every_word
+    return next_id, past_key_values, last_hidden_states, logits, input_ids_for_class #, cos_sims_every_word
 
 

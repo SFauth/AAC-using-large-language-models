@@ -179,14 +179,12 @@ class SimCTG(nn.Module):
         # to support longer generated length, you can re-train the SimCTG model with longer sequences
         decoding_len = decoding_len - prefix_len # maximum length of (prefix + generated continuation) - prefix = max length that can be generated
 
-        unsoftmaxed_cos_sims = []
-
         break_tokens = ". ! ?"
 
         break_tokens = self.tokenizer.encode(break_tokens, return_tensors='pt').to("cuda") # specify break_tokens
 
         for step in range(decoding_len): # model takes sos and prompt as input and produces next word 
-            input_ids, past_key_values, last_hidden_states, logits, input_ids_for_class, var_magic_scores, var_model_conf = \
+            input_ids, past_key_values, last_hidden_states, logits, input_ids_for_class = \
             PlugAndPlayContrastiveDecodingOneStepFast(
                 self.model, 
                 input_ids, 
@@ -220,7 +218,7 @@ class SimCTG(nn.Module):
         time_diff = (end_time - start_time)
         execution_time = time_diff.total_seconds() * 1000
 
-        return self.parse_output_token_list(input_ids_for_class[0]), var_magic_scores, var_model_conf # [0] to squeeze the tensor
+        return self.parse_output_token_list(input_ids_for_class[0]) # [0] to squeeze the tensor
     
     @torch.no_grad()
     def magic_search_gt_captions(self, input_ids, beam_width, alpha, decoding_len, beta, gt_captions, clip, 

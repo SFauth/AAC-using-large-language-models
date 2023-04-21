@@ -19,3 +19,4 @@ image_captioning/clip/AudioCLIP/protocols
 **/*.json*
 **/*.jar
 **/*.pt
+**/*.html
