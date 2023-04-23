@@ -1,10 +1,9 @@
 import importlib
 torch, np = importlib.import_module('torch'), importlib.import_module('numpy')
 
-def preprocess_for_WavCaps(sound_instance,
-                           device):
+def preprocess_for_WavCaps(sound_instance):
 
-    sound_instance = torch.tensor(sound_instance).unsqueeze(0).to(device)
+    sound_instance = torch.tensor(sound_instance).unsqueeze(0).cuda()
     if sound_instance.shape[-1] < 32000 * 10:
         pad_length = 32000 * 10 - sound_instance.shape[-1]
         sound_instance = torch.nn.functional.pad(sound_instance, [0, pad_length], "constant", 0.0)

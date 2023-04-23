@@ -10,6 +10,8 @@ import argparse
 import numpy as np
 import torch.nn.functional as F
 from torch.nn import CrossEntropyLoss
+from accelerate import init_empty_weights, load_checkpoint_and_dispatch, infer_auto_device_map
+from huggingface_hub import hf_hub_download
 
 try:
     from language_model.loss_func import contrastive_loss
@@ -42,13 +44,23 @@ class SimCTG(nn.Module):
             print ('eos token is {}, eos token id is {}'.format(self.eos_token, self.eos_token_id))
             self.model = GPT2LMHeadModel.from_pretrained(model_name) # GPT2LMHeadModel vs. GPT2Model??
 
-        elif model_name == "facebook/opt-1.3b":
+        elif "facebook" in model_name:
             from transformers import AutoModelForCausalLM
             self.tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=False)
             self.eos_token, self.eos_token_id = self.tokenizer.bos_token, self.tokenizer.bos_token_id
             print ('eos token is {}, eos token id is {}'.format(self.eos_token, self.eos_token_id))
             self.model = AutoModelForCausalLM.from_pretrained(model_name)
-
+            """
+            weights_location = hf_hub_download(repo_id=model_name, filename="pytorch_model.bin")
+            #config = AutoConfig.from_pretrained(model_name)
+            
+            with init_empty_weights():
+                #model = AutoModelForCausalLM.from_config(config)
+                model = AutoModelForCausalLM.from_pretrained(model_name)
+            device_map = infer_auto_device_map(model, max_memory={0:'2GiB', 1:'11GiB', 2:'11GiB', 3:'11GiB', 4:'11GiB'}) 
+            #self.model=AutoModelForCausalLM.from_pretrained(model_name, device_map='balanced_low_0', max_memory={0:'11GiB', 1:'11GiB', 2:'11GiB', 3:'11GiB', 4:'11GiB'})
+            self.model = load_checkpoint_and_dispatch(model, weights_location, device_map=device_map)
+            """
         self.vocab_size = len(self.tokenizer)
         print ('Resizing model embedding...')
         self.model.resize_token_embeddings(len(self.tokenizer)) 

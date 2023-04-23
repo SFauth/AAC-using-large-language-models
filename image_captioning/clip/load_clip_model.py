@@ -3,7 +3,6 @@ def load_WavCaps(cuda_available,
                  pt_file):
     from ruamel import yaml
     from WavCaps.retrieval.models.ase_model import ASE
-    from WavCaps.retrieval.data_handling.text_transform import text_preprocess
     from torch import load
 
     with open("/home/sfauth/code/MAGIC/image_captioning/clip/WavCaps/retrieval/settings/inference.yaml", "r") as f:
@@ -11,6 +10,7 @@ def load_WavCaps(cuda_available,
 
     clip = ASE(config)
     if cuda_available:
+        #clip=nn.DataParallel(clip, device_ids=[0,1,2]).to(device)
         clip = clip.to(device)  
     cp_path = pt_file
     cp = load(cp_path)
@@ -54,6 +54,7 @@ def load_CLAP(cuda_available,
     clip.eval()
     # DISCLAIMER: in the package example, eval mode is not activated!
 
-    setattr(clip, "encode_audio", get_audio_embedding_from_data)
+    setattr(clip, "encode_audio", clip.get_audio_embedding_from_data)
+    setattr(clip, "encode_text", clip.get_text_embedding)
 
     return clip

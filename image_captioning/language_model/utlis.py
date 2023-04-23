@@ -344,10 +344,13 @@ def PlugAndPlayContrastiveDecodingOneStepFast(model, input_ids, prefix_len, beam
 
         if "AudioCLIP" in str(type(clip)):
             batch_text_list_ = [[candidate] for candidate in batch_text_list]
-            text_embeds = clip.encode_text(batch_text_list_)   
+            text_embeds = clip.encode_text(batch_text_list_)
         
+        elif "CLAP" in str(type(clip)): 
+            text_embeds = clip.encode_text(batch_text_list, use_tensor=True).to('cuda' if torch.cuda.is_available() else 'cpu') 
+
         else: 
-            text_embeds = clip.encode_text(batch_text_list)   
+            text_embeds = clip.encode_text(batch_text_list)
         
     scaled_cos_sim = clip.logit_scale_a * torch.cosine_similarity(image_embeds, text_embeds)
     scaled_cos_sim = torch.unsqueeze(scaled_cos_sim.t(), 0)

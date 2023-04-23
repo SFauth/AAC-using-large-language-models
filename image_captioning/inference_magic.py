@@ -62,6 +62,7 @@ def parse_config():
 
     return parser.parse_args()
 
+
 def get_prompt_id(text, tokenizer):
     tokens = tokenizer(text, return_tensors="pt").input_ids   # gets token id's for the text: e.g. hello I am cool [50257, 281, 6597, 10651, 286, 257]
     return tokens
@@ -73,6 +74,7 @@ import argparse
 if __name__ == '__main__':
     if torch.cuda.is_available():
         print ('Cuda is available.')
+        print('{} GPUs available'.format(torch.cuda.device_count()))
     cuda_available = torch.cuda.is_available()
     args = parse_config()
     device = torch.device('cuda')
@@ -83,8 +85,6 @@ if __name__ == '__main__':
     with open(args.GT_captions_path) as f:
         item_list = json.load(f)
     print ('Data loaded.')
-
-    #item_list = item_list[0:3]
 
     print ('Number of test instances is {}'.format(len(item_list)))
     
@@ -134,25 +134,16 @@ if __name__ == '__main__':
         
         preprocessor = preprocess_for_CLAP
 
-
-    #from clap_ import CLIP
-    #clip = CLIP(args.audio_pt_file) #ACLP *.pt # er soll hier CLIP aus clip.py laden (dort wird AudioCLIP geladen)
-    #if cuda_available:
-     #   clip = clip.to(device)  GETS DONE in clap_.py script!
-    #clip.eval()
-    print ('WavCaps Model loaded!')
-
     print ('Loading off-the-shelf language model...')
     import sys
     sys.path.append(args.language_model_code_path)
     from simctg import SimCTG
-    #sos_token, pad_token = r'<-start_of_text->', r'<-pad->' # r'an audio clip of <-start_of_text->', r'<-pad->'
-    #sos_token, pad_token = r'<-start_of_text->', r'<-pad->'
-    #sos_token = r'<-start_of_text->' # wieder weglassen
-    
+
     generation_model = SimCTG(args.language_model_name)
+
     if cuda_available:
         generation_model = generation_model.to(device)
+    #accelerator.prepare_model(generation_model)
     generation_model.eval()  # set model to evaluation (test mode, i.e. no training)
 
     print ('Language model loaded.')
@@ -171,7 +162,7 @@ if __name__ == '__main__':
         keywords = [tag.strip() for tag in keywords for tag in tag.split(',')]
 
         with torch.no_grad():
-            keyword_embeds = clip.encode_text(keywords)
+            keyword_embeds = clip.module.encode_text(keywords)
 
     elif "chatgpt" in args.path_to_ChatGPT_keywords:
 
@@ -189,7 +180,12 @@ if __name__ == '__main__':
             batched_keywords = batch_list(keywords,
                                           batch_size=1000)
 
-            keyword_embeds = torch.cat([clip.encode_text(keyword_batch) for keyword_batch in batched_keywords])
+            if "CLAP" in args.audio_pt_file:
+
+                keyword_embeds = torch.cat([clip.encode_text(keyword_batch, use_tensor=True) for keyword_batch in batched_keywords])    
+
+            else:
+                keyword_embeds = torch.cat([clip.encode_text(keyword_batch) for keyword_batch in batched_keywords])
 
 
     else:
@@ -199,17 +195,20 @@ if __name__ == '__main__':
     betas = torch.linspace(0.1, 2, steps=2).cuda()
 
 
-    prompts = ["This is a sound of"] 
+    prompts = ["This is a sound of "] 
+
+    #prompts = [" "]
 
 
     temperatures = torch.linspace(10, 25, steps=2).cuda()
 
-    top_keywords = torch.tensor([8,9,10]).cuda()
+    top_keywords = torch.tensor([10]).cuda()
 
-    #keywords_prompts = ["I am an intelligent audio captioning bot. I think there might be a AUDIO TAGS in this audio clip.\
-     #                   A creative short description I can generate to describe this audio is: "]
+    #keywords_prompts = ["I am an intelligent audio captioning bot. I think there might be "]
      
-    keywords_prompts = ["There is a "]
+    keywords_prompts = ["I hear "]
+
+    #keywords_prompts = ["Generate an audio caption based on the objects "]
     
     include_prompt_magic = [False]
 
@@ -283,196 +282,194 @@ if __name__ == '__main__':
                 sound_full_path = args.inference_file_prefix + one_test_dict['sound_name']
 
                 # create sound instance 
-            #try:
-                sound_instance, _ = librosa.load(sound_full_path, sr=args.sample_rate, mono=True)
+                try:
+                    sound_instance, _ = librosa.load(sound_full_path, sr=args.sample_rate, mono=True)
 
-                sound_instance = preprocessor(sound_instance,
-                                              device)
-                
-                if "CLAP" in str(type(clip)):
-                    audio_embeds = clip.encode_audio(sound_instance,
-                                                    use_tensor=True)      
-
-                audio_embeds = clip.encode_audio(sound_instance)
-                
-                                        
-                if ((args.path_to_AudioSet_keywords != None) and (l != 0)):
+                    sound_instance = preprocessor(sound_instance).type(torch.cuda.FloatTensor)
                     
-                    keyword_sounds_sims = torch.cosine_similarity(audio_embeds, keyword_embeds)
-                    top_l_indices = torch.topk(keyword_sounds_sims, k=3).indices
-                    top_l_objects = [keywords[index] for index in top_l_indices]
-                    last_key_index = len(top_l_objects) - 1
+                    if "CLAP" in str(type(clip)):
+                        audio_embeds = clip.encode_audio(sound_instance,
+                                                        use_tensor=True)      
+                    else:
+                        audio_embeds = clip.encode_audio(sound_instance)
+                    
+                                            
+                    if ((args.path_to_AudioSet_keywords != None) and (l != 0)):
+                        
+                        keyword_sounds_sims = torch.cosine_similarity(audio_embeds, keyword_embeds)
+                        top_l_indices = torch.topk(keyword_sounds_sims, k=l).indices
+                        top_l_objects = [keywords[index] for index in top_l_indices]
+                        last_key_index = len(top_l_objects) - 1
 
-                    if top_l_objects[last_key_index][0] in 'aeiouAEIOU':
-                        last_object_with_article = "an " + top_l_objects[last_key_index]
+                        if top_l_objects[last_key_index][0] in 'aeiouAEIOU':
+                            last_object_with_article = "an " + top_l_objects[last_key_index]
 
+                        else: 
+                            last_object_with_article = "a " + top_l_objects[last_key_index]
+
+                        top_l_objects_one_string = "{0}, and {1}".format(", ".join(top_l_objects[:last_key_index]), last_object_with_article)
+                        
+                        temp_prompt = keyword_prompt + top_l_objects_one_string +  " in this audio clip. " + prompt
+                    
+                        # tokenize prompt
+                        input_ids = get_prompt_id(temp_prompt, generation_model.tokenizer)
+
+                    else:
+
+                        input_ids = get_prompt_id(prompt, generation_model.tokenizer)
+                    
+                    """
+                    input ids: vector containing tokens of prompt [50257, 271, 6597, 10651, 286, 257]
+                    """
+
+                    if cuda_available:
+                        input_ids = input_ids.to(device)
+
+                    #try:
+
+                    """
+                    input_ids: gets token id of the SOS token 
+                    """
+
+                    output_text = generation_model.magic_search(input_ids, args.k, alpha, args.decoding_len, 
+                        beta, audio_embeds, clip, clip_text_max_len, include_prompt_magic, end_penalty)
+                    
+                    # keep all which is preceeded by prompt
+                    #res = search(prompt + r"\s+(.*)", output_text)
+                    # output_text_without_prompt = res.group(1)
+                    output_text_without_prompt = output_text.split(prompt)[-1]                
+                    output_text_series = pd.Series(output_text)
+                    output_text_without_prompt_series = pd.Series(output_text_without_prompt)
+                    
+                    one_res_dict['prediction'] = output_text_without_prompt # always without prompt, as prompt is other entry
+                    one_res_dict["beta"] = beta.item()
+                    one_res_dict["prompt"] = prompt
+                    one_res_dict["k"] = args.k
+                    one_res_dict["alpha"] = alpha.item()
+                    one_res_dict["decoding_len"] = args.decoding_len
+                    one_res_dict["clip_text_max_len"] = clip_text_max_len
+                    one_res_dict["n_test_samples"] = test_num
+                    one_res_dict["included_prompt_in_magic"] = include_prompt_magic
+                    one_res_dict["dataset"] = args.dataset
+                    one_res_dict["CLAP_type"] = os.path.split(args.audio_pt_file)[-1]
+                    one_res_dict["temperature"] = clip.logit_scale_a.item()
+                    one_res_dict["l"] = l.item()
+                    one_res_dict["keyword_prompt"] = keyword_prompt
+                    one_res_dict["end_penalty"] = end_penalty.item()
+
+                    result_list.append(one_res_dict)
+
+
+                    """
+                    This section produces the __output table__ in 'inference_result/similaritites_sounds' containing the:
+                    1) untokenized prediction (without the prompt)
+                    2) groundtruth captions
+                    3) cosine similarity of the [prediction] and the [audio]
+                    4) cosine similarity of the [GT_caption_i] and the [audio]
+                    5) cosine similarity of the [GT captions_i] and the [prediction] (all with each other; matrix)
+                    6) playable audio
+                    7) metrics for the current observation or the whole run (first row)
+                    DISCLAIMER: the prediction in 3) and 5) contain the prompt, if include_magic_prompt == True
+                    """
+
+                    #%% 2a) groundtruth captions and prediction
+
+                    captions = one_res_dict["captions"] # GT captions
+                    
+                    if include_prompt_magic == True:
+                        captions.append(output_text_without_prompt)
+                        pred = output_text_without_prompt_series
+                        table_subfolder = "includes_prompt_magic"
+                    
                     else: 
-                        last_object_with_article = "a " + top_l_objects[last_key_index]
+                        captions.append(output_text_without_prompt)
+                        pred = output_text_without_prompt_series
+                        table_subfolder = "excludes_prompt_magic"
 
-                    top_l_objects_one_string = "{0}, and {1}".format(", ".join(top_l_objects[:last_key_index]), last_object_with_article)
+
+                    #%% 5) cosine similarity of the [GT captions_i] and the [prediction] (all with each other; matrix)
+                    # includes prompt if specified in flag
                     
-                    temp_prompt = keyword_prompt + top_l_objects_one_string + ". " + prompt
-                
-                    # tokenize prompt
-                    input_ids = get_prompt_id(temp_prompt, generation_model.tokenizer) 
+                    if "AudioCLIP" in str(type(clip)):
+                        captions_as_lists = [[caption] for caption in captions]
+                        captions_embs = clip.encode_text(captions_as_lists)
 
-                else:
+                    elif "CLAP" in str(type(clip)): 
+                        captions_embs = clip.encode_text(captions, use_tensor=True).to('cuda' if torch.cuda.is_available() else 'cpu') 
 
-                    input_ids = get_prompt_id(prompt, generation_model.tokenizer) 
-                
-                """
-                input ids: vector containing tokens of prompt [50257, 271, 6597, 10651, 286, 257]
-                """
+                    else:
+                        captions_embs = clip.encode_text(captions)
 
-                if cuda_available:
-                    input_ids = input_ids.cuda(device)
-
-                #try:
-
-                """
-                input_ids: gets token id of the SOS token 
-                """
-
-                output_text = generation_model.magic_search(input_ids, args.k, alpha, args.decoding_len, 
-                    beta, audio_embeds, clip, clip_text_max_len, include_prompt_magic, end_penalty)
-                
-                # keep all which is preceeded by prompt
-                res = search(prompt + r"\s+(.*)", output_text)
-                output_text_without_prompt = res.group(1)
-                output_text_series = pd.Series(output_text)
-                output_text_without_prompt_series = pd.Series(output_text_without_prompt)
-                
-                one_res_dict['prediction'] = output_text_without_prompt # always without prompt, as prompt is other entry
-                one_res_dict["beta"] = beta.item()
-                one_res_dict["prompt"] = prompt
-                one_res_dict["k"] = args.k
-                one_res_dict["alpha"] = alpha.item()
-                one_res_dict["decoding_len"] = args.decoding_len
-                one_res_dict["clip_text_max_len"] = clip_text_max_len
-                one_res_dict["n_test_samples"] = test_num
-                one_res_dict["included_prompt_in_magic"] = include_prompt_magic
-                one_res_dict["dataset"] = args.dataset
-                one_res_dict["CLAP_type"] = os.path.split(args.audio_pt_file)[-1]
-                one_res_dict["temperature"] = clip.logit_scale_a.item()
-                one_res_dict["l"] = l.item()
-                one_res_dict["keyword_prompt"] = keyword_prompt
-                one_res_dict["end_penalty"] = end_penalty.item()
-
-                result_list.append(one_res_dict)
+                    cos_sim_captions_list = cosine_similarity(captions_embs.cpu().detach().numpy()).round(2).astype(str).tolist()
+                    [row.append('<br>') for row in cos_sim_captions_list]
+                    cos_sim_captions_list = [val for sublist in cos_sim_captions_list for val in sublist]
+                    cos_sim_captions = pd.Series({"cos_sim_captions":cos_sim_captions_list})
+                    cos_sim_captions = pd.DataFrame(cos_sim_captions)[0].apply(' '.join)
 
 
-                """
-                This section produces the __output table__ in 'inference_result/similaritites_sounds' containing the:
-                1) untokenized prediction (without the prompt)
-                2) groundtruth captions
-                3) cosine similarity of the [prediction] and the [audio]
-                4) cosine similarity of the [GT_caption_i] and the [audio]
-                5) cosine similarity of the [GT captions_i] and the [prediction] (all with each other; matrix)
-                6) playable audio
-                7) metrics for the current observation or the whole run (first row)
-                DISCLAIMER: the prediction in 3) and 5) contain the prompt, if include_magic_prompt == True
-                """
-
-                #%% 2a) groundtruth captions and prediction
-
-                captions = one_res_dict["captions"] # GT captions
-                
-                if include_prompt_magic == True:
-                    captions.append(output_text_without_prompt)
-                    pred = output_text_without_prompt_series
-                    table_subfolder = "includes_prompt_magic"
-                
-                else: 
-                    captions.append(output_text_without_prompt)
-                    pred = output_text_without_prompt_series
-                    table_subfolder = "excludes_prompt_magic"
-
-
-                #%% 5) cosine similarity of the [GT captions_i] and the [prediction] (all with each other; matrix)
-                # includes prompt if specified in flag
-                
-                if "AudioCLIP" in str(type(clip)):
-                    captions_as_lists = [[caption] for caption in captions]
-                    captions_embs = clip.encode_text(captions_as_lists)
-
-                else:
-                    captions_embs = clip.encode_text(captions)
-
-                cos_sim_captions_list = cosine_similarity(captions_embs.cpu().detach().numpy()).round(2).astype(str).tolist()
-                [row.append('<br>') for row in cos_sim_captions_list]
-                cos_sim_captions_list = [val for sublist in cos_sim_captions_list for val in sublist]
-                cos_sim_captions = pd.Series({"cos_sim_captions":cos_sim_captions_list})
-                cos_sim_captions = pd.DataFrame(cos_sim_captions)[0].apply(' '.join)
-
-
-                #%% 3) 4) cosine similarity of the [GT_caption_i] and the [audio] and [prediction] and the [audio]
-
-                if "CLAP" in str(type(clip)):
-                    audio_embeds = clip.encode_audio(sound_instance,
-                                    use_tensor=True)     
+                    #%% 3) 4) cosine similarity of the [GT_caption_i] and the [audio] and [prediction] and the [audio]
                     
-                audio_embedding = clip.encode_audio(sound_instance)
-                cos_sim = torch.cosine_similarity(audio_embedding, captions_embs)# unscaled!                   
-                cos_sim = cos_sim.cpu().detach().numpy()
-                format_string = "{:.3f}"
-                cos_sim = [format_string.format(i) for i in cos_sim.tolist()]
-                cos_sim_pred = pd.Series({"cos_sim_pred":cos_sim[-1]})
-                cos_sim = pd.DataFrame(cos_sim[:-1]).apply('<br>'.join)
-        
-                #%% 6b) playable audio
-                # create col for .wav file
-                wav_col = pd.Series({"Audio":sound_full_path})                
-                sound_file_name = os.path.split(sound_full_path)[1]
+                    cos_sim = torch.cosine_similarity(audio_embeds, captions_embs)# unscaled!                   
+                    cos_sim = cos_sim.cpu().detach().numpy()
+                    format_string = "{:.3f}"
+                    cos_sim = [format_string.format(i) for i in cos_sim.tolist()]
+                    cos_sim_pred = pd.Series({"cos_sim_pred":cos_sim[-1]})
+                    cos_sim = pd.DataFrame(cos_sim[:-1]).apply('<br>'.join)
+            
+                    #%% 6b) playable audio
+                    # create col for .wav file
+                    wav_col = pd.Series({"Audio":sound_full_path})                
+                    sound_file_name = os.path.split(sound_full_path)[1]
 
-                if args.dataset == "clotho":
-                    sound_full_path = os.path.join("../../../../../softlinks_to_wav/evaluation_data_files", sound_file_name)
+                    if args.dataset == "clotho":
+                        sound_full_path = os.path.join("../../../../../softlinks_to_wav/evaluation_data_files", sound_file_name)
 
-                elif args.dataset == "audiocaps":
-                    sound_full_path = os.path.join("../../../../../softlinks_to_wav/AudioCaps_data", sound_file_name)
+                    elif args.dataset == "audiocaps":
+                        sound_full_path = os.path.join("../../../../../softlinks_to_wav/AudioCaps_data", sound_file_name)
 
-                else:
-                    pass
+                    else:
+                        pass
 
-                if args.language_model_name == "facebook/opt-1.3b":
-                    sound_full_path = os.path.join("..", sound_full_path)
+                    if "facebook" in args.language_model_name:
+                        sound_full_path = os.path.join("..", sound_full_path)
 
-                #%% 2b) groundtruth captions
-                captions.pop()
-                captions_table = pd.Series({"captions":'<br>'.join(captions)})
+                    #%% 2b) groundtruth captions
+                    captions.pop()
+                    captions_table = pd.Series({"captions":'<br>'.join(captions)})
 
-                #%% 7) metrics
+                    #%% 7) metrics
 
-                # compute the metrics
+                    # compute the metrics
 
-                # expects results json (a list of dicts)DDDDDDDDDDDDDDDDDDd
-                """
-                cocoEval = COCOEvalCap_obs(one_res_dict=one_res_dict)
-                cocoEval.evaluate()
-                metrics = pd.DataFrame(cocoEval.metrics).apply(lambda x: x.round(2), axis=0)
-                metrics = metrics.fillna(0).apply(lambda x: x.sum()).to_frame().T
-                """
+                    # expects results json (a list of dicts)DDDDDDDDDDDDDDDDDDd
+                    """
+                    cocoEval = COCOEvalCap_obs(one_res_dict=one_res_dict)
+                    cocoEval.evaluate()
+                    metrics = pd.DataFrame(cocoEval.metrics).apply(lambda x: x.round(2), axis=0)
+                    metrics = metrics.fillna(0).apply(lambda x: x.sum()).to_frame().T
+                    """
 
-                #%% COMBINE TABLE COMPONENTS
+                    #%% COMBINE TABLE COMPONENTS
 
-                pd.set_option('display.float_format', lambda x: '%.3f' % x)
+                    pd.set_option('display.float_format', lambda x: '%.3f' % x)
 
-                cols = [pred, captions_table, cos_sim_pred, cos_sim,  cos_sim_captions, wav_col]
+                    cols = [pred, captions_table, cos_sim_pred, cos_sim,  cos_sim_captions, wav_col]
 
-                sim_text = pd.DataFrame(pd.concat(cols, axis=0)).T
+                    sim_text = pd.DataFrame(pd.concat(cols, axis=0)).T
 
-                sim_text.columns = ["pred", "GT_captions", "sim(pred, audio)", "sim(GT_caption_i, audio)", "sim(GT_caption_i, GT_caption_j, pred]) , while j!=i", "Audio"]
+                    sim_text.columns = ["pred", "GT_captions", "sim(pred, audio)", "sim(GT_caption_i, audio)", "sim(GT_caption_i, GT_caption_j, pred]) , while j!=i", "Audio"]
 
-                #%% 6b) playable audio
-                sim_text["Audio"] = sim_text["Audio"].apply(lambda audio_path: f"""<audio controls> <source src="{sound_full_path}" type="audio/wav"> </audio>""")
+                    #%% 6b) playable audio
+                    sim_text["Audio"] = sim_text["Audio"].apply(lambda audio_path: f"""<audio controls> <source src="{sound_full_path}" type="audio/wav"> </audio>""")
 
-                #sim_text = pd.concat([sim_text, metrics], axis=1)
+                    #sim_text = pd.concat([sim_text, metrics], axis=1)
 
-                audio_sim_tables[str(item_list[p_idx]["sound_name"])] = sim_text
+                    audio_sim_tables[str(item_list[p_idx]["sound_name"])] = sim_text
 
+                        
                     
-                
-            #except: 
-                #   next
+                except: 
+                       next
 
         p.finish()
 
@@ -502,18 +499,7 @@ if __name__ == '__main__':
                                            datetime.today().strftime('%Y-%m-%d %H:%M:%S') + \
                                                 "_" + \
                                                     save_name_results_json
-        """
-        file_prefix = "beta_" + str(np.round(beta.item(),1)) + \
-            "_alpha_" + str(np.round(alpha.item(),1)) + \
-                "_" + prompt.replace(" ", "_") + "_" + \
-                      "kappa" + "_" + str(np.round(clip.logit_scale_a.item(),1)) + "_" \
-                      + "l_" + str(np.round(l.item(),1)) +"_" \
-                        + "end_" + str(np.round(end_penalty.item(),5)) +"_" \
-                            + "kw_prompt_" + keyword_prompt.replace(" ", "_") + "_" \
-                                + "mean_metrics" + "_" \
-                                    + str(np.round(mean_metrics.item(),2)) + \
-                                        "_" + save_name_results_json
-        """
+
         html_filename =  file_prefix + ".html"
         sim_audio_table = pd.concat(audio_sim_tables.values())
         sim_audio_table = pd.concat([sample_metrics.reset_index(drop=True),\
