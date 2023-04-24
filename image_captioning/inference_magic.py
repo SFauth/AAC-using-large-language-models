@@ -192,7 +192,7 @@ if __name__ == '__main__':
         print('No keywords used! ')
     
 
-    betas = torch.linspace(0.1, 2, steps=2).cuda()
+    betas = torch.linspace(0.1, 2, steps=1).cuda()
 
 
     prompts = ["This is a sound of "] 
@@ -200,21 +200,21 @@ if __name__ == '__main__':
     #prompts = [" "]
 
 
-    temperatures = torch.linspace(10, 25, steps=2).cuda()
+    temperatures = torch.linspace(10, 25, steps=1).cuda()
 
     top_keywords = torch.tensor([10]).cuda()
 
     #keywords_prompts = ["I am an intelligent audio captioning bot. I think there might be "]
      
-    keywords_prompts = ["I hear "]
+    keywords_prompts = ["Objects: "]
 
     #keywords_prompts = ["Generate an audio caption based on the objects "]
     
     include_prompt_magic = [False]
 
-    alphas = torch.linspace(0, 0.1, steps=3).cuda()
+    alphas = torch.linspace(0, 0.1, steps=1).cuda()
 
-    end_penaltys = torch.linspace(0.1, 0.16, steps=3).cuda()
+    end_penaltys = torch.linspace(0.1, 0.16, steps=1).cuda()
 
     hyperparam_grid = itertools.product(betas,
                                         prompts,
@@ -309,7 +309,7 @@ if __name__ == '__main__':
 
                         top_l_objects_one_string = "{0}, and {1}".format(", ".join(top_l_objects[:last_key_index]), last_object_with_article)
                         
-                        temp_prompt = keyword_prompt + top_l_objects_one_string +  " in this audio clip. " + prompt
+                        temp_prompt = keyword_prompt + top_l_objects_one_string +  ". " + prompt
                     
                         # tokenize prompt
                         input_ids = get_prompt_id(temp_prompt, generation_model.tokenizer)
@@ -483,7 +483,7 @@ if __name__ == '__main__':
             print("Metric calc failed")
 
         final_metrics = pd.DataFrame(cocoEval_final.final_metrics)
-        final_metrics = final_metrics.fillna(0).apply(lambda x: x.sum()).to_frame().T.apply(lambda x: x.round(2), axis=0)
+        final_metrics = final_metrics.fillna(0).apply(lambda x: x.sum()).to_frame().T.apply(lambda x: x.round(3), axis=0)
         mean_metrics = final_metrics.mean(axis=1).rename("Mean_NLG_M").round(decimals=3)
         final_metrics = pd.concat([mean_metrics, final_metrics], axis=1)
 
@@ -510,15 +510,24 @@ if __name__ == '__main__':
         if args.dataset == "clotho":
             html_path = os.path.join(os.getcwd(), "../inference_result", args.language_model_name, "clotho_v2.1" , table_subfolder, "output_tables", args.experiment, html_filename)
             result_jsons_full_save_path = os.path.join(os.getcwd(), "../inference_result", args.language_model_name, "clotho_v2.1", table_subfolder, "output_jsons", args.experiment, file_prefix + ".json")
+            final_test_result_path = os.path.join(os.getcwd(), "../inference_result", args.language_model_name, "clotho_v2.1", table_subfolder, "evaluation", args.experiment, file_prefix + ".csv")
             print("Saving in Clotho results")
 
         elif args.dataset == "audiocaps":
             html_path = os.path.join(os.getcwd(), "../inference_result", args.language_model_name, "AudioCaps", table_subfolder, "output_tables", args.experiment, html_filename)
             result_jsons_full_save_path = os.path.join(os.getcwd(), "../inference_result", args.language_model_name, "AudioCaps", table_subfolder, "output_jsons", args.experiment, file_prefix + ".json")
+            final_test_result_path = os.path.join(os.getcwd(), "../inference_result", args.language_model_name, "AudioCaps", table_subfolder, "evaluation", args.experiment, file_prefix + ".csv")
             print("Saving in AudioCaps results")
 
         else:
             pass
+
+        if "test_performance" in args.experiment:
+            index = pd.MultiIndex.from_tuples([(args.dataset, args.save_name)], names=['Dataset', 'Model'])
+            final_metrics.index=index
+            os.makedirs(os.path.dirname(final_test_result_path), exist_ok=True)
+            final_metrics.to_csv(final_test_result_path)
+            print('NLG test metrics path: {}'.format(final_test_result_path))
 
         print ('HTML_path: {}'.format(html_path))
         print ('Results json path: {}'.format(result_jsons_full_save_path))
