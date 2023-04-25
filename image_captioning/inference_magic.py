@@ -53,8 +53,8 @@ def parse_config():
     # prompt
     parser.add_argument("--include_prompt_magic", type=str, help="include prompt in the calculation of the MAGIC score")
     # keywords
-    parser.add_argument("--path_to_AudioSet_keywords", type=str, help="creates an intermediate prompt using AudioSet keywords")
-    parser.add_argument("--path_to_ChatGPT_keywords", type=str, help="creates an intermediate prompt using AudioSet+ChatGPT keywords")
+    parser.add_argument("--path_to_AudioSet_keywords", type=str, default=None, help="creates an intermediate prompt using AudioSet keywords")
+    parser.add_argument("--path_to_ChatGPT_keywords", type=str, default=None, help="creates an intermediate prompt using AudioSet+ChatGPT keywords")
 
     # latex table
     parser.add_argument("--latex_table_description", type=str, help="creates a LaTeX table containing NLG \
@@ -174,9 +174,9 @@ if __name__ == '__main__':
         keywords = [tag.strip() for tag in keywords for tag in tag.split(',')]
 
         with torch.no_grad():
-            keyword_embeds = clip.module.encode_text(keywords)
+            keyword_embeds = clip.encode_text(keywords)
 
-    elif "chatgpt" in args.path_to_ChatGPT_keywords:
+    elif args.path_to_ChatGPT_keywords != None and "chatgpt" in args.path_to_ChatGPT_keywords:
 
         print('Using AudioSet+ChatGPT files as keyword list')
         keywords_raw = list(pd.read_csv(args.path_to_AudioSet_keywords)["display_name"])
@@ -205,8 +205,8 @@ if __name__ == '__main__':
     
 
     #betas = torch.linspace(0.1, 2, steps=1).cuda()
-    betas = torch.linspace(0.1, 0.1, steps=1).cuda()
-
+    #betas = torch.linspace(0.1, 0.1, steps=1).cuda()
+    betas = torch.linspace(0,0, steps=1).cuda()
 
     prompts = ["This is a sound of "] 
 
@@ -317,7 +317,8 @@ if __name__ == '__main__':
                 try:
                     sound_instance, _ = librosa.load(sound_full_path, sr=args.sample_rate, mono=True)
 
-                    sound_instance = preprocessor(sound_instance)
+                    sound_instance = preprocessor(sound_instance,
+                                                    device)
                     
                     if "CLAP" in str(type(clip)):
                         audio_embeds = clip.encode_audio(sound_instance,
@@ -501,7 +502,7 @@ if __name__ == '__main__':
                         
                     
                 except: 
-                       next
+                    next
 
         p.finish()
 

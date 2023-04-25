@@ -1,7 +1,8 @@
 import importlib
 torch, np, random = importlib.import_module('torch'), importlib.import_module('numpy'), importlib.import_module('random')
 
-def preprocess_for_WavCaps(sound_instance):
+def preprocess_for_WavCaps(sound_instance,
+                           device=None):
     # padding if clip is less 10 secs long
 
     sample_rate = 32000
@@ -30,7 +31,7 @@ def preprocess_for_AudioCLIP(sound_instance,
 
 def preprocess_for_CLAP(sound_instance,
                            device):
-    
+        
     def int16_to_float32(x):
         return (x / 32767.0).astype(np.float32)
 
