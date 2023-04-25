@@ -182,6 +182,12 @@ class COCOEvalCap_list:
 
         self.setEvalImgs()
 
+
+        cider_and_spice = [metric for metric in self.final_metrics if "CIDEr" in metric.keys() or "SPICE" in metric.keys()]
+        SPIDEr = (cider_and_spice[0]["CIDEr"] + cider_and_spice[1]["SPICE"]) / 2
+
+        self.final_metrics.append({"SPIDEr":SPIDEr})
+
     def setEval(self, score, method):
         self.eval[method] = score
 

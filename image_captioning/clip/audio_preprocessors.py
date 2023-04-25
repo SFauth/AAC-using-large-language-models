@@ -1,12 +1,23 @@
 import importlib
-torch, np = importlib.import_module('torch'), importlib.import_module('numpy')
+torch, np, random = importlib.import_module('torch'), importlib.import_module('numpy'), importlib.import_module('random')
 
 def preprocess_for_WavCaps(sound_instance):
+    # padding if clip is less 10 secs long
+
+    sample_rate = 32000
+    length_in_s = 10
+    length = length_in_s * sample_rate
 
     sound_instance = torch.tensor(sound_instance).unsqueeze(0).cuda()
-    if sound_instance.shape[-1] < 32000 * 10:
-        pad_length = 32000 * 10 - sound_instance.shape[-1]
+    if sound_instance.shape[-1] < length:
+        pad_length = length - sound_instance.shape[-1]
         sound_instance = torch.nn.functional.pad(sound_instance, [0, pad_length], "constant", 0.0)
+
+    # random cropping if clip is more than 10 secs long
+    if sound_instance.shape[-1] > length:
+        max_start = sound_instance.shape[-1] - length
+        start = random.randint(0, max_start)
+        sound_instance = sound_instance[0, start: start + length].unsqueeze(0)
 
     return sound_instance
 

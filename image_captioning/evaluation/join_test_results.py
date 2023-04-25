@@ -2,6 +2,7 @@ from glob import glob
 import os
 import pandas as pd
 import argparse
+import sys
 
 def parse_config():
     parser = argparse.ArgumentParser()
@@ -14,7 +15,7 @@ if __name__ == '__main__':
     args = parse_config()
 
     hyperparams_dict = glob(os.path.join(args.hyperparam_json_path, '*.json'), recursive=True)[0]
-    hyperparams = pd.read_json(hyperparams_dict).loc[:,["alpha",
+    hyperparams = pd.read_json(hyperparams_dict).loc[0:1,["alpha",
                                           "beta",
                                           "k",
                                           "temperature",
@@ -22,8 +23,6 @@ if __name__ == '__main__':
                                           "keyword_prompt",
                                           "prompt",
                                           "end_penalty"]]
-    print(hyperparams)
-    print(type(hyperparams))
 
     latex_hyperparams = hyperparams.to_latex(index=False,
                                              header=True)
@@ -31,13 +30,13 @@ if __name__ == '__main__':
 
     result_files = []
 
-    for f in glob(os.path.join(args.result_files_path, '*.csv'), recursive=True):
+    for f in glob(os.path.join(args.result_files_path, '**/*.csv'), recursive=True):
 
         result_files.append(pd.read_csv(f).set_index(['Dataset', 'Model']))
-
+        
     result_table = pd.concat(result_files, axis=0).applymap(lambda x: x*100).drop(columns=["Mean_NLG_M"])
 
-    # take json and automatically include hyperparams in caption
+    # take json and automatically include hyperparam    s in caption
 
     latex_results = result_table.to_latex()
     print(latex_results)

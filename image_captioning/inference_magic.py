@@ -35,9 +35,10 @@ def parse_config():
     # index path setting
     parser.add_argument("--audio_code_path", type=str, help="path to audio model's code (folder)")
     parser.add_argument("--audio_pt_file", type=str, help="path to .pt file of audio model")
-    parser.add_argument("--inference_file_prefix", type=str, help="folder storing files to do inference on (inference_file_prefix/audioclip_0.wav)")
+    parser.add_argument("--AudioCaps_inference_file_prefix", type=str, help="folder storing files to do inference on (inference_file_prefix/audioclip_0.wav)")
+    parser.add_argument("--clotho_inference_file_prefix", type=str, help="folder storing files to do inference on (inference_file_prefix/clotho_0.wav)")
     # test data path
-    parser.add_argument("--GT_captions_path", type=str, help="JSON file connecting GT captions and audio file names")
+    parser.add_argument("--GT_captions_AudioCaps", type=str, default=None, help="JSON file connecting GT captions and audio file names for AC")
     # decoding configuration
     parser.add_argument("--decoding_len", type=int, default=16, help='maximum length of (prefix + generated continuation)')
     # sample rate 
@@ -48,7 +49,7 @@ def parse_config():
     parser.add_argument("--save_name", type=str, help="save name suffix of output json containing hyperparams, GT captions and prediction")
     parser.add_argument("--experiment", type=str, help="specify: hyperparam_experiments or code_testing")
     # data set
-    parser.add_argument("--dataset", type=str, help="specify dataset: clotho or AudioCaps")
+    parser.add_argument("--GT_captions_clotho", type=str, default=None, help="JSON file connecting GT captions and audio file names for Clotho")
     # prompt
     parser.add_argument("--include_prompt_magic", type=str, help="include prompt in the calculation of the MAGIC score")
     # keywords
@@ -82,12 +83,23 @@ if __name__ == '__main__':
 
     print ('Loading data...')
 
-    with open(args.GT_captions_path) as f:
-        item_list = json.load(f)
-    print ('Data loaded.')
 
-    print ('Number of test instances is {}'.format(len(item_list)))
-    
+    item_lists = []
+
+    if args.GT_captions_clotho != None:
+
+        with open(args.GT_captions_clotho) as f:
+            item_list_clotho = json.load(f)
+            item_lists.append(item_list_clotho)
+            print('Number of clotho test instances is {}'.format(len(item_list_clotho)))
+
+    if args.GT_captions_AudioCaps != None:
+
+        with open(args.GT_captions_AudioCaps) as f:
+            item_list_AudioCaps = json.load(f)
+            item_lists.append(item_list_AudioCaps)
+            print('Number of AudioCaps test instances is {}'.format(len(item_list_AudioCaps)))
+
     # get AudioCLIP
 
     sys.path.append(args.audio_code_path)  # define path to clap class
@@ -192,7 +204,8 @@ if __name__ == '__main__':
         print('No keywords used! ')
     
 
-    betas = torch.linspace(0.1, 2, steps=1).cuda()
+    #betas = torch.linspace(0.1, 2, steps=1).cuda()
+    betas = torch.linspace(0.1, 0.1, steps=1).cuda()
 
 
     prompts = ["This is a sound of "] 
@@ -200,9 +213,10 @@ if __name__ == '__main__':
     #prompts = [" "]
 
 
-    temperatures = torch.linspace(10, 25, steps=1).cuda()
+    #temperatures = torch.linspace(10, 25, steps=1).cuda()
+    temperatures = torch.linspace(25, 25, steps=1).cuda()
 
-    top_keywords = torch.tensor([10]).cuda()
+    top_keywords = torch.tensor([2]).cuda()
 
     #keywords_prompts = ["I am an intelligent audio captioning bot. I think there might be "]
      
@@ -212,9 +226,12 @@ if __name__ == '__main__':
     
     include_prompt_magic = [False]
 
-    alphas = torch.linspace(0, 0.1, steps=1).cuda()
+    #alphas = torch.linspace(0, 0.1, steps=1).cuda()
+    alphas = torch.linspace(0, 0, steps=1).cuda()
 
-    end_penaltys = torch.linspace(0.1, 0.16, steps=1).cuda()
+
+    #end_penaltys = torch.linspace(0.1, 0.16, steps=1).cuda()
+    end_penaltys = torch.linspace(0.1, 0.1, steps=1).cuda()
 
     hyperparam_grid = itertools.product(betas,
                                         prompts,
@@ -223,7 +240,8 @@ if __name__ == '__main__':
                                         keywords_prompts,
                                         include_prompt_magic,
                                         alphas,
-                                        end_penaltys)
+                                        end_penaltys,
+                                        item_lists)
     
 
     for hyperparam in hyperparam_grid:
@@ -236,7 +254,20 @@ if __name__ == '__main__':
         include_prompt_magic = hyperparam[5]
         alpha = hyperparam[6]
         end_penalty = hyperparam[7]
+        item_list = hyperparam[8]
 
+
+        if len(item_list) == 975 or len(item_list) == 495 or len(item_list) == 23:
+            dataset = "AudioCaps"
+            inference_file_prefix = args.AudioCaps_inference_file_prefix
+
+        elif len(item_list) == 1045 or len(item_list) == 5:
+            dataset = "clotho"
+            inference_file_prefix = args.clotho_inference_file_prefix
+        else:
+            print('Dataset neither AudioCaps or Clotho!')
+
+        
         """
         beta = torch.linspace(0.5, 0.5, steps=1).cuda()
         clip.logit_scale_a = torch.linspace(18.6612, 18.6612, steps=1).cuda().unsqueeze(dim=0)
@@ -253,7 +284,8 @@ if __name__ == '__main__':
                         + ", keyword_prompt: " + str(keyword_prompt) \
                             +", include_prompt_in_MAGIC_search: " + str(include_prompt_magic) \
                                 +", Alpha: " + str(np.round(alpha.item(),1)) \
-                                    +", end_penalty : " + str(np.round(end_penalty.item(),5)))
+                                    +", end_penalty : " + str(np.round(end_penalty.item(),5)) \
+                                        + ", dataset: " + dataset)
 
         result_list = []
         invalid_num = 0
@@ -279,13 +311,13 @@ if __name__ == '__main__':
                     'captions':one_test_dict['captions']  
                 }
                 
-                sound_full_path = args.inference_file_prefix + one_test_dict['sound_name']
+                sound_full_path = inference_file_prefix + one_test_dict['sound_name']
 
                 # create sound instance 
                 try:
                     sound_instance, _ = librosa.load(sound_full_path, sr=args.sample_rate, mono=True)
 
-                    sound_instance = preprocessor(sound_instance).type(torch.cuda.FloatTensor)
+                    sound_instance = preprocessor(sound_instance)
                     
                     if "CLAP" in str(type(clip)):
                         audio_embeds = clip.encode_audio(sound_instance,
@@ -350,7 +382,7 @@ if __name__ == '__main__':
                     one_res_dict["clip_text_max_len"] = clip_text_max_len
                     one_res_dict["n_test_samples"] = test_num
                     one_res_dict["included_prompt_in_magic"] = include_prompt_magic
-                    one_res_dict["dataset"] = args.dataset
+                    one_res_dict["dataset"] = dataset
                     one_res_dict["CLAP_type"] = os.path.split(args.audio_pt_file)[-1]
                     one_res_dict["temperature"] = clip.logit_scale_a.item()
                     one_res_dict["l"] = l.item()
@@ -421,10 +453,10 @@ if __name__ == '__main__':
                     wav_col = pd.Series({"Audio":sound_full_path})                
                     sound_file_name = os.path.split(sound_full_path)[1]
 
-                    if args.dataset == "clotho":
+                    if "clotho" in dataset:
                         sound_full_path = os.path.join("../../../../../softlinks_to_wav/evaluation_data_files", sound_file_name)
 
-                    elif args.dataset == "audiocaps":
+                    elif "AudioCaps" in dataset:
                         sound_full_path = os.path.join("../../../../../softlinks_to_wav/AudioCaps_data", sound_file_name)
 
                     else:
@@ -507,13 +539,13 @@ if __name__ == '__main__':
         sim_audio_table = pd.concat([final_metrics, sim_audio_table], axis=0)
 
 
-        if args.dataset == "clotho":
+        if "clotho" in dataset:
             html_path = os.path.join(os.getcwd(), "../inference_result", args.language_model_name, "clotho_v2.1" , table_subfolder, "output_tables", args.experiment, html_filename)
             result_jsons_full_save_path = os.path.join(os.getcwd(), "../inference_result", args.language_model_name, "clotho_v2.1", table_subfolder, "output_jsons", args.experiment, file_prefix + ".json")
             final_test_result_path = os.path.join(os.getcwd(), "../inference_result", args.language_model_name, "clotho_v2.1", table_subfolder, "evaluation", args.experiment, file_prefix + ".csv")
             print("Saving in Clotho results")
 
-        elif args.dataset == "audiocaps":
+        elif "AudioCaps" in dataset:
             html_path = os.path.join(os.getcwd(), "../inference_result", args.language_model_name, "AudioCaps", table_subfolder, "output_tables", args.experiment, html_filename)
             result_jsons_full_save_path = os.path.join(os.getcwd(), "../inference_result", args.language_model_name, "AudioCaps", table_subfolder, "output_jsons", args.experiment, file_prefix + ".json")
             final_test_result_path = os.path.join(os.getcwd(), "../inference_result", args.language_model_name, "AudioCaps", table_subfolder, "evaluation", args.experiment, file_prefix + ".csv")
@@ -523,7 +555,7 @@ if __name__ == '__main__':
             pass
 
         if "test_performance" in args.experiment:
-            index = pd.MultiIndex.from_tuples([(args.dataset, args.save_name)], names=['Dataset', 'Model'])
+            index = pd.MultiIndex.from_tuples([(dataset, args.save_name)], names=['Dataset', 'Model'])
             final_metrics.index=index
             os.makedirs(os.path.dirname(final_test_result_path), exist_ok=True)
             final_metrics.to_csv(final_test_result_path)
