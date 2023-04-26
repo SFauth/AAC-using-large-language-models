@@ -174,7 +174,15 @@ if __name__ == '__main__':
         keywords = [tag.strip() for tag in keywords for tag in tag.split(',')]
 
         with torch.no_grad():
-            keyword_embeds = clip.encode_text(keywords)
+            
+            if "CLAP" in args.audio_pt_file:
+
+                keyword_embeds = clip.encode_text(keywords, use_tensor=True)
+
+            else: 
+
+                keyword_embeds = clip.encode_text(keywords)
+                
 
     elif args.path_to_ChatGPT_keywords != None and "chatgpt" in args.path_to_ChatGPT_keywords:
 
@@ -205,8 +213,8 @@ if __name__ == '__main__':
     
 
     #betas = torch.linspace(0.1, 2, steps=1).cuda()
-    #betas = torch.linspace(0.1, 0.1, steps=1).cuda()
-    betas = torch.linspace(0,0, steps=1).cuda()
+    betas = torch.linspace(0.1, 0.1, steps=1).cuda()
+    #betas = torch.linspace(0,0, steps=1).cuda()
 
     prompts = ["This is a sound of "] 
 
