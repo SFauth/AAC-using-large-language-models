@@ -1,4 +1,4 @@
-CUDA_VISIBLE_DEVICES="0" python ../inference_magic.py\
+CUDA_VISIBLE_DEVICES="2" python ../inference_magic.py\
     --language_model_code_path ../language_model/\
     --language_model_name facebook/opt-1.3b\
     --audio_code_path ../clip/\

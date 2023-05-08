@@ -213,8 +213,10 @@ if __name__ == '__main__':
     
 
     #betas = torch.linspace(0.1, 2, steps=1).cuda()
-    betas = torch.linspace(0.1, 0.1, steps=1).cuda()
-    #betas = torch.linspace(0,0, steps=1).cuda()
+    #betas = torch.linspace(1.6, 2, steps=5).cuda()
+    #betas = torch.linspace(0.7, 0.7, steps=1).cuda()
+    #betas = torch.tensor([2.5, 3, 4, 5, 7, 10, 25], device=device)
+    betas = torch.tensor([0], device=device)
 
     prompts = ["This is a sound of "] 
 
@@ -224,6 +226,7 @@ if __name__ == '__main__':
     #temperatures = torch.linspace(10, 25, steps=1).cuda()
     temperatures = torch.linspace(25, 25, steps=1).cuda()
 
+    #top_keywords = torch.tensor([2]).cuda()
     top_keywords = torch.tensor([2]).cuda()
 
     #keywords_prompts = ["I am an intelligent audio captioning bot. I think there might be "]
@@ -563,7 +566,7 @@ if __name__ == '__main__':
         else:
             pass
 
-        if "test_performance" in args.experiment:
+        if "test_performance" or "validation" or "ablation" in args.experiment:
             index = pd.MultiIndex.from_tuples([(dataset, args.save_name)], names=['Dataset', 'Model'])
             final_metrics.index=index
             os.makedirs(os.path.dirname(final_test_result_path), exist_ok=True)

@@ -1,4 +1,4 @@
-CUDA_VISIBLE_DEVICES="6" python ../inference_magic.py\
+CUDA_VISIBLE_DEVICES="3" python ../inference_magic.py\
     --language_model_code_path ../language_model/\
     --language_model_name facebook/opt-1.3b\
     --audio_code_path ../clip/\
@@ -10,7 +10,7 @@ CUDA_VISIBLE_DEVICES="6" python ../inference_magic.py\
     --decoding_len 78\
     --sample_rate 44100\
     --k 45\
-    --save_name Baseline_MAGIC_no_audio\
+    --save_name Baseline_LM_only\
     --include_prompt_magic False\
     --experiment test_performance &&
     
