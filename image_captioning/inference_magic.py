@@ -211,12 +211,11 @@ if __name__ == '__main__':
     else:
         print('No keywords used! ')
     
-
     #betas = torch.linspace(0.1, 2, steps=1).cuda()
     #betas = torch.linspace(1.6, 2, steps=5).cuda()
     #betas = torch.linspace(0.7, 0.7, steps=1).cuda()
     #betas = torch.tensor([2.5, 3, 4, 5, 7, 10, 25], device=device)
-    betas = torch.tensor([0], device=device)
+    betas = torch.tensor([0.1], device=device)
 
     prompts = ["This is a sound of "] 
 
@@ -227,7 +226,7 @@ if __name__ == '__main__':
     temperatures = torch.linspace(25, 25, steps=1).cuda()
 
     #top_keywords = torch.tensor([2]).cuda()
-    top_keywords = torch.tensor([2]).cuda()
+    top_keywords = torch.tensor([9,10]).cuda()
 
     #keywords_prompts = ["I am an intelligent audio captioning bot. I think there might be "]
      

@@ -21,6 +21,8 @@ def make_max_cells_bold(val, max_val, second_max_val):
     else:
         return val
 
+def sorting_function_keyword_lists(list_name):
+    return len(str(list_name))
 
 if __name__ == '__main__':
     args = parse_config()
@@ -45,23 +47,24 @@ if __name__ == '__main__':
 
     for f in glob(os.path.join(args.result_files_path, '**/*.csv'), recursive=True):
 
-        if "test_performance" in f and "beta_0.1" not in f:
+        if "test_performance" in f and "beta_0.1" in f:
             result_files.append(pd.read_csv(f).set_index(['Dataset', 'Model']))
     
-    result_table = pd.concat(result_files, axis=0).applymap(lambda x: x*100).drop(columns=["Mean_NLG_M"])
+    result_table = pd.concat(result_files, axis=0).applymap(lambda x: x*100).rename(columns={"Mean_NLG_M":"Mean Score"})
+
     
     # add supervised SOTA results for clotho and AudioCaps
 
     SOTA = pd.DataFrame({'Dataset':["AudioCaps", "clotho"],
                          'Model':['Supervised SOTA', 'Supervised SOTA'],
                          'Bleu_1':[70.7, 60.1],
-                         'Bleu_2':[0, 0],
-                         'Bleu_3':[0, 0],
-                         'Bleu_4':[28.3, 18.0],
+                         'Bleu_2':[53.4, 40.0],
+                         'Bleu_3':[39.5, 27.1],
+                         'Bleu_4':[28.9, 18.2],
                          'METEOR':[25.0, 18.5],
                          'ROUGE_L':[50.7, 40.0],
                          'CIDEr':[78.7, 48.8],
-                         'SPICE':[18.2, 13.3],
+                         'SPICE':[18.2, 13.5],
                          'SPIDEr':[48.5, 31.0]}).set_index(['Dataset', 'Model'])
     
     ablation_table = pd.concat([result_table, SOTA], axis=0).reset_index()
@@ -85,23 +88,6 @@ if __name__ == '__main__':
 
 
     ablation_table = ablation_table.groupby(["Dataset", "Group"]).apply(lambda x: x.sort_values('Bleu_1'))
-
-    """
-    metric_cols = ablation_table.iloc[:, 1:]    
-    ac = metric_cols.iloc[:len(metric_cols)//2]
-    clotho = metric_cols.iloc[len(metric_cols)//2:]
-
-    for col in ac.columns:
-        max_val = ac[col].max()
-        second_max_val = ac[col][ac[col] != max_val].max()
-        ac[col] = ac[col].apply(lambda x: make_max_cells_bold(x, max_val, second_max_val))
-        
-        max_val = clotho[col].max()
-        second_max_val = clotho[col][clotho[col] != max_val].max()
-        clotho[col] = clotho[col].apply(lambda x: make_max_cells_bold(x, max_val, second_max_val))
-
-    ablation_table = pd.concat([ac, clotho], axis=0)
-    """
 
     ablation_table = ablation_table.reset_index(level=[0,1,2], drop=True).drop(columns=['Group', 'Dataset'])
 
@@ -136,6 +122,11 @@ if __name__ == '__main__':
     new_columns = name_cols + (ablation_table.columns.drop(name_cols).tolist())
     ablation_table = ablation_table[new_columns].drop(columns=["Model"])
 
+    ablation_table["MAGIC"] = np.where((ablation_table["Audio Model"] == "-") & (ablation_table["Keywords"] == "-"),
+                                "Off",
+                                ablation_table["MAGIC"])
+
+
     if args.SOTA_table != "TRUE":
         ablation_table = ablation_table[~ablation_table["Audio Model"].str.contains("SOTA")]
 
@@ -145,7 +136,8 @@ if __name__ == '__main__':
         ablation_table =  ablation_table.loc[ablation_table['Audio Model'].str.contains("SOTA") | \
                                          ablation_table['Audio Model'].str.contains("-") |
                                          (ablation_table['Audio Model'].str.contains("WavCaps") & \
-                                          ablation_table['Keywords'].str.contains("AudioSet KW"))]
+                                          ablation_table['Keywords'].str.contains("AudioSet KW") & \
+                                          ablation_table["MAGIC"].str.contains("On"))]
 
     index = [""] * ablation_table.shape[0]
     index[0] = "AudioCaps"
@@ -156,11 +148,26 @@ if __name__ == '__main__':
     ablation_table.columns = ablation_table.columns.str.replace('_', ' ')
     #ablation_table["Model"] = ablation_table["Model"].str.replace('_', ' ')
 
-
     # Create one ablation table for every dataset
 
     ac = ablation_table.iloc[:len(ablation_table)//2]
     clotho = ablation_table.iloc[len(ablation_table)//2:]
+
+    ac = ac.\
+        groupby(['MAGIC', 'Audio Model', 'Keywords']).\
+        apply(lambda x: x.assign(keyword_list_length=x['Keywords'].map(sorting_function_keyword_lists)).\
+        sort_values('keyword_list_length')).\
+        reset_index(drop=True).\
+        drop(columns=["keyword_list_length"])
+    
+    clotho = clotho.\
+        groupby(['MAGIC', 'Audio Model', 'Keywords']).\
+        apply(lambda x: x.assign(keyword_list_length=x['Keywords'].map(sorting_function_keyword_lists)).\
+        sort_values('keyword_list_length')).\
+        reset_index(drop=True).\
+        drop(columns=["keyword_list_length"])
+
+
 
     ablation_tables = {"AudioCaps":ac,
      "Clotho":clotho}
@@ -173,8 +180,15 @@ if __name__ == '__main__':
         if "Clotho" in name:
             caption = args.caption + " on Clotho"
 
+
+        #table.drop(columns=["Bleu 2", "Bleu 3"], inplace=True)
+
         latex_table = table.to_latex(index=False,
                                      caption=caption)
+        print(latex_table)
+        continue
+        import sys
+        sys.exit()
         
         if args.SOTA_table == "TRUE":
 
@@ -182,6 +196,8 @@ if __name__ == '__main__':
 
         else:
             path_name = "../evaluation/tables/" + "ablation_table_" + name + ".txt" 
+
+        print("Writing table to {}".format(path_name))
 
         with open(path_name, 'w') as f:
             f.write(latex_table)
