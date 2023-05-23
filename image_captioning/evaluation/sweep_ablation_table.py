@@ -146,8 +146,6 @@ if __name__ == '__main__':
                       hyperparam=args.hyperparam,
                       save_path="../evaluation/plots/l_ablation_plot.png")
 
-    import sys
-    sys.exit()
 
     latex_table = sweep_table.to_latex(index=False,
                                      caption=args.caption)
@@ -155,7 +153,13 @@ if __name__ == '__main__':
     
     if "AudioCaps" in args.caption:
 
-        dataset_prefix = "AudioCaps_test_"
+        if "validation" in args.caption:
+
+            dataset_prefix = "AudioCaps_validation_"
+
+        else:
+
+            dataset_prefix = "AudioCaps_test_"
 
     elif "Clotho" in args.caption:
 
