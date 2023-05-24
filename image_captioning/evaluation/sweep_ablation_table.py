@@ -87,50 +87,79 @@ if __name__ == '__main__':
     beta = []
     l = []
     index_hyperparams = []
+    ablation_or_not = []
 
     for hyperparam_dicts_list in hyperparams_dicts_list_list:
 
 
         file_name = os.path.split(hyperparam_dicts_list)[-1]
+
         if args.hyperparam in file_name:
             index_hyperparams.append(file_name.split('_MAGIC')[0])
             f = open(hyperparam_dicts_list)
             dict_list = json.load(f)
             beta.append(dict_list[0]["beta"])
             l.append(dict_list[0]["l"])
+            ablation_or_not.append(file_name.split('_MAGIC')[1])
             # also append beta! then just select based on args.hyperparam later!
+            # change hyperparams df with one column indicating split 
 
     hyperparams = pd.DataFrame([beta, l]).transpose()
 
     hyperparams = pd.concat([hyperparams, pd.Series(index_hyperparams)], axis=1)
 
-    hyperparams.columns = ["beta", "l", "timestamp"]
+    hyperparams = pd.concat([hyperparams, pd.Series(ablation_or_not)], axis=1)
 
-    #print("Hyperparams df: {}".format(hyperparams))
+    hyperparams.columns = ["beta", "l", "timestamp", "ablation_or_not"]
+
+    #print("Hyperparams df: {}".format(hyperparams[hyperparams["timestamp"].str.contains("0.132")]))
     #print("result_table df: {}".format(result_table))
 
     beta_val_value = hyperparams["beta"].mode()[0]
 
     l_val_value = hyperparams["l"].mode()[0]
 
+
+    if "beta" in args.hyperparam:
+
+        hyperparams = hyperparams[hyperparams["ablation_or_not"].str.contains("beta")]
+
+    else: 
+
+        hyperparams = hyperparams[hyperparams["ablation_or_not"].str.contains("l_test_ablation")]
+
+
     sweep_table = pd.merge(hyperparams, result_table, on='timestamp', how='left').\
             sort_values(args.hyperparam).\
-            drop(columns=["timestamp"]).\
+            drop(columns=["timestamp", "ablation_or_not"]).\
             rename(columns={"Mean_NLG_M":"Mean Score"})
     
+
     sweep_table.columns = sweep_table.columns.str.replace('_', ' ')
+
+    save_path_prefix = "../evaluation/plots/"
+
+    if "Clotho" in args.caption:
+        save_path_prefix += "Clotho_"
+
+    elif "AudioCaps" in args.caption:
+        save_path_prefix += "AudioCaps_"
+
+    else:
+        raise Exception("No known dataset selected")
+
+    if "validation" in args.caption:
+        val_or_not = "validation"
+
+    else:
+        val_or_not = ""
+
+    save_path = save_path_prefix + args.hyperparam + "_ablation_" + val_or_not + "plot.png"
 
     if args.hyperparam == "beta":
         sweep_table = sweep_table[sweep_table["l"] == l_val_value]
         sweep_table = sweep_table.drop_duplicates().drop(columns=["l", "Bleu 2", "Bleu 3"]) #.drop(columns=["l"])
 
-        if "validation" in args.caption:
-
-            save_path="../evaluation/plots/beta_ablation_validation_plot.png"
-
-        else:
-
-            save_path="../evaluation/plots/beta_ablation_plot.png"
 
         ablation_plot(sweep_table=sweep_table,
                     hyperparam=args.hyperparam,
@@ -139,16 +168,18 @@ if __name__ == '__main__':
             
 
     elif args.hyperparam == "l":
+
         sweep_table = sweep_table[sweep_table["beta"] == beta_val_value]
         sweep_table = sweep_table.drop_duplicates().drop(columns=["beta", "Bleu 2", "Bleu 3"])#, "Bleu_2", "Bleu_3"])
 
         ablation_plot(sweep_table=sweep_table,
                       hyperparam=args.hyperparam,
-                      save_path="../evaluation/plots/l_ablation_plot.png")
+                      save_path=save_path)
 
 
     latex_table = sweep_table.to_latex(index=False,
                                      caption=args.caption)
+    
     
     
     if "AudioCaps" in args.caption:
