@@ -39,10 +39,10 @@ pip3 install -r requirements.txt
 
 ### 3. Loading AudioCaps and Clotho data:
 #### a) AudioCaps:
-- Go to https://github.com/cdjkim/audiocaps/tree/master/dataset and download val.csv and test.csv
-- Put them into the folder: 
-- Put the AudioCaps files into the folder data/AudioCaps
+- Go to https://github.com/cdjkim/audiocaps/tree/master/dataset, download val.csv and test.csv and put them into data/AudioCaps/
 - Run process_AudioCaps.py to prepare the data 
+- Put the AudioCaps files into the folder data/AudioCaps: tar -xzf AudioCaps_data.tar.gz
+
 #### b) Clotho:
 b
 ****
