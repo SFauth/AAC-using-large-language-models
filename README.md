@@ -41,6 +41,7 @@ pip3 install -r requirements.txt
 #### a) AudioCaps:
 - Go to https://github.com/cdjkim/audiocaps/tree/master/dataset and download val.csv and test.csv
 - Put them into the folder: 
+- Put the AudioCaps files into the folder data/AudioCaps
 - Run process_AudioCaps.py to prepare the data 
 #### b) Clotho:
 b
