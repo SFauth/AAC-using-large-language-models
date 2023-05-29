@@ -14,7 +14,7 @@ Plugging Visual Controls in Text Generation]](https://arxiv.org/abs/2205.02655).
 * <a href='#introduction'>1. Introduction</a>
 * <a href='#environment_setup'>2. Environment Setup</a>
 * <a href='#data'>3. Loading AudioCaps and Clotho data</a>
-* <a href='#image_captioning'>5. Zero-Shot Image Captioning</a>
+* <a href='#clip_models'>4. Download audio CLIP models</a>
     * <a href='#image_captioning_experiment'>5.1. Implementation of Experiments</a>
     * <a href='#image_captioning_magic_search'>5.2. Example Usage of Magic Search</a> [![Open In Colab](https://colab.research.google.com/assets/colab-
 ****
@@ -51,13 +51,12 @@ pip3 install -r requirements.txt
 
 ****
 
-<span id='image_captioning'/>
+<span id='clip_models'/>
 
-### 5. Zero-Shot Image Captioning:
+### 4. Download audio CLIP models:
+- Navigate to assets
+- 
 
-<span id='image_captioning_experiment'/>
-- Go to https://github.com/cdjkim/audiocaps/tree/master/dataset, download val.csv and test.csv and put them into data/AudioCaps/
-- Run process_AudioCaps.py to prepare the data 
 #### 5.1. Implementation of Experiments: 
 To ensure the reproductity of our work, we provide all related resources to implement our experiments on the task of zero-shot image captioning. Please refer more details [[here]](https://github.com/yxuansu/MAGIC/tree/main/image_captioning). 
 
@@ -70,6 +69,9 @@ In the following, we illustrate how to perform zero-shot image captioning with m
 
 <span id='image_captioning_language_model'/>
 
+<span id='image_captioning_experiment'/>
+- Go to https://github.com/cdjkim/audiocaps/tree/master/dataset, download val.csv and test.csv and put them into data/AudioCaps/
+- Run process_AudioCaps.py to prepare the data 
 ##### 5.2.1. Load Language Model:
 We first load the language model as:
 ```python
