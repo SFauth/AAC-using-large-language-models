@@ -13,6 +13,7 @@ Plugging Visual Controls in Text Generation]](https://arxiv.org/abs/2205.02655).
 ## Catalogue:
 * <a href='#introduction'>1. Introduction</a>
 * <a href='#environment_setup'>2. Environment Setup</a>
+* <a href='#data'>3. Loading AudioCaps and Clotho data</a>
 * <a href='#image_captioning'>5. Zero-Shot Image Captioning</a>
     * <a href='#image_captioning_experiment'>5.1. Implementation of Experiments</a>
     * <a href='#image_captioning_magic_search'>5.2. Example Usage of Magic Search</a> [![Open In Colab](https://colab.research.google.com/assets/colab-
@@ -32,6 +33,17 @@ conda activate <ENV_NAME>
 pip3 install -r requirements.txt
 ```
 
+****
+
+<span id='data'/>
+
+### 3. Loading AudioCaps and Clotho data:
+#### a) AudioCaps:
+- Go to https://github.com/cdjkim/audiocaps/tree/master/dataset and download val.csv and test.csv
+- Put them into the folder: 
+- Run process_AudioCaps.py to prepare the data 
+#### b) Clotho:
+b
 ****
 
 <span id='image_captioning'/>
