@@ -26,8 +26,9 @@ Generative language models (LMs) such as GPT-2/3 can be prompted to generate tex
 <span id='environment_setup'/>
 
 ### 2. Environment Setup:
-```yaml
-python version: 3.8
+```
+conda create --name <ENV_NAME> python=3.7.1
+conda activate <ENV_NAME>
 pip3 install -r requirements.txt
 ```
 
