@@ -39,12 +39,16 @@ pip3 install -r requirements.txt
 
 ### 3. Loading AudioCaps and Clotho data:
 #### a) AudioCaps:
+- Navigate to softlinks
 - Unpack the directory containing the data: tar -xzf AudioCaps_data.tar.gz
-- Put the AudioCaps files into the folder softlinks/AudioCaps_data 
+- Make sure that the AudioCaps files are in the folder softlinks/AudioCaps_data
     
 
 #### b) Clotho:
-b
+- Download the evaluation, i.e. test data, of Clotho Version 2.1 (https://zenodo.org/record/4783391): clotho_audio_evalution.7z
+- Unpack clotho_audio_evalution.7z in the folder softlinks/evaluation_data_files
+
+
 ****
 
 <span id='image_captioning'/>
