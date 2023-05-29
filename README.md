@@ -39,9 +39,9 @@ pip3 install -r requirements.txt
 
 ### 3. Loading AudioCaps and Clotho data:
 #### a) AudioCaps:
-- Go to https://github.com/cdjkim/audiocaps/tree/master/dataset, download val.csv and test.csv and put them into data/AudioCaps/
-- Run process_AudioCaps.py to prepare the data 
-- Put the AudioCaps files into the folder data/AudioCaps: tar -xzf AudioCaps_data.tar.gz
+- Unpack the directory containing the data: tar -xzf AudioCaps_data.tar.gz
+- Put the AudioCaps files into the folder softlinks/AudioCaps_data 
+    
 
 #### b) Clotho:
 b
@@ -52,7 +52,8 @@ b
 ### 5. Zero-Shot Image Captioning:
 
 <span id='image_captioning_experiment'/>
-
+- Go to https://github.com/cdjkim/audiocaps/tree/master/dataset, download val.csv and test.csv and put them into data/AudioCaps/
+- Run process_AudioCaps.py to prepare the data 
 #### 5.1. Implementation of Experiments: 
 To ensure the reproductity of our work, we provide all related resources to implement our experiments on the task of zero-shot image captioning. Please refer more details [[here]](https://github.com/yxuansu/MAGIC/tree/main/image_captioning). 
 
