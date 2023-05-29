@@ -10,6 +10,8 @@ import argparse
 import numpy as np
 import torch.nn.functional as F
 from torch.nn import CrossEntropyLoss
+from accelerate import init_empty_weights, load_checkpoint_and_dispatch, infer_auto_device_map
+from huggingface_hub import hf_hub_download
 
 try:
     from language_model.loss_func import contrastive_loss
@@ -42,13 +44,23 @@ class SimCTG(nn.Module):
             print ('eos token is {}, eos token id is {}'.format(self.eos_token, self.eos_token_id))
             self.model = GPT2LMHeadModel.from_pretrained(model_name) # GPT2LMHeadModel vs. GPT2Model??
 
-        elif model_name == "facebook/opt-1.3b":
+        elif "facebook" in model_name:
             from transformers import AutoModelForCausalLM
             self.tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=False)
             self.eos_token, self.eos_token_id = self.tokenizer.bos_token, self.tokenizer.bos_token_id
             print ('eos token is {}, eos token id is {}'.format(self.eos_token, self.eos_token_id))
             self.model = AutoModelForCausalLM.from_pretrained(model_name)
-
+            """
+            weights_location = hf_hub_download(repo_id=model_name, filename="pytorch_model.bin")
+            #config = AutoConfig.from_pretrained(model_name)
+            
+            with init_empty_weights():
+                #model = AutoModelForCausalLM.from_config(config)
+                model = AutoModelForCausalLM.from_pretrained(model_name)
+            device_map = infer_auto_device_map(model, max_memory={0:'2GiB', 1:'11GiB', 2:'11GiB', 3:'11GiB', 4:'11GiB'}) 
+            #self.model=AutoModelForCausalLM.from_pretrained(model_name, device_map='balanced_low_0', max_memory={0:'11GiB', 1:'11GiB', 2:'11GiB', 3:'11GiB', 4:'11GiB'})
+            self.model = load_checkpoint_and_dispatch(model, weights_location, device_map=device_map)
+            """
         self.vocab_size = len(self.tokenizer)
         print ('Resizing model embedding...')
         self.model.resize_token_embeddings(len(self.tokenizer)) 
@@ -156,8 +168,8 @@ class SimCTG(nn.Module):
 
 
     @torch.no_grad()
-    def magic_search(self, input_ids, beam_width, alpha, decoding_len, beta, sound_instance, clip, 
-        clip_text_max_len, include_prompt_magic):#, add_token_level_score=False):
+    def magic_search(self, input_ids, beam_width, alpha, decoding_len, beta, audio_embeds, clip, 
+        clip_text_max_len, include_prompt_magic, end_penalty):#, add_token_level_score=False):
 
         """
         Vanilla magic search
@@ -171,7 +183,7 @@ class SimCTG(nn.Module):
 
         input_ids_for_class = input_ids.clone()
 
-        image_embeds = clip.compute_image_representation_from_image_instance(sound_instance)
+        image_embeds = audio_embeds
 
         start_time = datetime.datetime.now()
 
@@ -179,14 +191,12 @@ class SimCTG(nn.Module):
         # to support longer generated length, you can re-train the SimCTG model with longer sequences
         decoding_len = decoding_len - prefix_len # maximum length of (prefix + generated continuation) - prefix = max length that can be generated
 
-        unsoftmaxed_cos_sims = []
-
         break_tokens = ". ! ?"
 
         break_tokens = self.tokenizer.encode(break_tokens, return_tensors='pt').to("cuda") # specify break_tokens
 
         for step in range(decoding_len): # model takes sos and prompt as input and produces next word 
-            input_ids, past_key_values, last_hidden_states, logits, input_ids_for_class, var_magic_scores, var_model_conf = \
+            input_ids, past_key_values, last_hidden_states, logits, input_ids_for_class = \
             PlugAndPlayContrastiveDecodingOneStepFast(
                 self.model, 
                 input_ids, 
@@ -203,12 +213,16 @@ class SimCTG(nn.Module):
                 logits,
                 first_step=step==0,
                 input_ids_for_class=input_ids_for_class,
-                include_prompt_magic=include_prompt_magic
+                include_prompt_magic=include_prompt_magic,
+                step=step,
+                end_penalty=end_penalty
             )
+            # somehow penalize generation of break tokens and sos
             
             if input_ids is not None and input_ids in break_tokens:
                 print( f"Stopped after {step} tokens")
                 break
+                
 
             #unsoftmaxed_cos_sims.append(unsoftmaxed_cos_sim)
 
@@ -216,7 +230,7 @@ class SimCTG(nn.Module):
         time_diff = (end_time - start_time)
         execution_time = time_diff.total_seconds() * 1000
 
-        return self.parse_output_token_list(input_ids_for_class[0]), var_magic_scores, var_model_conf # [0] to squeeze the tensor
+        return self.parse_output_token_list(input_ids_for_class[0]) # [0] to squeeze the tensor
     
     @torch.no_grad()
     def magic_search_gt_captions(self, input_ids, beam_width, alpha, decoding_len, beta, gt_captions, clip, 

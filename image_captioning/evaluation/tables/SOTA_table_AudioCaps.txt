@@ -1,0 +1,13 @@
+\begin{table}
+\centering
+\caption{SOTA Table on AudioCaps}
+\begin{tabular}{lllrrrrrrrrr}
+\toprule
+MAGIC &     Audio Model &    Keywords &  Bleu 1 &  Bleu 2 &  Bleu 3 &  Bleu 4 &  METEOR &  ROUGE L &  CIDEr &  SPICE &  SPIDEr \\
+   On &               - &           - &    18.8 &     1.1 &     0.0 &     0.0 &     4.1 &     17.8 &    0.1 &    0.0 &     0.0 \\
+\midrule
+   On &         WavCaps & AudioSet KW &    44.5 &    25.1 &    14.0 &     6.7 &    12.3 &     33.2 &   29.1 &    8.5 &    18.8 \\
+  Off & Supervised SOTA &           - &    70.7 &    53.4 &    39.5 &    28.9 &    25.0 &     50.7 &   78.7 &   18.2 &    48.5 \\
+\bottomrule
+\end{tabular}
+\end{table}

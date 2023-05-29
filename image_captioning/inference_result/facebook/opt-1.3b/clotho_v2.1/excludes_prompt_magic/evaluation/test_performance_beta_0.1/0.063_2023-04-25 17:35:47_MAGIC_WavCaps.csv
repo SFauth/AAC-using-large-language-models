@@ -1,0 +1,2 @@
+Dataset,Model,Mean_NLG_M,Bleu_1,Bleu_2,Bleu_3,Bleu_4,METEOR,ROUGE_L,CIDEr,SPICE,SPIDEr
+clotho,MAGIC_WavCaps,0.063,0.216,0.06,0.02,0.006,0.052,0.18,0.014,0.011,0.012

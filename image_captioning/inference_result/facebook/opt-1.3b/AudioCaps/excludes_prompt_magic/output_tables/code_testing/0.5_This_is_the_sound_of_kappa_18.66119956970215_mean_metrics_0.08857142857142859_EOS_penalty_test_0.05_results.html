@@ -1,0 +1,431 @@
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Mean_NLG_M</th>
+      <th>Bleu_1</th>
+      <th>Bleu_2</th>
+      <th>Bleu_3</th>
+      <th>Bleu_4</th>
+      <th>METEOR</th>
+      <th>ROUGE_L</th>
+      <th>CIDEr</th>
+      <th>pred</th>
+      <th>GT_captions</th>
+      <th>sim(pred, audio)</th>
+      <th>sim(GT_caption_i, audio)</th>
+      <th>sim(GT_caption_i, GT_caption_j, pred]) , while j!=i</th>
+      <th>Audio</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0.089</td>
+      <td>0.180</td>
+      <td>0.070</td>
+      <td>0.020</td>
+      <td>0.000</td>
+      <td>0.110</td>
+      <td>0.190</td>
+      <td>0.050</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>0</th>
+      <td>NaN</td>
+      <td>0.250</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.174</td>
+      <td>0.137</td>
+      <td>0.040</td>
+      <td>thousands of people cheering and applauding. I think it's a rooster.</td>
+      <td>A large crowd cheers and applauds<br>An audience screams and gives applause<br>Continuous applause and cheering<br>An audience screams and gives applause<br>An audience cheers</td>
+      <td>0.454</td>
+      <td>0.559<br>0.527<br>0.541<br>0.527<br>0.541</td>
+      <td>1.0 0.83 0.86 0.83 0.84 0.69 <br> 0.83 1.0 0.91 1.0 0.9 0.68 <br> 0.86 0.91 1.0 0.91 0.94 0.69 <br> 0.83 1.0 0.91 1.0 0.9 0.68 <br> 0.84 0.9 0.94 0.9 1.0 0.66 <br> 0.69 0.68 0.69 0.68 0.66 1.0 <br></td>
+      <td><audio controls> <source src="../../../../../../softlinks_to_wav/AudioCaps_data/rqfQRErjfk8_170000.wav" type="audio/wav"> </audio></td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>NaN</td>
+      <td>0.067</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.024</td>
+      <td>0.083</td>
+      <td>0.000</td>
+      <td>a party going on. We heard a laughing voice. We heard a voice that said</td>
+      <td>Popping and crackling repeats as men yell and laugh<br>A vehicle is running and crackling and popping as people laugh<br>People yell and laugh as a motor sputters and pops<br>Men screeching and shouting while a vehicle is revving and backfiring loudly<br>People yell and laugh as a vehicle approaches and sputters</td>
+      <td>0.401</td>
+      <td>0.428<br>0.492<br>0.543<br>0.421<br>0.529</td>
+      <td>1.0 0.72 0.64 0.46 0.53 0.36 <br> 0.72 1.0 0.69 0.4 0.59 0.31 <br> 0.64 0.69 1.0 0.5 0.83 0.51 <br> 0.46 0.4 0.5 1.0 0.59 0.2 <br> 0.53 0.59 0.83 0.59 1.0 0.46 <br> 0.36 0.31 0.51 0.2 0.46 1.0 <br></td>
+      <td><audio controls> <source src="../../../../../../softlinks_to_wav/AudioCaps_data/rqu8iB22I_Y_5000.wav" type="audio/wav"> </audio></td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>NaN</td>
+      <td>0.083</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.030</td>
+      <td>0.127</td>
+      <td>0.000</td>
+      <td>a sewing machine. I'm pretty sure it's a sewing machine.</td>
+      <td>An engine idles consistently before sputtering some<br>A motorcycle engine is idling<br>A sputtering motor idles roughly<br>Sputtering and clanking of an idling powerful engine<br>An engine is idling while people speak</td>
+      <td>0.483</td>
+      <td>0.450<br>0.521<br>0.454<br>0.480<br>0.358</td>
+      <td>1.0 0.62 0.73 0.7 0.43 0.42 <br> 0.62 1.0 0.62 0.61 0.53 0.43 <br> 0.73 0.62 1.0 0.82 0.26 0.38 <br> 0.7 0.61 0.82 1.0 0.34 0.32 <br> 0.43 0.53 0.26 0.34 1.0 0.36 <br> 0.42 0.43 0.38 0.32 0.36 1.0 <br></td>
+      <td><audio controls> <source src="../../../../../../softlinks_to_wav/AudioCaps_data/rwT__ERCUno_90000.wav" type="audio/wav"> </audio></td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>NaN</td>
+      <td>0.231</td>
+      <td>0.136</td>
+      <td>0.092</td>
+      <td>0.000</td>
+      <td>0.200</td>
+      <td>0.260</td>
+      <td>0.032</td>
+      <td>lush, Fill (with liquid), and a Bathtub (filling or washing). This is the sound of a toilet flushing, filling, or washing. We</td>
+      <td>A toilet flushes quickly<br>A toilet flushes loudly and water runs down through the toilet and then gurgles at the bottom<br>A toilet flushes and water drains<br>A loud rumble followed by a toilet flushing<br>A toilet flushes and water drains</td>
+      <td>0.449</td>
+      <td>0.512<br>0.532<br>0.524<br>0.458<br>0.524</td>
+      <td>1.0 0.78 0.86 0.69 0.86 0.77 <br> 0.78 1.0 0.85 0.77 0.85 0.73 <br> 0.86 0.85 1.0 0.81 1.0 0.74 <br> 0.69 0.77 0.81 1.0 0.81 0.62 <br> 0.86 0.85 1.0 0.81 1.0 0.74 <br> 0.77 0.73 0.74 0.62 0.74 1.0 <br></td>
+      <td><audio controls> <source src="../../../../../../softlinks_to_wav/AudioCaps_data/rwb6PSAee5Y_60000.wav" type="audio/wav"> </audio></td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>NaN</td>
+      <td>0.187</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.064</td>
+      <td>0.188</td>
+      <td>0.000</td>
+      <td>a human being being sprayed with a hose. I'm pretty sure it's a bus.</td>
+      <td>Distant men speak as a spray can nozzle is depressed<br>While a man talks in the distance, a sprayer sprays multiple times<br>Intermittent spraying is accompanied by men speaking<br>A spray hisses followed by a man speaking and low rumbling in the background<br>A person sprays liquid onto a hard surface as a man speaks and vehicles pass by</td>
+      <td>0.514</td>
+      <td>0.523<br>0.526<br>0.467<br>0.503<br>0.507</td>
+      <td>1.0 0.74 0.59 0.63 0.57 0.51 <br> 0.74 1.0 0.71 0.6 0.73 0.66 <br> 0.59 0.71 1.0 0.74 0.69 0.55 <br> 0.63 0.6 0.74 1.0 0.67 0.59 <br> 0.57 0.73 0.69 0.67 1.0 0.65 <br> 0.51 0.66 0.55 0.59 0.65 1.0 <br></td>
+      <td><audio controls> <source src="../../../../../../softlinks_to_wav/AudioCaps_data/rwtmaKiCcQU_30000.wav" type="audio/wav"> </audio></td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>NaN</td>
+      <td>0.154</td>
+      <td>0.113</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.185</td>
+      <td>0.226</td>
+      <td>0.032</td>
+      <td>a man speaking. We heard a man speaking. We heard a man speaking.</td>
+      <td>A man speaks as crickets sing<br>A man speaks as crickets sing<br>A man speaks as crickets sing<br>A man speaks as crickets sing<br>Insects chirp and men speak</td>
+      <td>0.350</td>
+      <td>0.529<br>0.529<br>0.529<br>0.529<br>0.514</td>
+      <td>1.0 1.0 1.0 1.0 0.8 0.47 <br> 1.0 1.0 1.0 1.0 0.8 0.47 <br> 1.0 1.0 1.0 1.0 0.8 0.47 <br> 1.0 1.0 1.0 1.0 0.8 0.47 <br> 0.8 0.8 0.8 0.8 1.0 0.42 <br> 0.47 0.47 0.47 0.47 0.42 1.0 <br></td>
+      <td><audio controls> <source src="../../../../../../softlinks_to_wav/AudioCaps_data/ryFDPxgDOGc_570000.wav" type="audio/wav"> </audio></td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>NaN</td>
+      <td>0.200</td>
+      <td>0.120</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.153</td>
+      <td>0.262</td>
+      <td>0.017</td>
+      <td>a man speaking, but it is not a man speaking. We heard a man speaking,</td>
+      <td>Several insects fly while two men talk<br>Insects buzz and men speak<br>Many insects are buzzing as a man are speaking<br>Insects buzz as men speak<br>Insects buzz around and men talk</td>
+      <td>0.294</td>
+      <td>0.565<br>0.584<br>0.540<br>0.571<br>0.571</td>
+      <td>1.0 0.88 0.82 0.88 0.89 0.33 <br> 0.88 1.0 0.87 0.94 0.95 0.35 <br> 0.82 0.87 1.0 0.9 0.84 0.34 <br> 0.88 0.94 0.9 1.0 0.92 0.37 <br> 0.89 0.95 0.84 0.92 1.0 0.34 <br> 0.33 0.35 0.34 0.37 0.34 1.0 <br></td>
+      <td><audio controls> <source src="../../../../../../softlinks_to_wav/AudioCaps_data/s-T9OVOiMLo_330000.wav" type="audio/wav"> </audio></td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>NaN</td>
+      <td>0.207</td>
+      <td>0.086</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.203</td>
+      <td>0.130</td>
+      <td>0.001</td>
+      <td>fic noise, roadway noise, Motor vehicle (road), and a Vehicle. This is the sound of a vehicle moving through the city. We heard a vehicle’s engine</td>
+      <td>A truck engine accelerates as wind blows<br>Vehicle pass by on a road<br>A vehicle accelerates as road noise occurs<br>A car drives along a busy road, other cars drive as well<br>Vehicles pass by on a road</td>
+      <td>0.479</td>
+      <td>0.371<br>0.526<br>0.454<br>0.535<br>0.554</td>
+      <td>1.0 0.48 0.59 0.36 0.48 0.31 <br> 0.48 1.0 0.72 0.62 0.94 0.69 <br> 0.59 0.72 1.0 0.65 0.69 0.65 <br> 0.36 0.62 0.65 1.0 0.67 0.68 <br> 0.48 0.94 0.69 0.67 1.0 0.71 <br> 0.31 0.69 0.65 0.68 0.71 1.0 <br></td>
+      <td><audio controls> <source src="../../../../../../softlinks_to_wav/AudioCaps_data/s3W19T14v1g_40000.wav" type="audio/wav"> </audio></td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>NaN</td>
+      <td>0.143</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.077</td>
+      <td>0.203</td>
+      <td>0.000</td>
+      <td>a conversation between two people. The Conversation is a speech synthesizer that can be</td>
+      <td>A man talks followed by a woman shouting<br>A man speaks as water overflows making a hiss noise and a woman yells<br>A man speaks then a woman yells<br>A man speaks then a woman panics<br>An adult man speaks and a woman exclaims nervously</td>
+      <td>0.424</td>
+      <td>0.502<br>0.431<br>0.502<br>0.337<br>0.366</td>
+      <td>1.0 0.66 0.94 0.68 0.54 0.47 <br> 0.66 1.0 0.59 0.37 0.37 0.26 <br> 0.94 0.59 1.0 0.71 0.54 0.42 <br> 0.68 0.37 0.71 1.0 0.6 0.34 <br> 0.54 0.37 0.54 0.6 1.0 0.3 <br> 0.47 0.26 0.42 0.34 0.3 1.0 <br></td>
+      <td><audio controls> <source src="../../../../../../softlinks_to_wav/AudioCaps_data/s3cT_DAj31g_80000.wav" type="audio/wav"> </audio></td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>NaN</td>
+      <td>0.296</td>
+      <td>0.107</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.165</td>
+      <td>0.205</td>
+      <td>0.002</td>
+      <td>fic noise, roadway noise, Engine, and a Vehicle. This is the sound of a vehicle driving by. We heard a vehicle driving by. We heard a vehicle</td>
+      <td>A motor vehicle roars, drowning out people speaking in the background<br>Water rushes and then a vehicle zooms past<br>Water rushes by followed by a motorcycle zooming by in the distance<br>A motor vehicle accelerate<br>A vehicle with a diesel engine accelerates</td>
+      <td>0.428</td>
+      <td>0.512<br>0.444<br>0.438<br>0.410<br>0.365</td>
+      <td>1.0 0.36 0.32 0.51 0.43 0.6 <br> 0.36 1.0 0.74 0.54 0.39 0.42 <br> 0.32 0.74 1.0 0.5 0.3 0.41 <br> 0.51 0.54 0.5 1.0 0.68 0.58 <br> 0.43 0.39 0.3 0.68 1.0 0.4 <br> 0.6 0.42 0.41 0.58 0.4 1.0 <br></td>
+      <td><audio controls> <source src="../../../../../../softlinks_to_wav/AudioCaps_data/s4Uz1Ffgo04_100000.wav" type="audio/wav"> </audio></td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>NaN</td>
+      <td>0.153</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.089</td>
+      <td>0.196</td>
+      <td>0.000</td>
+      <td>a battlecruiser dying. I think it's a frigate. I think it</td>
+      <td>A motor runs and stops, and animals squawk and croak<br>Submachine gun fire along with creature sound effects that continues after gunfire stops<br>Gunshots fire as a frog croaks<br>A motor sputters, animals croak, and a person exclaims<br>A motor runs choppily, followed by an animal croaking, and a person exclaiming</td>
+      <td>0.396</td>
+      <td>0.431<br>0.476<br>0.500<br>0.533<br>0.517</td>
+      <td>1.0 0.36 0.41 0.6 0.56 0.27 <br> 0.36 1.0 0.63 0.36 0.34 0.4 <br> 0.41 0.63 1.0 0.67 0.51 0.53 <br> 0.6 0.36 0.67 1.0 0.83 0.33 <br> 0.56 0.34 0.51 0.83 1.0 0.22 <br> 0.27 0.4 0.53 0.33 0.22 1.0 <br></td>
+      <td><audio controls> <source src="../../../../../../softlinks_to_wav/AudioCaps_data/s4tUs779vBA_160000.wav" type="audio/wav"> </audio></td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>NaN</td>
+      <td>0.182</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.049</td>
+      <td>0.231</td>
+      <td>0.000</td>
+      <td>a female voice, not a male voice. I'm not sure</td>
+      <td>Birds chirp in the background while a horse neighs followed by a girl speaking<br>A young woman speaks and then a horse neighs in the background<br>A horse neighs and a girl talks<br>A bird tweets, a horse whinnies, and a girl speaks<br>Birds chirp then a girl speaks and a horse neighs</td>
+      <td>0.352</td>
+      <td>0.632<br>0.572<br>0.622<br>0.618<br>0.603</td>
+      <td>1.0 0.73 0.81 0.92 0.97 0.35 <br> 0.73 1.0 0.81 0.72 0.72 0.43 <br> 0.81 0.81 1.0 0.83 0.78 0.36 <br> 0.92 0.72 0.83 1.0 0.92 0.31 <br> 0.97 0.72 0.78 0.92 1.0 0.37 <br> 0.35 0.43 0.36 0.31 0.37 1.0 <br></td>
+      <td><audio controls> <source src="../../../../../../softlinks_to_wav/AudioCaps_data/s59PfAghdkM_0.wav" type="audio/wav"> </audio></td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>NaN</td>
+      <td>0.056</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.052</td>
+      <td>0.092</td>
+      <td>0.000</td>
+      <td>the environment, just like the sound of a car engine. I don't think it's the sound</td>
+      <td>A soft wind underscores a woman laughing<br>Distant waters roar amid foreground jostling and a gasp<br>Water is gurgling in a tank<br>Water is gurgling in a tank<br>Water is gurgling in a tank</td>
+      <td>0.320</td>
+      <td>0.403<br>0.388<br>0.186<br>0.186<br>0.186</td>
+      <td>1.0 0.47 0.13 0.13 0.13 0.27 <br> 0.47 1.0 0.18 0.18 0.18 0.19 <br> 0.13 0.18 1.0 1.0 1.0 0.25 <br> 0.13 0.18 1.0 1.0 1.0 0.25 <br> 0.13 0.18 1.0 1.0 1.0 0.25 <br> 0.27 0.19 0.25 0.25 0.25 1.0 <br></td>
+      <td><audio controls> <source src="../../../../../../softlinks_to_wav/AudioCaps_data/s6DESzUTGjY_16000.wav" type="audio/wav"> </audio></td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>NaN</td>
+      <td>0.111</td>
+      <td>0.081</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.145</td>
+      <td>0.165</td>
+      <td>0.078</td>
+      <td>a train coming. I'm not sure if you're joking or not, but I'm pretty sure</td>
+      <td>Here comes the train and it starts to blow the horn and get close<br>A train horn sounds and railroad crossing ring<br>A train horn sounds and approaches as crossing bells ring<br>A horn is blown and increases in strength<br>A horn loudly blares</td>
+      <td>0.311</td>
+      <td>0.312<br>0.428<br>0.366<br>0.503<br>0.514</td>
+      <td>1.0 0.67 0.72 0.51 0.45 0.65 <br> 0.67 1.0 0.89 0.51 0.56 0.65 <br> 0.72 0.89 1.0 0.47 0.47 0.59 <br> 0.51 0.51 0.47 1.0 0.82 0.21 <br> 0.45 0.56 0.47 0.82 1.0 0.22 <br> 0.65 0.65 0.59 0.21 0.22 1.0 <br></td>
+      <td><audio controls> <source src="../../../../../../softlinks_to_wav/AudioCaps_data/s7knHCFW82w_30000.wav" type="audio/wav"> </audio></td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>NaN</td>
+      <td>0.154</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.036</td>
+      <td>0.188</td>
+      <td>0.000</td>
+      <td>a sleeping baby. We heard a baby crying. We heard a baby crying.</td>
+      <td>Young female child snoring and breathing deeply<br>A recorded voice speaks briefly as a man snores<br>A man snores loudly as a recorded voice speaks in the background<br>A person snores as birds chirp softly in the distance<br>Distant faint rustling and clattering with nearby wheezing and snoring</td>
+      <td>0.290</td>
+      <td>0.417<br>0.448<br>0.489<br>0.461<br>0.443</td>
+      <td>1.0 0.54 0.65 0.6 0.64 0.49 <br> 0.54 1.0 0.79 0.66 0.65 0.28 <br> 0.65 0.79 1.0 0.66 0.59 0.42 <br> 0.6 0.66 0.66 1.0 0.64 0.32 <br> 0.64 0.65 0.59 0.64 1.0 0.34 <br> 0.49 0.28 0.42 0.32 0.34 1.0 <br></td>
+      <td><audio controls> <source src="../../../../../../softlinks_to_wav/AudioCaps_data/sAam2NqGhLY_20000.wav" type="audio/wav"> </audio></td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>NaN</td>
+      <td>0.062</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.061</td>
+      <td>0.089</td>
+      <td>0.017</td>
+      <td>the story of the life of the man who was born in the year of the</td>
+      <td>Some men converse over an engine running<br>A motorcycle engine revs and a man speaks<br>A man speaks as a small engine revs<br>A motorcycle engine revs as a man speaks<br>A motorcycle engine runs and a man speaks</td>
+      <td>0.208</td>
+      <td>0.403<br>0.465<br>0.507<br>0.494<br>0.498</td>
+      <td>1.0 0.49 0.5 0.61 0.58 0.08 <br> 0.49 1.0 0.64 0.91 0.95 0.04 <br> 0.5 0.64 1.0 0.76 0.66 0.23 <br> 0.61 0.91 0.76 1.0 0.91 0.1 <br> 0.58 0.95 0.66 0.91 1.0 0.08 <br> 0.08 0.04 0.23 0.1 0.08 1.0 <br></td>
+      <td><audio controls> <source src="../../../../../../softlinks_to_wav/AudioCaps_data/sC_i_y7QS1U_300000.wav" type="audio/wav"> </audio></td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>NaN</td>
+      <td>0.462</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.282</td>
+      <td>0.376</td>
+      <td>0.214</td>
+      <td>Clock, Tick-tock, and a Tick. The sound of the clock ticking is a</td>
+      <td>A consistent ticking pattern<br>A clock ticktocks continuously<br>A repeated ticking<br>The ticktock of a clock arm repeatedly moving back and forth<br>A clock ticktocks</td>
+      <td>0.488</td>
+      <td>0.541<br>0.551<br>0.527<br>0.494<br>0.524</td>
+      <td>1.0 0.85 0.9 0.76 0.79 0.82 <br> 0.85 1.0 0.89 0.74 0.96 0.83 <br> 0.9 0.89 1.0 0.73 0.87 0.82 <br> 0.76 0.74 0.73 1.0 0.67 0.79 <br> 0.79 0.96 0.87 0.67 1.0 0.84 <br> 0.82 0.83 0.82 0.79 0.84 1.0 <br></td>
+      <td><audio controls> <source src="../../../../../../softlinks_to_wav/AudioCaps_data/sCeWURVHfOM_30000.wav" type="audio/wav"> </audio></td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>NaN</td>
+      <td>0.143</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.085</td>
+      <td>0.203</td>
+      <td>0.012</td>
+      <td>a drunk person trying to get out of a bar. I think you're</td>
+      <td>Burping with men speaking<br>Someone burps and laughs before speaking<br>A person burping then laughs and speaks<br>Repeated burps are followed by a male speaking<br>A man burps, speaks, and burps again</td>
+      <td>0.382</td>
+      <td>0.498<br>0.465<br>0.479<br>0.543<br>0.576</td>
+      <td>1.0 0.69 0.69 0.8 0.8 0.36 <br> 0.69 1.0 0.92 0.72 0.74 0.27 <br> 0.69 0.92 1.0 0.77 0.82 0.28 <br> 0.8 0.72 0.77 1.0 0.88 0.29 <br> 0.8 0.74 0.82 0.88 1.0 0.36 <br> 0.36 0.27 0.28 0.29 0.36 1.0 <br></td>
+      <td><audio controls> <source src="../../../../../../softlinks_to_wav/AudioCaps_data/sCw3XnCos9s_50000.wav" type="audio/wav"> </audio></td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>NaN</td>
+      <td>0.364</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.166</td>
+      <td>0.336</td>
+      <td>0.202</td>
+      <td>the water. I'm pretty sure it's a wind. I</td>
+      <td>Water splashes and wind noise is made into a microphone<br>Water splashes and wind blows as birds chirp<br>The wind blares loudly against some clothing and water splashes in a river<br>Water splashes as wind noise takes place in a microphone<br>Water splashes and wind blows</td>
+      <td>0.511</td>
+      <td>0.463<br>0.464<br>0.488<br>0.538<br>0.526</td>
+      <td>1.0 0.54 0.6 0.78 0.62 0.75 <br> 0.54 1.0 0.46 0.69 0.76 0.55 <br> 0.6 0.46 1.0 0.69 0.55 0.58 <br> 0.78 0.69 0.69 1.0 0.83 0.75 <br> 0.62 0.76 0.55 0.83 1.0 0.66 <br> 0.75 0.55 0.58 0.75 0.66 1.0 <br></td>
+      <td><audio controls> <source src="../../../../../../softlinks_to_wav/AudioCaps_data/sDSppXIlJrs_27000.wav" type="audio/wav"> </audio></td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>NaN</td>
+      <td>0.222</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.161</td>
+      <td>0.236</td>
+      <td>0.160</td>
+      <td>the tires squealing, the vehicle is moving, and the environmental noise is the sound of the tires being</td>
+      <td>A race car approaches quickly and slows down squealing tires<br>A mechanical buzzing getting louder<br>A vehicle accelerates before slowing down and squealing tires<br>A race car approaches quickly squealing tires<br>A race car accelerates quickly before decelerating and squealing tires</td>
+      <td>0.547</td>
+      <td>0.495<br>0.281<br>0.475<br>0.508<br>0.472</td>
+      <td>1.0 0.23 0.78 0.93 0.9 0.43 <br> 0.23 1.0 0.29 0.2 0.25 0.21 <br> 0.78 0.29 1.0 0.73 0.8 0.54 <br> 0.93 0.2 0.73 1.0 0.91 0.52 <br> 0.9 0.25 0.8 0.91 1.0 0.49 <br> 0.43 0.21 0.54 0.52 0.49 1.0 <br></td>
+      <td><audio controls> <source src="../../../../../../softlinks_to_wav/AudioCaps_data/sEprKHm8Sj8_90000.wav" type="audio/wav"> </audio></td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>NaN</td>
+      <td>0.110</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.049</td>
+      <td>0.148</td>
+      <td>0.000</td>
+      <td>a scientist/engineer/mathematician/astronomer/physicist/</td>
+      <td>A man speaks while a machine runs before a smoke alarm beeps<br>A man speaks, followed by an electronic beep and another man speaking<br>A man speaks and a smoke alarm beeps<br>A man speaks then makes a device beep<br>A man speaks followed by a two beeps and another man speaking</td>
+      <td>0.222</td>
+      <td>0.499<br>0.516<br>0.472<br>0.515<br>0.485</td>
+      <td>1.0 0.66 0.9 0.72 0.67 0.23 <br> 0.66 1.0 0.72 0.92 0.95 0.35 <br> 0.9 0.72 1.0 0.76 0.73 0.33 <br> 0.72 0.92 0.76 1.0 0.89 0.32 <br> 0.67 0.95 0.73 0.89 1.0 0.34 <br> 0.23 0.35 0.33 0.32 0.34 1.0 <br></td>
+      <td><audio controls> <source src="../../../../../../softlinks_to_wav/AudioCaps_data/sG7TyPnFDR0_180000.wav" type="audio/wav"> </audio></td>
+    </tr>
+    <tr>
+      <th>21</th>
+      <td>NaN</td>
+      <td>0.231</td>
+      <td>0.139</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.108</td>
+      <td>0.231</td>
+      <td>0.296</td>
+      <td>the boat, it's not a race boat, it's a boat. I</td>
+      <td>A boat engine runs and wind blows while a man speaks and women scream<br>A boat runs and wind blows while a man speaks and women cheer<br>An engine buzzing with wind and brief speech<br>Humming of a motor with people screaming then a woman speaks as wind blows hard and water splashes<br>Girls scream and a man speaks as wind blows and a boat motor runs</td>
+      <td>0.484</td>
+      <td>0.610<br>0.575<br>0.409<br>0.645<br>0.580</td>
+      <td>1.0 0.88 0.49 0.85 0.92 0.58 <br> 0.88 1.0 0.47 0.72 0.83 0.55 <br> 0.49 0.47 1.0 0.42 0.38 0.45 <br> 0.85 0.72 0.42 1.0 0.84 0.48 <br> 0.92 0.83 0.38 0.84 1.0 0.55 <br> 0.58 0.55 0.45 0.48 0.55 1.0 <br></td>
+      <td><audio controls> <source src="../../../../../../softlinks_to_wav/AudioCaps_data/sGgBtiZY0U8_30000.wav" type="audio/wav"> </audio></td>
+    </tr>
+    <tr>
+      <th>22</th>
+      <td>NaN</td>
+      <td>0.056</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>0.017</td>
+      <td>0.075</td>
+      <td>0.000</td>
+      <td>the train coming in, and the sound of the train leaving. The noise of the train coming in</td>
+      <td>A person uses a saw to cut some wood<br>An engine rumbling followed by a mechanical buzzing<br>An engine revs loudly followed by some men talking and a saw cutting through metal<br>An engine idles continuously<br>An engine runs and people speak as cutting takes place</td>
+      <td>0.328</td>
+      <td>0.374<br>0.426<br>0.458<br>0.295<br>0.402</td>
+      <td>1.0 0.36 0.69 0.22 0.53 0.25 <br> 0.36 1.0 0.42 0.43 0.35 0.32 <br> 0.69 0.42 1.0 0.3 0.64 0.15 <br> 0.22 0.43 0.3 1.0 0.28 0.39 <br> 0.53 0.35 0.64 0.28 1.0 0.32 <br> 0.25 0.32 0.15 0.39 0.32 1.0 <br></td>
+      <td><audio controls> <source src="../../../../../../softlinks_to_wav/AudioCaps_data/sHbXC6na9hg_0.wav" type="audio/wav"> </audio></td>
+    </tr>
+  </tbody>
+</table>

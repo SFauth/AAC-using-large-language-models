@@ -1,0 +1,13 @@
+\begin{table}
+\centering
+\caption{SOTA Table on Clotho}
+\begin{tabular}{lllrrrrrrrrr}
+\toprule
+MAGIC &     Audio Model &    Keywords &  Bleu 1 &  Bleu 2 &  Bleu 3 &  Bleu 4 &  METEOR &  ROUGE L &  CIDEr &  SPICE &  SPIDEr \\
+   On &               - &           - &    18.6 &     2.8 &     0.0 &     0.0 &     3.8 &     16.6 &    0.2 &    0.1 &     0.2 \\
+\midrule
+   On &         WavCaps & AudioSet KW &    32.3 &    14.4 &     6.2 &     2.8 &     9.2 &     25.6 &   13.5 &    5.1 &     9.3 \\
+  Off & Supervised SOTA &           - &    60.1 &    40.0 &    27.1 &    18.2 &    18.5 &     40.0 &   48.8 &   13.5 &    31.0 \\
+\bottomrule
+\end{tabular}
+\end{table}

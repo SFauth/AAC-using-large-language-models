@@ -203,7 +203,11 @@ def plug_and_play_fast_ranking(
     alpha, 
     beta, 
     batch_class_score,
-    beam_width,  # choose k (=beam_width) candidates for being our best word
+    beam_width, # choose k (=beam_width) candidates for being our best word
+    top_k_ids,
+    tokenizer,
+    step,
+    end_penalty
 ):
     '''
         context_hidden: beam_width x context_len x embed_dim   ; for each word in every candidate's context get embedding vector
@@ -227,9 +231,34 @@ def plug_and_play_fast_ranking(
     #print(batch_class_score.view([beam_width]))
     #print("sum of magic scores: ")
     #print(torch.sum(batch_class_score.view([beam_width])))
+    
     scores = (1.0 - alpha) * next_top_k_probs - alpha * scores + beta * batch_class_score.view([beam_width])
-    scores = torch.stack(torch.split(scores, beam_width))
-    selected_idx = scores.max(dim=-1)[1]
+    scores = torch.stack(torch.split(scores, beam_width)).squeeze()
+
+    # Many tokens (high step), low penalty. Few tokens (low step), high penalty for EOS token or break tokens
+    # check if token is in list of [EOS, BREAK TOKENS]; if yes, decrease score!
+    scores_and_indices = scores.topk(next_top_k_ids.shape[1])
+    
+
+    top_k_tokens = torch.tensor([top_k_ids.squeeze()[index] for index in scores_and_indices.indices.squeeze()], device='cuda')
+    tokens_to_penalize = tokenizer.encode(". ! ?", return_tensors='pt').cuda().squeeze() # includes sos and eos in gpt2 and opt
+    base_penalty = 0
+    sequential_penalty = end_penalty
+    penalty =  base_penalty + sequential_penalty * step # penalty is a function of the step. The lower the step, the higher the penalty
+
+    penalized_scores = []
+    for k, token in enumerate(top_k_tokens):
+
+        if token in tokens_to_penalize:
+            #penalized_scores[k] = scores[k] * penalty
+            penalized_scores.append(scores[k] * penalty)
+
+        else:
+            penalized_scores.append(scores[k])
+
+    penalized_scores = torch.tensor(penalized_scores, device='cuda')
+
+    selected_idx = penalized_scores.max(dim=-1)[1]
     
     # save unsoftmaxed cos sim of every iteration and the respective untokenized bits
 
@@ -238,14 +267,11 @@ def plug_and_play_fast_ranking(
 
     # RETURN both var of batch_class_score and next_top_k_probs
 
-    var_magic_scores = batch_class_score.view([beam_width]).var()
-    var_model_conf = next_top_k_probs.var()
-
-    return selected_idx, var_magic_scores, var_model_conf
+    return selected_idx
 
 def PlugAndPlayContrastiveDecodingOneStepFast(model, input_ids, prefix_len, beam_width, alpha, beta, 
     simctg_tokenizer, image_embeds, clip, clip_text_max_len, past_key_values, last_hidden_states, 
-    logit_for_next_step, include_prompt_magic, first_step=False, input_ids_for_class=None):#, add_token_level_score=False):
+    logit_for_next_step, include_prompt_magic, step, end_penalty, first_step=False, input_ids_for_class=None):#, add_token_level_score=False):
     '''
         model: the generation model, e.g., gpt2
         input_ids: 1 x seqlen
@@ -296,7 +322,7 @@ def PlugAndPlayContrastiveDecodingOneStepFast(model, input_ids, prefix_len, beam
     batch_text_list = []
 
     if include_prompt_magic == "True":
-
+        # magic score is computed for the prompt + proposed_word 
         for one_input_id in input_ids_for_class_:
             one_text = simctg_tokenizer.decode(one_input_id)
             batch_text_list.append(one_text)
@@ -314,11 +340,25 @@ def PlugAndPlayContrastiveDecodingOneStepFast(model, input_ids, prefix_len, beam
             # we only consider the class score of the generated text continuation
             batch_text_list.append(one_text)
 
+    with torch.no_grad():
 
-    batch_score = clip.compute_image_text_similarity_via_raw_text(image_embeds, batch_text_list)
+        if "AudioCLIP" in str(type(clip)):
+            batch_text_list_ = [[candidate] for candidate in batch_text_list]
+            text_embeds = clip.encode_text(batch_text_list_)
+        
+        elif "CLAP" in str(type(clip)): 
+            text_embeds = clip.encode_text(batch_text_list, use_tensor=True).to('cuda' if torch.cuda.is_available() else 'cpu') 
+
+        else: 
+            text_embeds = clip.encode_text(batch_text_list)
+        
+    scaled_cos_sim = clip.logit_scale_a * torch.cosine_similarity(image_embeds, text_embeds)
+    scaled_cos_sim = torch.unsqueeze(scaled_cos_sim.t(), 0)
+    batch_score = scaled_cos_sim.softmax(dim=-1)
+
     # does CLAP get normalized? 
 
-    selected_idx, var_magic_scores, var_model_conf = plug_and_play_fast_ranking(  # does beam search
+    selected_idx = plug_and_play_fast_ranking(  # does beam search
         context_hidden, 
         next_hidden, 
         top_k_ids, 
@@ -327,6 +367,10 @@ def PlugAndPlayContrastiveDecodingOneStepFast(model, input_ids, prefix_len, beam
         beta, 
         batch_score,
         beam_width,
+        top_k_ids,
+        simctg_tokenizer,
+        step,
+        end_penalty
     )       
 
     # prepare for the next step
@@ -337,6 +381,6 @@ def PlugAndPlayContrastiveDecodingOneStepFast(model, input_ids, prefix_len, beam
     past_key_values = select_past_key_values(past_key_values, beam_width, selected_idx)
     logits = torch.stack(torch.split(logits, beam_width))[range(bsz), selected_idx, :]
     input_ids_for_class = torch.cat([input_ids_for_class, next_id], dim=-1)
-    return next_id, past_key_values, last_hidden_states, logits, input_ids_for_class, var_magic_scores, var_model_conf #, cos_sims_every_word
+    return next_id, past_key_values, last_hidden_states, logits, input_ids_for_class #, cos_sims_every_word
 
 

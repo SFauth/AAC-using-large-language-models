@@ -1,0 +1,35 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+pytorch = "*"
+numpy = "*"
+pillow = "*"
+librosa = "*"
+progressbar = "*"
+pandas = "*"
+tqdm = "*"
+scikit-learn = "*"
+ruamel = "*"
+absl-py = "*"
+pytest = "*"
+sacrebleu = "==1.4.10"
+six = "*"
+torchvision = "==0.7.0"
+transformers = "==4.7.0"
+pyyaml = "*"
+nltk = "*"
+sentencepiece = "*"
+spacy = "*"
+gdown = "*"
+seaborn = "*"
+matplotlib = "*"
+scikit-image = "*"
+ipdb = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.9"
