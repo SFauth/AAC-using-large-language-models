@@ -1,13 +1,9 @@
-## Language Models Can See: Plugging Visual Controls in Text Generation
-**Authors**: Yixuan Su, Tian Lan, Yahui Liu, Fangyu Liu, Dani Yogatama, Yan Wang, Lingpeng Kong, and Nigel Collier
+## Using large pre-trained language models for audio captionining
+**Author**: Stefan Fauth
 
 
-This repository contains code, models, and other related resources of our paper [[Language Models Can See:
-Plugging Visual Controls in Text Generation]](https://arxiv.org/abs/2205.02655).
-
-:star: If you are also interested in open-ended text generation and would like to see more details of our contrastive search decoding method, please refer to our SimCTG [[paper]](https://arxiv.org/abs/2202.06417) and [[repo]](https://github.com/yxuansu/SimCTG). 
-
-:star: [Replicate](https://replicate.com/home) has provided a great web [[demo]](https://replicate.com/yxuansu/magic/examples) of MAGIC that is super easy to use and to interact with. Check it out!
+This repository contains code, models, and other related resources of my master's thesis. It is based on the MAGIC paper [[Language Models Can See:
+Plugging Visual Controls in Text Generation]](https://arxiv.org/abs/2205.02655). I am grateful to the authors: Yixuan Su, Tian Lan, Yahui Liu, Fangyu Liu, Dani Yogatama, Yan Wang, Lingpeng Kong, and Nigel Collier.
 
 ****
 
@@ -16,71 +12,20 @@ Plugging Visual Controls in Text Generation]](https://arxiv.org/abs/2205.02655).
 ****
 ## Catalogue:
 * <a href='#introduction'>1. Introduction</a>
-* <a href='#news'>2. News</a>
-* <a href='#citation'>3. Citation</a>
-* <a href='#environment_setup'>4. Environment Setup</a>
+* <a href='#environment_setup'>2. Environment Setup</a>
 * <a href='#image_captioning'>5. Zero-Shot Image Captioning</a>
     * <a href='#image_captioning_experiment'>5.1. Implementation of Experiments</a>
-    * <a href='#image_captioning_magic_search'>5.2. Example Usage of Magic Search</a> [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1NDVkKpanbsaUwecHoRp_2kIpMztOFW25?usp=sharing)
-         * <a href='#image_captioning_language_model'>5.2.1. Load Language Model</a>
-         * <a href='#image_captioning_CLIP'>5.2.2. Load CLIP</a>
-         * <a href='#image_captioning_start_token'>5.2.3. Prepare Start Token</a>
-         * <a href='#image_captioning_load_image'>5.2.4. Load Image</a>
-         * <a href='#image_captioning_magic_search_result'>5.2.5. Zero-Shot Image Captioning with Magic Search</a>
-         * <a href='#image_captioning_reproduce_result'>5.2.6. Reproduce Our Results in the Paper</a>
-* <a href='#story_generation'>6. Visually Grounded Story Generation</a>
-    * <a href='#story_generation_experiment'>6.1. Implementation of Experiments</a>
-    * <a href='#story_generation_magic_search'>6.2. Example Usage of Magic Search</a> [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/19lyyMXDRNr-Op8vwUOiRmbhMxI_s3rwW?usp=sharing)
-         * <a href='#story_generation_language_model'>6.2.1. Load Language Model</a>
-         * <a href='#story_generation_CLIP'>6.2.2. Load CLIP</a>
-         * <a href='#story_generation_get_image'>6.3.2. Get the Related Image</a>
-              * <a href='#story_generation_get_image_from_index'>6.3.2.1. Retrieve from Image Index</a>
-              * <a href='#story_generation_get_image_from_example'>6.3.2.2. Directly Load Image</a>
-         * <a href='#story_generation_magic_search_result'>6.3.3. Visually Grounded Story Generation with Magic Search</a>
-         * <a href='#story_generation_reproduce_result'>6.3.4. Reproduce Our Results in the Paper</a>
-* <a href='#contact'>7. Contact</a>
-* <a href='#magic_elsewhere'>8. MAGIC Elsewhere</a>
-
+    * <a href='#image_captioning_magic_search'>5.2. Example Usage of Magic Search</a> [![Open In Colab](https://colab.research.google.com/assets/colab-
 ****
 
 <span id='introduction'/>
 
 ### 1. Introduction:
 Generative language models (LMs) such as GPT-2/3 can be prompted to generate text with remarkable quality. While they are designed for text-prompted generation, it remains an open question how the generation process could be guided by modalities beyond text such as images. In this work, we propose a training-free framework, called MAGIC (i<ins>**MA**</ins>ge-<ins>**G**</ins>uided text generat<ins>**I**</ins>on with <ins>**C**</ins>LIP), for plugging in visual controls in the generation process and enabling LMs to perform multimodal tasks (e.g., image captioning) in a zero-shot manner. MAGIC is a simple yet efficient plug-and-play framework, which directly combines an off-the-shelf LM (i.e., GPT-2) and an image-text matching model (i.e., CLIP) for image-grounded text generation. During decoding, MAGIC influences the generation of the LM by introducing a CLIP-induced score, called **_magic score_**, which regularizes the generated result to be semantically related to a given image while being coherent to the previously generated context. Notably, the proposed decoding scheme does not involve any gradient update operation, therefore being computationally efficient. On the challenging task of zero-shot image captioning, MAGIC outperforms the state-of-the-art method by notable margins with a nearly 27 times decoding speedup. MAGIC is a flexible framework and is theoretically compatible with any text generation tasks that incorporate image grounding. In the experiments, we showcase that it is also capable of performing visually grounded story generation given both an image and a text prompt.
-****
-
-<span id='news'/>
-
-### 2. News:
-* [2022/05/06] MAGIC is publicly released!
-****
-
-<span id='citation'/>
-
-### 3. Citation:
-If you find our paper and resources useful, please kindly leave a star and cite our papers. Thanks!
-
-```bibtex
-@article{su2022language,
-  title={Language Models Can See: Plugging Visual Controls in Text Generation},
-  author={Su, Yixuan and Lan, Tian and Liu, Yahui and Liu, Fangyu and Yogatama, Dani and Wang, Yan and Kong, Lingpeng and Collier, Nigel},
-  journal={arXiv preprint arXiv:2205.02655},
-  year={2022}
-}
-
-@article{su2022contrastive,
-  title={A Contrastive Framework for Neural Text Generation},
-  author={Su, Yixuan and Lan, Tian and Wang, Yan and Yogatama, Dani and Kong, Lingpeng and Collier, Nigel},
-  journal={arXiv preprint arXiv:2202.06417},
-  year={2022}
-}
-```
-
-****
 
 <span id='environment_setup'/>
 
-### 4. Environment Setup:
+### 2. Environment Setup:
 ```yaml
 python version: 3.8
 pip3 install -r requirements.txt
