@@ -1,9 +1,6 @@
 ## Source code
 In this directory, we provide an overview over each folder of the source code. 
 
-> ****  The structure of the directory looks like:
-
-    .
     ├──
         ├── ./data/  # Contains the keyword lists and preprocessing functions to create the JSONs combining file_name and corresponding GT captions
         ├── ./language_model/ # Stores the code of the language model
