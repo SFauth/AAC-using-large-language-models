@@ -124,9 +124,14 @@ CUDA_VISIBLE_DEVICES="1"
 |On | WavCaps | AudioSetKW+ChatGPT KW | MAGIC_WavCaps_AudioSet+ChatGPT_KW.sh | |
 
 ****
-### Detailed breakdown of an inference shell-script for future work:
+### Future work: how to exchange components of the system?
 
-It is structured as follows:
+In order to exchange components, we first provide a breakdown of an inference shell-script.
+#### Summary:
+1. How to exchange the hyperparameters that are not in the shell-script? 
+2. How to exchange the 
+
+
 ```
 CUDA_VISIBLE_DEVICES="1" python ../inference_magic.py\
     --language_model_code_path ../language_model/\  # folder-name of language model
@@ -146,6 +151,8 @@ CUDA_VISIBLE_DEVICES="1" python ../inference_magic.py\
     --path_to_AudioSet_keywords ../data/AudioSet/class_labels_indices.csv\     # specify path to AudioSet keyword list
     --path_to_ChatGPT_keywords ../data/sounding_objects/chatgpt_audio_tags.csv   # specify path to ChatGPT keyword list
 ```
+
+
 
 #### 5.1. Implementation of Experiments: 
 To ensure the reproductity of our work, we provide all related resources to implement our experiments on the task of zero-shot image captioning. Please refer more details [[here]](https://github.com/yxuansu/MAGIC/tree/main/image_captioning). 
