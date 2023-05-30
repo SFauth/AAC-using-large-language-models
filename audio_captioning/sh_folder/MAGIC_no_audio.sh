@@ -12,8 +12,4 @@ CUDA_VISIBLE_DEVICES="3" python ../inference_magic.py\
     --k 45\
     --save_name Baseline_LM_only\
     --include_prompt_magic False\
-    --experiment test_performance &&
-    
-    python "../evaluation/join_test_results.py"\
-    --result_files_path ../inference_result/facebook/opt-1.3b/\
-    --hyperparam_json_path ../inference_result/facebook/opt-1.3b/AudioCaps/excludes_prompt_magic/output_jsons/test_performance/
+    --experiment test_performance 
