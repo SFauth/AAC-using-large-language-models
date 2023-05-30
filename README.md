@@ -51,7 +51,9 @@ pip3 install -r requirements.txt
 ```
 ****
 <span id='data'/>
+
 ### 3. Data setup:
+
 The repo is constructed, such that the data to do inference on can be stored in another directory. In case, you already have AudioCaps and Clotho's evaluation data set loaded, it is enough to **specify the softlink** in the directory audio_captioning/softlinks and you can skip a) and b). If you do **not have it** yet and want to minimize the effort to run an experiment, just **follow a) and b)**
 
 - a) AudioCaps:
@@ -67,6 +69,7 @@ mv clotho_audio_evaluation.7z evaluation_data_files.7z
 7z x evaluation_data_files.7z
 ```
 ****
+
 ### 4. Audio CLIP Model setup:
 
 <span id='clip_models'/>
@@ -91,7 +94,9 @@ gdown 1il6X1EiUPlbyysM9hn2CYr-YRSCuSy2m
 
 ****
 <span id='run_inference'/>
+
 ### 5. Running inference:
+
 In the folder ``` audio_captioning/sh_folder ``` , there are two types of shell scripts. 
 - Type A: _search_audioCLIPmodel_keywords.sh_ (inference scripts)
 - Type B: _create_X.sh_ (visualization and table creating scripts)
