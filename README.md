@@ -181,7 +181,7 @@ https://github.com/SFauth/AACLM/blob/62e2c0a29c1e6a9efc4f7e4e7becf40104df7465/au
 <span id='contact'/>
 
 ### 7. Contact
-If you have any questions, feel free to contact me via (ys484 at cam.ac.uk).
+If there are still open questions, have a look at the dissertation or contact me at (SFauth@gmx.net).
 
 
 ****
