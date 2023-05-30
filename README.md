@@ -128,8 +128,18 @@ CUDA_VISIBLE_DEVICES="1"
 
 In order to exchange components, we first provide a breakdown of an inference shell-script.
 #### Summary:
-1. How to exchange the hyperparameters that are not in the shell-script? 
-2. How to exchange the 
+1. How to **exchange** the **hyperparameters** that are **not in** the **shell-script**. Go into 
+```
+audio_captioning/inference_magic.py
+```
+   and change the parameter, e.g. $\beta$ and $l$:
+
+- [beta](https://github.com/SFauth/AACLM/blob/d55733c5e74e67e4845c79f6616faf883b7b2069/audio_captioning/inference_magic.py#L218)
+- [number of keywords](https://github.com/SFauth/AACLM/blob/d55733c5e74e67e4845c79f6616faf883b7b2069/audio_captioning/inference_magic.py#L229)
+  
+   
+2. How to exchange the CLIP model?
+- adapt the 
 
 
 ```
