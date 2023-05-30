@@ -124,26 +124,27 @@ CUDA_VISIBLE_DEVICES="1"
 |On | WavCaps | AudioSetKW+ChatGPT KW | MAGIC_WavCaps_AudioSet+ChatGPT_KW.sh | |
 
 ****
-### Bonus: detailed breakdown of an inference shell-script for future work
+### Detailed breakdown of an inference shell-script for future work:
 
 It is structured as follows:
 ```
 CUDA_VISIBLE_DEVICES="1" python ../inference_magic.py\
-    --language_model_code_path ../language_model/\
-    --language_model_name facebook/opt-1.3b\     # name of the language model on HuggingFace
-    --audio_code_path ../clip/\
+    --language_model_code_path ../language_model/\  # folder-name of language model
+    --language_model_name facebook/opt-1.3b\     # name of the language model on HuggingFace to download checkpoint
+    --audio_code_path ../clip/\  # path to clip models' code
     --audio_pt_file ../clip/WavCaps/retrieval/assets/HTSAT-BERT-PT.pt\      # path to the pre-trained audio CLIP model's checkpoint
     --AudioCaps_inference_file_prefix ../softlinks/AudioCaps_data/\     # specify directory containing AudioCaps data 
     --clotho_inference_file_prefix ../softlinks/evaluation_data_files/\       # specify directory containing Clotho data 
     --GT_captions_AudioCaps ../data/AudioCaps/AudioCaps_test.json\       # replace with ../data/AudioCaps/AudioCaps_test.json if you want to use the validation set
     --GT_captions_clotho ../data/Clotho/clotho_v2.1_test.json\
-    --decoding_len 78\
-    --sample_rate 32000\
-    --k 45\
+    --decoding_len 78\     # user-defined decoding length in MAGIC search
+    --sample_rate 32000\   # sample_rate used for the audio
+    --k 45\    # number of candidate tokens to consider in MAGIC search
     --save_name MAGIC_WavCaps_AudioSet_KW\
     --include_prompt_magic False\
     --experiment test_performance\
-    --path_to_AudioSet_keywords ../data/AudioSet/class_labels_indices.csv     # specify path to keyword list
+    --path_to_AudioSet_keywords ../data/AudioSet/class_labels_indices.csv\     # specify path to AudioSet keyword list
+    --path_to_ChatGPT_keywords ../data/sounding_objects/chatgpt_audio_tags.csv   # specify path to ChatGPT keyword list
 ```
 
 #### 5.1. Implementation of Experiments: 
