@@ -14,7 +14,7 @@ Plugging Visual Controls in Text Generation]](https://arxiv.org/abs/2205.02655).
 * <a href='#introduction'>1. Introduction</a>
 * <a href='#environment_setup'>2. Environment Setup</a>
 * <a href='#data'>3. Loading AudioCaps and Clotho data</a>
-* <a href='#clip_models'>4. Download audio CLIP models</a>
+* <a href='#clip_models'>4. Audio CLIP Model setup</a>
     * <a href='#image_captioning_experiment'>5.1. Implementation of Experiments</a>
     * <a href='#image_captioning_magic_search'>5.2. Example Usage of Magic Search</a> [![Open In Colab](https://colab.research.google.com/assets/colab-
 ****
@@ -50,6 +50,7 @@ pip3 install -r requirements.txt
 ```
 ****
 ### 3. Data setup:
+<span id='data'/>
 The repo is constructed, such that the data to do inference on can be stored in another directory. In case, you already have AudioCaps and Clotho's evaluation data set loaded, it is enough to **specify the softlink** in the directory audio_captioning/softlinks and you can skip a) and b). If you do **not have it** yet and want to minimize the effort to run an experiment, just **follow a) and b)**
 
 - a) AudioCaps:
@@ -66,6 +67,9 @@ mv clotho_audio_evaluation.7z evaluation_data_files.7z
 ```
 ****
 ### 4. Audio CLIP Model setup:
+
+<span id='clip_models'/>
+
 Set up the pre-trained audio CLIP model's checkpoint. If you only want to use the best audio CLIP model, skip a) and b):
 
 - a) For AudioCLIP:
@@ -120,12 +124,10 @@ CUDA_VISIBLE_DEVICES="1"
 
 
 
-<span id='data'/>
 
 
 ****
 
-<span id='clip_models'/>
 
 ### 4. Prepare audio CLIP models:
 
