@@ -148,32 +148,21 @@ audio_captioning/inference_magic.py
 - [number of keywords](https://github.com/SFauth/AACLM/blob/d55733c5e74e67e4845c79f6616faf883b7b2069/audio_captioning/inference_magic.py#L229)
   
    
-2. How to exchange the language model with another model from HuggingFace?
+2. How to **exchange** the **language model** with another model from HuggingFace?
 Note that this may vary, depending on the model.
 - change in the corresponding shell-script the flag _language_model_name_ according to the model name on Huggingface, e.g. GPT2
 - if necessary, adapt the snippet:
 [https://github.com/SFauth/AACLM/blob/557f433fe7f7b369df23f156113b15cfa6b670ca/audio_captioning/language_model/simctg.py#L48-L52](https://github.com/SFauth/AACLM/blob/557f433fe7f7b369df23f156113b15cfa6b670ca/audio_captioning/language_model/simctg.py#L48-L52)
 
-```
-CUDA_VISIBLE_DEVICES="1" python ../inference_magic.py\
-    --language_model_code_path ../language_model/\  # folder-name of language model
-    --language_model_name facebook/opt-1.3b\     # name of the language model on HuggingFace to download checkpoint
-    --audio_code_path ../clip/\  # path to clip models' code
-    --audio_pt_file ../clip/WavCaps/retrieval/assets/HTSAT-BERT-PT.pt\      # path to the pre-trained audio CLIP model's checkpoint
-    --AudioCaps_inference_file_prefix ../softlinks/AudioCaps_data/\     # specify directory containing AudioCaps data 
-    --clotho_inference_file_prefix ../softlinks/evaluation_data_files/\       # specify directory containing Clotho data 
-    --GT_captions_AudioCaps ../data/AudioCaps/AudioCaps_test.json\       # replace with ../data/AudioCaps/AudioCaps_test.json if you want to use the validation set
-    --GT_captions_clotho ../data/Clotho/clotho_v2.1_test.json\
-    --decoding_len 78\     # user-defined decoding length in MAGIC search
-    --sample_rate 32000\   # sample_rate used for the audio
-    --k 45\    # number of candidate tokens to consider in MAGIC search
-    --save_name MAGIC_WavCaps_AudioSet_KW\
-    --include_prompt_magic False\
-    --experiment test_performance\
-    --path_to_AudioSet_keywords ../data/AudioSet/class_labels_indices.csv\     # specify path to AudioSet keyword list
-    --path_to_ChatGPT_keywords ../data/sounding_objects/chatgpt_audio_tags.csv   # specify path to ChatGPT keyword list
-```
+3. How to **exchange** the **audio CLIP** model? 
+Replicate the code for the other audio CLIP models
+- add a preprocessing function to: https://github.com/SFauth/AACLM/blob/62e2c0a29c1e6a9efc4f7e4e7becf40104df7465/audio_captioning/clip/audio_preprocessors.py 
+- create a model loading function: https://github.com/SFauth/AACLM/blob/62e2c0a29c1e6a9efc4f7e4e7becf40104df7465/audio_captioning/clip/load_clip_model.py
+- add an elif condition for the new model: https://github.com/SFauth/AACLM/blob/62e2c0a29c1e6a9efc4f7e4e7becf40104df7465/audio_captioning/inference_magic.py#L126-L135
+- specify in the corresponding shell-script the path to the model's checkpoint: https://github.com/SFauth/AACLM/blob/62e2c0a29c1e6a9efc4f7e4e7becf40104df7465/audio_captioning/sh_folder/MAGIC_WavCaps_AudioSet_KW.sh#L5
 
+4. **Explanation** of every **flag**:
+https://github.com/SFauth/AACLM/blob/62e2c0a29c1e6a9efc4f7e4e7becf40104df7465/audio_captioning/inference_magic.py#L32-L57
 
 
 #### 5.1. Implementation of Experiments: 
