@@ -134,6 +134,11 @@ CUDA_VISIBLE_DEVICES="1"
 |On | WavCaps | AudioSetKW | MAGIC_WavCaps_AudioSet_KW.sh | Best Model|
 |On | WavCaps | AudioSetKW+ChatGPT KW | MAGIC_WavCaps_AudioSet+ChatGPT_KW.sh | |
 
+There are three files to analyze the results of a run with a dataset, which are stored in the folder specifying the language model. A run is uniquely identified by its time suffix.
+1. evaluation: A table containing the NLG metrics of the run: https://github.com/SFauth/AACLM/blob/62e2c0a29c1e6a9efc4f7e4e7becf40104df7465/audio_captioning/inference_result/facebook/opt-1.3b/AudioCaps/excludes_prompt_magic/evaluation/test_performance_beta_0.1/0.214_2023-04-25%2017%3A46%3A36_MAGIC_WavCaps_AudioSet_KW.csv
+2. output_tables: An HTML table containing the audio clip and sample-level results (NLG metrics, cosine similarities with the audio of the prediction, the prediction, ...). Run the HTML file
+3. output_jsons: A list of dictionaries containing the prediction for every sample and all hyperparameters
+
 ****
 <span id='future_work'/>
 
