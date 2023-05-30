@@ -1,8 +1,8 @@
-## Using large pre-trained language models for audio captionining
+## Using large pre-trained language models for audio captioning
 **Author**: Stefan Fauth
 
 
-This repository contains code, models, and other related resources of my master's thesis. It is based on the MAGIC paper [[Language Models Can See:
+This repository contains code, models, and other related resources of my master's thesis. The repo is based on the MAGIC paper [[Language Models Can See:
 Plugging Visual Controls in Text Generation]](https://arxiv.org/abs/2205.02655). I am grateful to the authors: Yixuan Su, Tian Lan, Yahui Liu, Fangyu Liu, Dani Yogatama, Yan Wang, Lingpeng Kong, and Nigel Collier.
 
 ****
@@ -27,7 +27,7 @@ Plugging Visual Controls in Text Generation]](https://arxiv.org/abs/2205.02655).
 <span id='introduction'/>
 
 ### 1. Introduction:
-Generative language models 
+Automated Audio Captioning using LMs.
 ****
 <span id='environment_setup'/>
 
