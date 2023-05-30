@@ -92,15 +92,13 @@ In the folder ``` audio_captioning/sh_folder ``` , there are two types of shell 
 
 In order to do inference: **ignore Type A**
 
-$$
-\begin{table}
-\centering
-\caption{Model Ablation on AudioCaps}
-\begin{tabular}{lllrrrrrrrrr}
-\toprule
-MAGIC & Audio Model &            Keywords &  Bleu 1 &  Bleu 2 &  Bleu 3 &  Bleu 4 &  METEOR &  ROUGE L &  CIDEr &  SPICE &  SPIDEr \\
-   On &           - &                   - &    18.8 &     1.1 &     0.0 &     0.0 &     4.1 &     17.8 &    0.1 &    0.0 &     0.0 \\
-\midrule
+
+|MAGIC | Audio Model | Keywords | Script |
+|----------|----------|---------|--------|
+|Off| - | - | MAGIC_no_audio.sh |
+
+
+   |Off |           - &                   - &    18.8 &     1.1 &     0.0 &     0.0 &     4.1 &     17.8 &    0.1 &    0.0 &     0.0 \\
    On &   AudioCLIP &                   - &    18.8 &     1.1 &     0.0 &     0.0 &     4.1 &     17.8 &    0.1 &    0.0 &     0.0 \\
    On &   AudioCLIP & AudioSet+ChatGPT KW &    26.0 &     6.7 &     0.7 &     0.0 &     7.6 &     21.3 &    1.2 &    2.0 &     1.6 \\
    On &   AudioCLIP &         AudioSet KW &    33.6 &    11.4 &     3.9 &     1.4 &     7.2 &     23.5 &    2.5 &    1.1 &     1.8 \\
@@ -112,11 +110,8 @@ MAGIC & Audio Model &            Keywords &  Bleu 1 &  Bleu 2 &  Bleu 3 &  Bleu 
    On &     WavCaps &         AudioSet KW &    44.5 &    25.1 &    14.0 &     6.7 &    12.3 &     33.2 &   29.1 &    8.5 &    18.8 \\
   Off &     WavCaps & AudioSet+ChatGPT KW &    39.2 &    19.8 &    10.4 &     4.8 &    10.7 &     29.0 &   20.2 &    6.8 &    13.5 \\
   Off &     WavCaps &         AudioSet KW &    43.9 &    24.6 &    13.5 &     6.3 &    12.0 &     32.8 &   28.1 &    8.2 &    18.1 \\
-\bottomrule
-\end{tabular}
-\end{table}
 
-$$
+
 
 For every model version, there is a shell script. For instance, for the best model this is the file: MAGIC_WavCaps_AudioSet_KW.sh.
 
