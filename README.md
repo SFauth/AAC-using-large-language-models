@@ -7,7 +7,7 @@ Plugging Visual Controls in Text Generation]](https://arxiv.org/abs/2205.02655).
 
 ****
 
-![MAGIC](/demo.gif)
+![AACLM](/demo.pdf)
 
 ****
 ## Catalogue:
