@@ -144,8 +144,8 @@ audio_captioning/inference_magic.py
 ```
    and change the parameter, e.g. $\beta$ and $l$:
 
-- [beta](https://github.com/SFauth/AACLM/blob/d55733c5e74e67e4845c79f6616faf883b7b2069/audio_captioning/inference_magic.py#L218)
-- [number of keywords](https://github.com/SFauth/AACLM/blob/d55733c5e74e67e4845c79f6616faf883b7b2069/audio_captioning/inference_magic.py#L229)
+- https://github.com/SFauth/AACLM/blob/d55733c5e74e67e4845c79f6616faf883b7b2069/audio_captioning/inference_magic.py#L218
+- https://github.com/SFauth/AACLM/blob/d55733c5e74e67e4845c79f6616faf883b7b2069/audio_captioning/inference_magic.py#L229
   
    
 2. How to **exchange** the **language model** with another model from HuggingFace?
