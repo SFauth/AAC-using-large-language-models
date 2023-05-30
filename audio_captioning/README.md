@@ -10,7 +10,9 @@ In this directory, we illustrate the details of our experiments on the task of z
         ├── ./clip/  # Contains the code of the audio CLIP models. Their checkpoints can also be stored here
         ├── ./evaluation/ # Stores the code to create the plots and tables of the dissertation
         ├── ./sh_folder/ # Contains the shell-scripts to infer and to create the tables / plots
-        └── ./inference_result/ # Contains the inferenced results (one JSON, one CSV and one HTML per run) each run is uniquely identified by the timestamp
+        ├── ./inference_result/ # Contains the inferenced results (one JSON, one CSV and one HTML per run) each run is uniquely identified by the timestamp
+        └── sound_obj_generator.py # This program created the ChatGPT keyword list
+        
 
 **[Note]** To ensure the reproductivity of our work, [in this folder](https://github.com/yxuansu/MAGIC/tree/main/image_captioning/inference_result), we provide the inferenced results of all evaluated methods.
 
