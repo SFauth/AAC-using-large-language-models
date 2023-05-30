@@ -27,21 +27,101 @@ Generative language models (LMs) such as GPT-2/3 can be prompted to generate tex
 <span id='environment_setup'/>
 
 ### 2. Environment Setup:
+
+1. Clone the repo
+```
+git clone https://github.com/SFauth/AACLM.git
+```
+2. Set it as the current directory
+```
+cd AACLM
+```
+3. Create a new conda environment with the correct Python version
 ```
 conda create --name <ENV_NAME> python=3.7.1
+```
+4. Activate the environment
+```
 conda activate <ENV_NAME>
+```
+5. Install all dependencies
+```
 pip3 install -r requirements.txt
 ```
+
+****
+### 3. Running inference:
+For every model version there is a shell script in audio_captioning/sh_folder. For instance, for the best model this is the file: MAGIC_WavCaps_AudioSet_KW.sh.
+
+It is structured as follows:
+```
+CUDA_VISIBLE_DEVICES="1" python ../inference_magic.py\
+    --language_model_code_path ../language_model/\
+    --language_model_name facebook/opt-1.3b\     # name of the language model on HuggingFace
+    --audio_code_path ../clip/\
+    --audio_pt_file ../clip/WavCaps/retrieval/assets/HTSAT-BERT-PT.pt\      # path to the pre-trained audio CLIP model's checkpoint
+    --AudioCaps_inference_file_prefix ../softlinks/AudioCaps_data/\     # specify directory containing AudioCaps data 
+    --clotho_inference_file_prefix ../softlinks/evaluation_data_files/\       # specify directory containing Clotho data 
+    --GT_captions_AudioCaps ../data/AudioCaps/AudioCaps_test.json\       # replace with ../data/AudioCaps/AudioCaps_test.json if you want to use the validation set
+    --GT_captions_clotho ../data/Clotho/clotho_v2.1_test.json\
+    --decoding_len 78\
+    --sample_rate 32000\
+    --k 45\
+    --save_name MAGIC_WavCaps_AudioSet_KW\
+    --include_prompt_magic False\
+    --experiment test_performance\
+    --path_to_AudioSet_keywords ../data/AudioSet/class_labels_indices.csv     # specify path to keyword list
+```
+What do you have to change in order to run the experiments? Remember that the current directory is the sh_folder (specify the paths in a way that goes out of this folder)
+
+1. Specify which GPU to use:
+```
+CUDA_VISIBLE_DEVICES="1" 
+```
+2. Set up the pre-trained audio CLIP model's checkpoint. If you only want to use the best audio CLIP model, skip a) and b). 
+
+a) For AudioCLIP:
+```
+cd audio_captioning/clip/AudioCLIP/assets
+wget https://github.com/AndreyGuzhov/AudioCLIP/releases/download/v0.1/AudioCLIP-Full-Training.pt
+```
+b) For LAION:
+```
+cd audio_captioning/clip/CLAP/assets
+wget https://huggingface.co/lukewys/laion_clap/resolve/main/630k-audioset-fusion-best.pt
+```
+c)
+For WavCaps:
+```
+cd audio_captioning/clip/WavCaps/retrieval/assets
+gdown 1il6X1EiUPlbyysM9hn2CYr-YRSCuSy2m
+```
+Download the desired checkpoint to the location that you specify in:
+```
+audio_pt_file 
+```
+3. Specify directory containing AudioCaps data:
+```
+AudioCaps_inference_file_prefix 
+```
+4. Specify directory containing Clotho data: 
+```
+clotho_inference_file_prefix 
+```
+
 
 ****
 
 <span id='data'/>
 
-### 3. Loading AudioCaps and Clotho data:
+### 4. Loading AudioCaps and Clotho data:
 #### a) AudioCaps:
-- Navigate to softlinks
-- Unpack the directory containing the data: tar -xzf AudioCaps_data.tar.gz
+```
+#Navigate to softlinks
+#Unpack the directory containing the data:
+tar -xzf AudioCaps_data.tar.gz
 - Make sure that the AudioCaps files are in the folder softlinks/AudioCaps_data
+```
     
 
 #### b) Clotho:
@@ -53,7 +133,7 @@ pip3 install -r requirements.txt
 
 <span id='clip_models'/>
 
-### 4. Download audio CLIP models:
+### 4. Prepare audio CLIP models:
 - Navigate to assets
 - 
 
