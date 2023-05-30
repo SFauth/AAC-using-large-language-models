@@ -53,6 +53,76 @@ pip3 install -r requirements.txt
 ### 3. Running inference:
 For every model version there is a shell script in audio_captioning/sh_folder. For instance, for the best model this is the file: MAGIC_WavCaps_AudioSet_KW.sh.
 
+What do you have to change in order to run the experiments? Remember that the current directory is the sh_folder (specify the paths in a way that goes out of this folder)
+
+1. Specify which GPU to use:
+```
+CUDA_VISIBLE_DEVICES="1" 
+```
+2. Set up the pre-trained audio CLIP model's checkpoint. If you only want to use the best audio CLIP model, skip a) and b). 
+
+- a) For AudioCLIP:
+```
+cd audio_captioning/clip/AudioCLIP/assets
+wget https://github.com/AndreyGuzhov/AudioCLIP/releases/download/v0.1/AudioCLIP-Full-Training.pt
+```
+- b) For LAION:
+```
+cd audio_captioning/clip/CLAP/assets
+wget https://huggingface.co/lukewys/laion_clap/resolve/main/630k-audioset-fusion-best.pt
+```
+- c) For WavCaps:
+```
+cd audio_captioning/clip/WavCaps/retrieval/assets
+gdown 1il6X1EiUPlbyysM9hn2CYr-YRSCuSy2m
+```
+
+### 3. Set up the data
+If you only want to use one dataset, only do step a):
+
+- a) AudioCaps:
+```
+cd audio_captioning/softlinks
+tar -xzf AudioCaps_data.tar.gz # unpack the compressed file containg the data
+```
+- b) Clotho :
+Download the evaluation, i.e. test data, of Clotho Version 2.1 (https://zenodo.org/record/4783391): clotho_audio_evalution.7z
+```
+wget https://zenodo.org/record/4783391/files/clotho_audio_evaluation.7z
+mv clotho_audio_evaluation.7z evaluation_data_files.7z
+7z x evaluation_data_files.7z
+```
+
+
+
+****
+
+<span id='data'/>
+
+### 4. Loading AudioCaps and Clotho data:
+#### a) AudioCaps:
+```
+#Navigate to softlinks
+#Unpack the directory containing the data:
+tar -xzf AudioCaps_data.tar.gz
+- Make sure that the AudioCaps files are in the folder softlinks/AudioCaps_data
+```
+    
+
+#### b) Clotho:
+Download the evaluation, i.e. test data, of Clotho Version 2.1 (https://zenodo.org/record/4783391): clotho_audio_evalution.7z
+```
+wget https://zenodo.org/record/4783391/files/clotho_audio_evaluation.7z
+mv clotho_audio_evaluation.7z evaluation_data_files.7z
+7z x evaluation_data_files.7z
+```
+
+****
+
+<span id='clip_models'/>
+
+### 4. Prepare audio CLIP models:
+
 It is structured as follows:
 ```
 CUDA_VISIBLE_DEVICES="1" python ../inference_magic.py\
@@ -72,70 +142,6 @@ CUDA_VISIBLE_DEVICES="1" python ../inference_magic.py\
     --experiment test_performance\
     --path_to_AudioSet_keywords ../data/AudioSet/class_labels_indices.csv     # specify path to keyword list
 ```
-What do you have to change in order to run the experiments? Remember that the current directory is the sh_folder (specify the paths in a way that goes out of this folder)
-
-1. Specify which GPU to use:
-```
-CUDA_VISIBLE_DEVICES="1" 
-```
-2. Set up the pre-trained audio CLIP model's checkpoint. If you only want to use the best audio CLIP model, skip a) and b). 
-
-a) For AudioCLIP:
-```
-cd audio_captioning/clip/AudioCLIP/assets
-wget https://github.com/AndreyGuzhov/AudioCLIP/releases/download/v0.1/AudioCLIP-Full-Training.pt
-```
-b) For LAION:
-```
-cd audio_captioning/clip/CLAP/assets
-wget https://huggingface.co/lukewys/laion_clap/resolve/main/630k-audioset-fusion-best.pt
-```
-c)
-For WavCaps:
-```
-cd audio_captioning/clip/WavCaps/retrieval/assets
-gdown 1il6X1EiUPlbyysM9hn2CYr-YRSCuSy2m
-```
-Download the desired checkpoint to the location that you specify in:
-```
-audio_pt_file 
-```
-3. Specify directory containing AudioCaps data:
-```
-AudioCaps_inference_file_prefix 
-```
-4. Specify directory containing Clotho data: 
-```
-clotho_inference_file_prefix 
-```
-
-
-****
-
-<span id='data'/>
-
-### 4. Loading AudioCaps and Clotho data:
-#### a) AudioCaps:
-```
-#Navigate to softlinks
-#Unpack the directory containing the data:
-tar -xzf AudioCaps_data.tar.gz
-- Make sure that the AudioCaps files are in the folder softlinks/AudioCaps_data
-```
-    
-
-#### b) Clotho:
-- Download the evaluation, i.e. test data, of Clotho Version 2.1 (https://zenodo.org/record/4783391): clotho_audio_evalution.7z
-- Unpack clotho_audio_evalution.7z in the folder softlinks/evaluation_data_files
-
-
-****
-
-<span id='clip_models'/>
-
-### 4. Prepare audio CLIP models:
-- Navigate to assets
-- 
 
 #### 5.1. Implementation of Experiments: 
 To ensure the reproductity of our work, we provide all related resources to implement our experiments on the task of zero-shot image captioning. Please refer more details [[here]](https://github.com/yxuansu/MAGIC/tree/main/image_captioning). 
