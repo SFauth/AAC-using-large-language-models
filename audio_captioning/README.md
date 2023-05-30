@@ -8,6 +8,8 @@ In this directory, we provide an overview over each folder of the source code.
         ├── ./evaluation/ # Stores the code to create the plots and tables of the dissertation
         ├── ./sh_folder/ # Contains the shell-scripts to infer and to create the tables / plots
         ├── ./inference_result/ # Contains the inferenced results (one JSON, one CSV and one HTML per run) each run is uniquely identified by the timestamp
+        ├── ./softlinks/ # Store the softlinks to or the audio files themselves here!!!
+        ├── inference_magic.py # The central python script combining the data, the models and that stores the results
         └── sound_obj_generator.py # This program created the ChatGPT keyword list
      
 
