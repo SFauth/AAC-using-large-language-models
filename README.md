@@ -23,7 +23,7 @@ Plugging Visual Controls in Text Generation]](https://arxiv.org/abs/2205.02655).
 <span id='introduction'/>
 
 ### 1. Introduction:
-Generative language models (LMs) such as GPT-2/3 can be prompted to generate text with remarkable quality. While they are designed for text-prompted generation, it remains an open question how the generation process could be guided by modalities beyond text such as images. In this work, we propose a training-free framework, called MAGIC (i<ins>**MA**</ins>ge-<ins>**G**</ins>uided text generat<ins>**I**</ins>on with <ins>**C**</ins>LIP), for plugging in visual controls in the generation process and enabling LMs to perform multimodal tasks (e.g., image captioning) in a zero-shot manner. MAGIC is a simple yet efficient plug-and-play framework, which directly combines an off-the-shelf LM (i.e., GPT-2) and an image-text matching model (i.e., CLIP) for image-grounded text generation. During decoding, MAGIC influences the generation of the LM by introducing a CLIP-induced score, called **_magic score_**, which regularizes the generated result to be semantically related to a given image while being coherent to the previously generated context. Notably, the proposed decoding scheme does not involve any gradient update operation, therefore being computationally efficient. On the challenging task of zero-shot image captioning, MAGIC outperforms the state-of-the-art method by notable margins with a nearly 27 times decoding speedup. MAGIC is a flexible framework and is theoretically compatible with any text generation tasks that incorporate image grounding. In the experiments, we showcase that it is also capable of performing visually grounded story generation given both an image and a text prompt.
+Generative language models 
 ****
 <span id='environment_setup'/>
 
@@ -108,6 +108,7 @@ In order to do inference: run the desired **Type A** script:
 - Script: name of the shell script that has to be run to use the row's main components
 
 **TLDR**: look at the following table and run the shell script MAGIC_WavCaps_AudioSet_KW.sh for the best model
+
 **Disclaimer**: before running, specify in the chosen shell script, which GPU to use, e.g.:
 
 ```
@@ -132,8 +133,6 @@ CUDA_VISIBLE_DEVICES="1"
 ****
 ### Future work: how to exchange components of the system?
 
-In order to exchange components, we first provide a breakdown of an inference shell-script.
-#### Summary:
 1. How to **exchange** the **hyperparameters** that are **not in** the **shell-script**. Go into 
 ```
 audio_captioning/inference_magic.py
@@ -144,9 +143,11 @@ audio_captioning/inference_magic.py
 - [number of keywords](https://github.com/SFauth/AACLM/blob/d55733c5e74e67e4845c79f6616faf883b7b2069/audio_captioning/inference_magic.py#L229)
   
    
-2. How to exchange the CLIP model?
-- adapt the 
-
+2. How to exchange the language model with another model from HuggingFace?
+Note that this may vary, depending on the model.
+- change in the corresponding shell-script the flag _language_model_name_ according to the model name on Huggingface, e.g. GPT2
+- if necessary, adapt the snippet:
+[https://github.com/SFauth/AACLM/blob/557f433fe7f7b369df23f156113b15cfa6b670ca/audio_captioning/language_model/simctg.py#L48-L52](https://github.com/SFauth/AACLM/blob/557f433fe7f7b369df23f156113b15cfa6b670ca/audio_captioning/language_model/simctg.py#L48-L52)
 
 ```
 CUDA_VISIBLE_DEVICES="1" python ../inference_magic.py\
