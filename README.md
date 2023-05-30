@@ -18,6 +18,7 @@ Plugging Visual Controls in Text Generation]](https://arxiv.org/abs/2205.02655).
 * <a href='#run_inference'>5. Running inference</a>
     * <a href='#image_captioning_experiment'>5.1. Implementation of Experiments</a>
     * <a href='#image_captioning_magic_search'>5.2. Example Usage of Magic Search</a> [![Open In Colab](https://colab.research.google.com/assets/colab-
+* <a href='#future_work'>6. Future work</a>
 ****
 
 <span id='introduction'/>
@@ -131,7 +132,11 @@ CUDA_VISIBLE_DEVICES="1"
 |On | WavCaps | AudioSetKW+ChatGPT KW | MAGIC_WavCaps_AudioSet+ChatGPT_KW.sh | |
 
 ****
-### Future work: how to exchange components of the system?
+<span id='future_work'/>
+
+### 6. Future work
+
+##### how to exchange components of the system?
 
 1. How to **exchange** the **hyperparameters** that are **not in** the **shell-script**. Go into 
 ```
