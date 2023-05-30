@@ -50,6 +50,7 @@ pip3 install -r requirements.txt
 ```
 ****
 ### 3. Data setup:
+The repo is constructed, such that the data to do inference on can be stored in another directory. In case, you already have AudioCaps and Clotho's evaluation data set loaded, it is enough to **specify the softlink** in the directory audio_captioning/softlinks and you can skip a) and b). If you do **not have it** yet and want to minimize the effort to run an experiment, just **follow a) and b)**
 
 - a) AudioCaps:
 ```
@@ -86,10 +87,38 @@ gdown 1il6X1EiUPlbyysM9hn2CYr-YRSCuSy2m
 ****
 ### 5. Running inference:
 In the folder ``` audio_captioning/sh_folder ``` , there are two types of shell scripts. 
-- Type A: prefix _create_X.sh_ 
-- Type B: remain scripts
+- Type A: _create_X.sh_ 
+- Type B: _search_audioCLIPmodel_keywords.sh_  all other remaining scripts
 
-For every model version, there is a shell script in audio_captioning/sh_folder. For instance, for the best model this is the file: MAGIC_WavCaps_AudioSet_KW.sh.
+In order to do inference: **ignore Type A**
+
+$$
+\begin{table}
+\centering
+\caption{Model Ablation on AudioCaps}
+\begin{tabular}{lllrrrrrrrrr}
+\toprule
+MAGIC & Audio Model &            Keywords &  Bleu 1 &  Bleu 2 &  Bleu 3 &  Bleu 4 &  METEOR &  ROUGE L &  CIDEr &  SPICE &  SPIDEr \\
+   On &           - &                   - &    18.8 &     1.1 &     0.0 &     0.0 &     4.1 &     17.8 &    0.1 &    0.0 &     0.0 \\
+\midrule
+   On &   AudioCLIP &                   - &    18.8 &     1.1 &     0.0 &     0.0 &     4.1 &     17.8 &    0.1 &    0.0 &     0.0 \\
+   On &   AudioCLIP & AudioSet+ChatGPT KW &    26.0 &     6.7 &     0.7 &     0.0 &     7.6 &     21.3 &    1.2 &    2.0 &     1.6 \\
+   On &   AudioCLIP &         AudioSet KW &    33.6 &    11.4 &     3.9 &     1.4 &     7.2 &     23.5 &    2.5 &    1.1 &     1.8 \\
+   On &       LAION &                   - &    21.7 &     5.6 &     2.1 &     0.0 &     5.2 &     20.0 &    1.6 &    1.7 &     1.7 \\
+   On &       LAION & AudioSet+ChatGPT KW &    41.1 &    21.5 &    11.2 &     5.2 &    11.7 &     30.4 &   26.1 &    7.8 &    17.0 \\
+   On &       LAION &         AudioSet KW &    43.5 &    23.1 &    11.9 &     5.4 &    12.0 &     31.9 &   26.3 &    8.0 &    17.2 \\
+   On &     WavCaps &                   - &    22.1 &     6.7 &     2.7 &     0.0 &     5.6 &     20.5 &    2.3 &    2.1 &     2.2 \\
+   On &     WavCaps & AudioSet+ChatGPT KW &    39.5 &    20.0 &    10.4 &     4.8 &    10.9 &     29.2 &   20.7 &    7.0 &    13.8 \\
+   On &     WavCaps &         AudioSet KW &    44.5 &    25.1 &    14.0 &     6.7 &    12.3 &     33.2 &   29.1 &    8.5 &    18.8 \\
+  Off &     WavCaps & AudioSet+ChatGPT KW &    39.2 &    19.8 &    10.4 &     4.8 &    10.7 &     29.0 &   20.2 &    6.8 &    13.5 \\
+  Off &     WavCaps &         AudioSet KW &    43.9 &    24.6 &    13.5 &     6.3 &    12.0 &     32.8 &   28.1 &    8.2 &    18.1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+$$
+
+For every model version, there is a shell script. For instance, for the best model this is the file: MAGIC_WavCaps_AudioSet_KW.sh.
 
 What do you have to change in order to run the experiments? Remember that the current directory is the sh_folder (specify the paths in a way that goes out of this folder)
 
