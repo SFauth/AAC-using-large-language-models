@@ -91,11 +91,13 @@ cd audio_captioning/clip/CLAP/assets
 wget https://huggingface.co/lukewys/laion_clap/resolve/main/630k-audioset-fusion-best.pt
 ```
 - c) For WavCaps:
+   - Replace the file name with your absolute path to the inference.yaml file https://github.com/SFauth/AACLM/blob/62e2c0a29c1e6a9efc4f7e4e7becf40104df7465/audio_captioning/clip/load_clip_model.py#L8 and 
+   - Download checkpoint:
 ```
 cd audio_captioning/clip/WavCaps/retrieval/assets
 gdown 1il6X1EiUPlbyysM9hn2CYr-YRSCuSy2m
 ```
-Go into https://github.com/SFauth/AACLM/blob/62e2c0a29c1e6a9efc4f7e4e7becf40104df7465/audio_captioning/clip/load_clip_model.py#L8 and replace the file name with your absolute path to the inference.yaml file
+
 
 ****
 <span id='run_inference'/>
