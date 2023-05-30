@@ -87,40 +87,36 @@ gdown 1il6X1EiUPlbyysM9hn2CYr-YRSCuSy2m
 ****
 ### 5. Running inference:
 In the folder ``` audio_captioning/sh_folder ``` , there are two types of shell scripts. 
-- Type A: _create_X.sh_ 
-- Type B: _search_audioCLIPmodel_keywords.sh_  all other remaining scripts
+- Type A: _search_audioCLIPmodel_keywords.sh_ (inference scripts)
+- Type B: _create_X.sh_ (visualization and table creating scripts)
 
-In order to do inference: **ignore Type A**
+In order to do inference: run the desired **Type A** script:
+- MAGIC: MAGIC search on or greedy search with no guiding (off)
+- Audio Model: which audio CLIP model to use
+- Keywords: which keyword list to use for the Socratic prompt improvement
+- Script: name of the shell script that has to be run to use the row's main components
 
+**Disclaimer**: before running, specify in the chosen shell script, which GPU to use, e.g.:
 
-|MAGIC | Audio Model | Keywords | Script |
-|----------|----------|---------|--------|
-|Off| - | - | MAGIC_no_audio.sh |
-
-
-   |Off |           - &                   - &    18.8 &     1.1 &     0.0 &     0.0 &     4.1 &     17.8 &    0.1 &    0.0 &     0.0 \\
-   On &   AudioCLIP &                   - &    18.8 &     1.1 &     0.0 &     0.0 &     4.1 &     17.8 &    0.1 &    0.0 &     0.0 \\
-   On &   AudioCLIP & AudioSet+ChatGPT KW &    26.0 &     6.7 &     0.7 &     0.0 &     7.6 &     21.3 &    1.2 &    2.0 &     1.6 \\
-   On &   AudioCLIP &         AudioSet KW &    33.6 &    11.4 &     3.9 &     1.4 &     7.2 &     23.5 &    2.5 &    1.1 &     1.8 \\
-   On &       LAION &                   - &    21.7 &     5.6 &     2.1 &     0.0 &     5.2 &     20.0 &    1.6 &    1.7 &     1.7 \\
-   On &       LAION & AudioSet+ChatGPT KW &    41.1 &    21.5 &    11.2 &     5.2 &    11.7 &     30.4 &   26.1 &    7.8 &    17.0 \\
-   On &       LAION &         AudioSet KW &    43.5 &    23.1 &    11.9 &     5.4 &    12.0 &     31.9 &   26.3 &    8.0 &    17.2 \\
-   On &     WavCaps &                   - &    22.1 &     6.7 &     2.7 &     0.0 &     5.6 &     20.5 &    2.3 &    2.1 &     2.2 \\
-   On &     WavCaps & AudioSet+ChatGPT KW &    39.5 &    20.0 &    10.4 &     4.8 &    10.9 &     29.2 &   20.7 &    7.0 &    13.8 \\
-   On &     WavCaps &         AudioSet KW &    44.5 &    25.1 &    14.0 &     6.7 &    12.3 &     33.2 &   29.1 &    8.5 &    18.8 \\
-  Off &     WavCaps & AudioSet+ChatGPT KW &    39.2 &    19.8 &    10.4 &     4.8 &    10.7 &     29.0 &   20.2 &    6.8 &    13.5 \\
-  Off &     WavCaps &         AudioSet KW &    43.9 &    24.6 &    13.5 &     6.3 &    12.0 &     32.8 &   28.1 &    8.2 &    18.1 \\
-
-
-
-For every model version, there is a shell script. For instance, for the best model this is the file: MAGIC_WavCaps_AudioSet_KW.sh.
-
-What do you have to change in order to run the experiments? Remember that the current directory is the sh_folder (specify the paths in a way that goes out of this folder)
-
-1. Specify which GPU to use:
 ```
 CUDA_VISIBLE_DEVICES="1" 
 ```
+
+|MAGIC| Audio Model | Keywords | Script | Comment |
+|----------|----------|---------|--------|---------|
+|Off| - | - | MAGIC_no_audio.sh | Baseline |
+|Off| WavCaps | AudioSetKW | WavCaps_AudioSet_KW.sh |  |
+|Off| WavCaps | AudioSet+ChatGPT KW | WavCaps_AudioSet+ChatGPT_KW.sh |  |
+|On | AudioCLIP | - | MAGIC_AudioCLIP.sh | |
+|On | AudioCLIP | AudioSetKW | MAGIC_AudioCLIP_AudioSet_KW.sh | |
+|On | AudioCLIP | AudioSetKW+ChatGPT KW | MAGIC_AudioCLIP_AudioSet+ChatGPT_KW.sh | |
+|On | LAION | - | MAGIC_LAION.sh | |
+|On | LAION | AudioSetKW | MAGIC_LAION_Audioset_KW.sh | |
+|On | LAION | AudioSetKW+ChatGPT KW | MAGIC_LAION_AudioSet+ChatGPT_KW.sh | |
+|On | WavCaps | - | MAGIC_WavCaps.sh | |
+|On | WavCaps | AudioSetKW | MAGIC_WavCaps_AudioSet_KW.sh | Best Model|
+|On | WavCaps | AudioSetKW+ChatGPT KW | MAGIC_WavCaps_AudioSet+ChatGPT_KW.sh | |
+
 
 
 
