@@ -12,9 +12,10 @@ Plugging Visual Controls in Text Generation]](https://arxiv.org/abs/2205.02655).
 ****
 ## Catalogue:
 * <a href='#introduction'>1. Introduction</a>
-* <a href='#environment_setup'>2. Environment Setup</a>
-* <a href='#data'>3. Loading AudioCaps and Clotho data</a>
+* <a href='#environment_setup'>2. Environment setup</a>
+* <a href='#data'>3. Data setup</a>
 * <a href='#clip_models'>4. Audio CLIP Model setup</a>
+* <a href='#run_inference'>5. Running inference</a>
     * <a href='#image_captioning_experiment'>5.1. Implementation of Experiments</a>
     * <a href='#image_captioning_magic_search'>5.2. Example Usage of Magic Search</a> [![Open In Colab](https://colab.research.google.com/assets/colab-
 ****
@@ -26,7 +27,7 @@ Generative language models (LMs) such as GPT-2/3 can be prompted to generate tex
 ****
 <span id='environment_setup'/>
 
-### 2. Environment Setup:
+### 2. Environment setup:
 
 1. Clone the repo
 ```
@@ -49,8 +50,8 @@ conda activate <ENV_NAME>
 pip3 install -r requirements.txt
 ```
 ****
-### 3. Data setup:
 <span id='data'/>
+### 3. Data setup:
 The repo is constructed, such that the data to do inference on can be stored in another directory. In case, you already have AudioCaps and Clotho's evaluation data set loaded, it is enough to **specify the softlink** in the directory audio_captioning/softlinks and you can skip a) and b). If you do **not have it** yet and want to minimize the effort to run an experiment, just **follow a) and b)**
 
 - a) AudioCaps:
@@ -89,6 +90,7 @@ gdown 1il6X1EiUPlbyysM9hn2CYr-YRSCuSy2m
 ```
 
 ****
+<span id='run_inference'/>
 ### 5. Running inference:
 In the folder ``` audio_captioning/sh_folder ``` , there are two types of shell scripts. 
 - Type A: _search_audioCLIPmodel_keywords.sh_ (inference scripts)
@@ -121,15 +123,8 @@ CUDA_VISIBLE_DEVICES="1"
 |On | WavCaps | AudioSetKW | MAGIC_WavCaps_AudioSet_KW.sh | Best Model|
 |On | WavCaps | AudioSetKW+ChatGPT KW | MAGIC_WavCaps_AudioSet+ChatGPT_KW.sh | |
 
-
-
-
-
-
 ****
-
-
-### 4. Prepare audio CLIP models:
+### Bonus: detailed breakdown of an inference shell-script for future work
 
 It is structured as follows:
 ```
