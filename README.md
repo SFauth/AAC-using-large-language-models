@@ -107,6 +107,7 @@ In order to do inference: run the desired **Type A** script:
 - Keywords: which keyword list to use for the Socratic prompt improvement
 - Script: name of the shell script that has to be run to use the row's main components
 
+**TLDR**: look at the following table and run the shell script MAGIC_WavCaps_AudioSet_KW.sh for the best model
 **Disclaimer**: before running, specify in the chosen shell script, which GPU to use, e.g.:
 
 ```
