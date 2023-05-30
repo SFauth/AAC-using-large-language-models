@@ -1,5 +1,5 @@
 ## Source code
-In this directory, we provide an overview over each folder of the source code. 
+The source code is organized as follows:
 
     ├──
         ├── ./data/  # Contains the keyword lists and preprocessing functions to create the JSONs combining file_name and corresponding GT captions
