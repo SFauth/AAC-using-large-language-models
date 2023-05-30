@@ -23,7 +23,7 @@ Plugging Visual Controls in Text Generation]](https://arxiv.org/abs/2205.02655).
 
 ### 1. Introduction:
 Generative language models (LMs) such as GPT-2/3 can be prompted to generate text with remarkable quality. While they are designed for text-prompted generation, it remains an open question how the generation process could be guided by modalities beyond text such as images. In this work, we propose a training-free framework, called MAGIC (i<ins>**MA**</ins>ge-<ins>**G**</ins>uided text generat<ins>**I**</ins>on with <ins>**C**</ins>LIP), for plugging in visual controls in the generation process and enabling LMs to perform multimodal tasks (e.g., image captioning) in a zero-shot manner. MAGIC is a simple yet efficient plug-and-play framework, which directly combines an off-the-shelf LM (i.e., GPT-2) and an image-text matching model (i.e., CLIP) for image-grounded text generation. During decoding, MAGIC influences the generation of the LM by introducing a CLIP-induced score, called **_magic score_**, which regularizes the generated result to be semantically related to a given image while being coherent to the previously generated context. Notably, the proposed decoding scheme does not involve any gradient update operation, therefore being computationally efficient. On the challenging task of zero-shot image captioning, MAGIC outperforms the state-of-the-art method by notable margins with a nearly 27 times decoding speedup. MAGIC is a flexible framework and is theoretically compatible with any text generation tasks that incorporate image grounding. In the experiments, we showcase that it is also capable of performing visually grounded story generation given both an image and a text prompt.
-
+****
 <span id='environment_setup'/>
 
 ### 2. Environment Setup:
@@ -48,18 +48,24 @@ conda activate <ENV_NAME>
 ```
 pip3 install -r requirements.txt
 ```
-
 ****
-### 3. Running inference:
-For every model version there is a shell script in audio_captioning/sh_folder. For instance, for the best model this is the file: MAGIC_WavCaps_AudioSet_KW.sh.
+### 3. Data setup:
 
-What do you have to change in order to run the experiments? Remember that the current directory is the sh_folder (specify the paths in a way that goes out of this folder)
-
-1. Specify which GPU to use:
+- a) AudioCaps:
 ```
-CUDA_VISIBLE_DEVICES="1" 
+cd audio_captioning/softlinks
+tar -xzf AudioCaps_data.tar.gz # unpack the compressed file containg the data
 ```
-2. Set up the pre-trained audio CLIP model's checkpoint. If you only want to use the best audio CLIP model, skip a) and b). 
+- b) Clotho :
+Download the evaluation, i.e. test data, of Clotho Version 2.1:
+```
+wget https://zenodo.org/record/4783391/files/clotho_audio_evaluation.7z
+mv clotho_audio_evaluation.7z evaluation_data_files.7z
+7z x evaluation_data_files.7z
+```
+****
+### 4. Audio CLIP Model setup:
+Set up the pre-trained audio CLIP model's checkpoint. If you only want to use the best audio CLIP model, skip a) and b):
 
 - a) For AudioCLIP:
 ```
@@ -77,45 +83,25 @@ cd audio_captioning/clip/WavCaps/retrieval/assets
 gdown 1il6X1EiUPlbyysM9hn2CYr-YRSCuSy2m
 ```
 
-### 3. Set up the data
-If you only want to use one dataset, only do step a):
-
-- a) AudioCaps:
-```
-cd audio_captioning/softlinks
-tar -xzf AudioCaps_data.tar.gz # unpack the compressed file containg the data
-```
-- b) Clotho :
-Download the evaluation, i.e. test data, of Clotho Version 2.1 (https://zenodo.org/record/4783391): clotho_audio_evalution.7z
-```
-wget https://zenodo.org/record/4783391/files/clotho_audio_evaluation.7z
-mv clotho_audio_evaluation.7z evaluation_data_files.7z
-7z x evaluation_data_files.7z
-```
-
-
-
 ****
+### 5. Running inference:
+In the folder ``` audio_captioning/sh_folder ``` , there are two types of shell scripts. 
+- Type A: prefix _create_X.sh_ 
+- Type B: remain scripts
+
+For every model version, there is a shell script in audio_captioning/sh_folder. For instance, for the best model this is the file: MAGIC_WavCaps_AudioSet_KW.sh.
+
+What do you have to change in order to run the experiments? Remember that the current directory is the sh_folder (specify the paths in a way that goes out of this folder)
+
+1. Specify which GPU to use:
+```
+CUDA_VISIBLE_DEVICES="1" 
+```
+
+
 
 <span id='data'/>
 
-### 4. Loading AudioCaps and Clotho data:
-#### a) AudioCaps:
-```
-#Navigate to softlinks
-#Unpack the directory containing the data:
-tar -xzf AudioCaps_data.tar.gz
-- Make sure that the AudioCaps files are in the folder softlinks/AudioCaps_data
-```
-    
-
-#### b) Clotho:
-Download the evaluation, i.e. test data, of Clotho Version 2.1 (https://zenodo.org/record/4783391): clotho_audio_evalution.7z
-```
-wget https://zenodo.org/record/4783391/files/clotho_audio_evaluation.7z
-mv clotho_audio_evaluation.7z evaluation_data_files.7z
-7z x evaluation_data_files.7z
-```
 
 ****
 
