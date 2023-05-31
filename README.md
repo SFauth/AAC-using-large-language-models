@@ -215,7 +215,7 @@ https://github.com/SFauth/AACLM/blob/62e2c0a29c1e6a9efc4f7e4e7becf40104df7465/au
    
 3. As we have had than more than one GPU, we then repeated step 1 and step 2 using other $\beta$ values, indicating to use another GPU
    
-4. We created a table and a visualization using a shell-script:
+4. We created a table and a visualization using a shell-script, specifying the **correct folders where to find the result JSON and CSV**. Besides, we specify the **correct hyperparameter** and give a **caption indicating whether we used a test or validation set**:
    https://github.com/SFauth/AACLM/blob/559d3e88aeec5d1b6e352ccf8ec2581eb9080e00/audio_captioning/sh_folder/create_beta_validation_ablation_table_AC.sh#L1-L5
 ****
 
