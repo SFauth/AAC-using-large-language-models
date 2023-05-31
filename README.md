@@ -22,6 +22,7 @@ Plugging Visual Controls in Text Generation]](https://arxiv.org/abs/2205.02655).
     * <a href='#future_work_LM'>7.2. How to exchange the language model? </a>
     * <a href='#future_work_CLIP'>7.3. How to exchange the audio CLIP model?</a>
     * <a href='#future_work_flag'>7.4. Detailed explanation of all flags in the inference shell-scripts</a>
+    * <a href='#ablation'>7.5 Example: how did we do the ablation studies to find the optimal beta?</a>
 * <a href='#contact'>8. Contact</a>
 ****
 
@@ -167,7 +168,7 @@ https://github.com/SFauth/AACLM/blob/1a9aa00c3af548f997a0aa6474ed31f0ed3ad303/au
 
 How to exchange components of the system or conduct experiments? We have found the optimal parameters by running sweeps. This can be done by making a change and then using one of the shell-scripts. 
 
-#### 7.1 How to **exchange** the **hyperparameters** that are **not in** the **shell-script**. 
+#### 7.1 How to **exchange** the **hyperparameters** that are **not in** the **shell-script**?
 
 <span id='future_work_hyper'/>
 
@@ -202,6 +203,20 @@ Replicate the code for the other audio CLIP models
 
 https://github.com/SFauth/AACLM/blob/62e2c0a29c1e6a9efc4f7e4e7becf40104df7465/audio_captioning/inference_magic.py#L32-L57
 
+#### 7.5 Example: how did we do the ablation studies to find the optimal beta? 
+
+<span id='ablation'/>
+
+1. According to <a href='#future_work_hyper'> 7.1 How to exchange the hyperparameters that are not in the shell-script </a>, we have exchanged $\beta$ with the values we wanted to try out:
+   ```python
+   betas = torch.tensor([0, 0.1, 0.2, 0.3], device=device) 
+   ```
+2. We created a shell-script and defined a GPU to use. Since we want to use the validation set of AudioCaps, we have to **define the correct --GT_captions_AudioCaps flag** that contains the names of the files that are part of the validation set. Furthermore, we **specify as experiment name "validation"** to make the result being saved in the validation folder. https://github.com/SFauth/AACLM/blob/559d3e88aeec5d1b6e352ccf8ec2581eb9080e00/audio_captioning/sh_folder/MAGIC_WavCaps_AudioSet_KW_beta_sweep_AC.sh#L1-L14
+   
+3. As we have had than more than one GPU, we then repeated step 1 and step 2 using other $\beta$ values, indicating to use another GPU
+   
+4. We created a table and a visualization using a shell-script:
+   https://github.com/SFauth/AACLM/blob/559d3e88aeec5d1b6e352ccf8ec2581eb9080e00/audio_captioning/sh_folder/create_beta_validation_ablation_table_AC.sh#L1-L5
 ****
 
 <span id='contact'/>
