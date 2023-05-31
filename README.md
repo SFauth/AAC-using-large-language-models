@@ -22,7 +22,7 @@ Plugging Visual Controls in Text Generation]](https://arxiv.org/abs/2205.02655).
     * <a href='#future_work_LM'>7.2. How to exchange the language model? </a>
     * <a href='#future_work_CLIP'>7.3. How to exchange the audio CLIP model?</a>
     * <a href='#future_work_flag'>7.4. Detailed explanation of all flags in the inference shell-scripts</a>
-    * <a href='#ablation'>7.5 Example: how did we do the ablation studies to find the optimal beta?</a>
+    * <a href='#ablation'>7.5. Example: how did we do the ablation studies to find the optimal beta?</a>
 * <a href='#contact'>8. Contact</a>
 ****
 
