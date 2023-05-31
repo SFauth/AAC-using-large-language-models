@@ -15,7 +15,7 @@ Plugging Visual Controls in Text Generation]](https://arxiv.org/abs/2205.02655).
 * <a href='#environment_setup'>2. Environment setup</a>
 * <a href='#data'>3. Data setup</a>
 * <a href='#clip_models'>4. Audio CLIP Model setup</a>
-* <a href='#stanford'>5. Download evaluation metric's code </a>
+* <a href='#stanford'>5. Natural language generation metrics setup </a>
 * <a href='#run_inference'>6. Running inference</a>
 * <a href='#future_work'>7. Future work</a>
     * <a href='#future_work_hyper'>7.1. How to exchange the hyperparameters that are not in the shell script?</a>
@@ -53,6 +53,7 @@ conda activate <ENV_NAME>
 5. Install all dependencies
 ```
 pip3 install -r requirements.txt
+conda install -c conda-forge openjdk # for using Java based Stanford NLG metrics computation
 ```
 ****
 <span id='data'/>
@@ -98,7 +99,15 @@ wget https://huggingface.co/lukewys/laion_clap/resolve/main/630k-audioset-fusion
 cd audio_captioning/clip/WavCaps/retrieval/assets
 gdown 1il6X1EiUPlbyysM9hn2CYr-YRSCuSy2m
 ```
+****
 
+<span id='stanford'/>
+
+### 5. Natural language generation metrics setup:
+
+```
+bash audio_captioning/evaluation/get_stanford_models.sh
+```
 
 ****
 <span id='run_inference'/>
