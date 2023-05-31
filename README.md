@@ -165,7 +165,7 @@ https://github.com/SFauth/AACLM/blob/1a9aa00c3af548f997a0aa6474ed31f0ed3ad303/au
 
 ### 7. Future work
 
-How to exchange components of the system or conduct experiments? We have found the optimal parameters by running sweeps of the model. This can be done by making a changes and then using a shell-script. 
+How to exchange components of the system or conduct experiments? We have found the optimal parameters by running sweeps. This can be done by making a change and then using one of the shell-scripts. 
 
 #### 7.1 How to **exchange** the **hyperparameters** that are **not in** the **shell-script**. 
 
