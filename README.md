@@ -211,7 +211,7 @@ https://github.com/SFauth/AACLM/blob/62e2c0a29c1e6a9efc4f7e4e7becf40104df7465/au
    ```python
    betas = torch.tensor([0, 0.1, 0.2, 0.3], device=device) 
    ```
-2. We created a shell-script and defined a GPU to use. Since we want to use the validation set of AudioCaps, we have to **define the correct --GT_captions_AudioCaps flag** that contains the names of the files that are part of the validation set. Furthermore, we **specify as experiment name "validation"** to make the result being saved in the validation folder and **set a save name containing the hyperparameter that we ablate** https://github.com/SFauth/AACLM/blob/559d3e88aeec5d1b6e352ccf8ec2581eb9080e00/audio_captioning/sh_folder/MAGIC_WavCaps_AudioSet_KW_beta_sweep_AC.sh#L1-L14
+2. We created a shell-script and defined a GPU to use. Since we want to use the validation set of AudioCaps, we have to **define the correct --GT_captions_AudioCaps flag** that contains the names of the files that are part of the validation set. Furthermore, we **specify as experiment name "validation"** to make the result being saved in the validation folder and **set a save name containing the hyperparameter that we ablate**: https://github.com/SFauth/AACLM/blob/559d3e88aeec5d1b6e352ccf8ec2581eb9080e00/audio_captioning/sh_folder/MAGIC_WavCaps_AudioSet_KW_beta_sweep_AC.sh#L1-L14
    
 3. As we have had than more than one GPU, we then repeated step 1 and step 2 using other $\beta$ values, indicating to use another GPU
    
