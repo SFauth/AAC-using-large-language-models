@@ -214,6 +214,7 @@ if __name__ == '__main__':
     #betas = torch.linspace(1.6, 2, steps=5).cuda()
     #betas = torch.linspace(0.7, 0.7, steps=1).cuda()
     #betas = torch.tensor([2.5, 3, 4, 5, 7, 10, 25], device=device)
+    #betas = torch.tensor([0.1], device=device)
     betas = torch.tensor([0.1], device=device)
 
     prompts = ["This is a sound of "] 

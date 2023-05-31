@@ -82,8 +82,6 @@ if __name__ == '__main__':
 
     hyperparams_dicts_list_list = glob(os.path.join(args.hyperparam_json_path, '*.json'), recursive=True)
 
-    #print(hyperparams_dicts_list_list[0])
-    
     beta = []
     l = []
     index_hyperparams = []
@@ -133,7 +131,7 @@ if __name__ == '__main__':
             sort_values(args.hyperparam).\
             drop(columns=["timestamp", "ablation_or_not"]).\
             rename(columns={"Mean_NLG_M":"Mean Score"})
-    
+
 
     sweep_table.columns = sweep_table.columns.str.replace('_', ' ')
 
@@ -203,6 +201,8 @@ if __name__ == '__main__':
 
     with open(path_name, 'w') as f:
         f.write(latex_table)
+
+    print("LaTeX table written to {}".format(path_name))
 
     #hyperparams = pd.Series(hyperparams)
 
