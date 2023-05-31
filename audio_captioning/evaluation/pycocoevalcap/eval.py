@@ -107,6 +107,7 @@ class COCOEvalCap_list:
 
     def evaluate(self):
         imgIds = self.params['image_id']
+
         # imgIds = self.coco.getImgIds()
         gts = {}
         res = {}
@@ -114,6 +115,7 @@ class COCOEvalCap_list:
         for imgId in imgIds:
             gts[imgId] = self.ground_truth[imgId]
             res[imgId] = self.prediction[imgId]
+
 
         # =================================================
         # Set up scorers

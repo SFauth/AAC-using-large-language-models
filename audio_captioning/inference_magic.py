@@ -21,7 +21,6 @@ from re import sub, search
 from tqdm import tqdm
 from sklearn.metrics import accuracy_score
 from sklearn.metrics.pairwise import cosine_similarity
-from evaluation.pycocoevalcap.eval import COCOEvalCap_obs
 from evaluation.pycocoevalcap.eval import COCOEvalCap_list
 
 logging.getLogger('transformers.generation_utils').disabled = True
@@ -226,7 +225,7 @@ if __name__ == '__main__':
     temperatures = torch.linspace(25, 25, steps=1).cuda()
 
     #top_keywords = torch.tensor([2]).cuda()
-    top_keywords = torch.tensor([9,10]).cuda()
+    top_keywords = torch.tensor([2]).cuda()
 
     #keywords_prompts = ["I am an intelligent audio captioning bot. I think there might be "]
      
@@ -517,6 +516,8 @@ if __name__ == '__main__':
         p.finish()
 
         #%% add NLG metrics for whole run to table
+
+        print(result_list)
 
         cocoEval_final = COCOEvalCap_list(result_list)
         

@@ -11,10 +11,4 @@ CUDA_VISIBLE_DEVICES="4" python ../inference_magic.py\
     --save_name MAGIC_WavCaps_AudioSet_KW_beta_test_ablation\
     --include_prompt_magic False\
     --experiment ablation\
-    --path_to_AudioSet_keywords ../data/AudioSet/class_labels_indices.csv &&
-    
-    python ../evaluation/sweep_ablation_table.py\
-    --result_files_path ../inference_result/facebook/opt-1.3b/AudioCaps/excludes_prompt_magic/evaluation/ablation\
-    --hyperparam_json_path ../inference_result/facebook/opt-1.3b/AudioCaps/excludes_prompt_magic/output_jsons/ablation/\
-    --hyperparam beta\
-    --caption Ablation_table_for_beta
+    --path_to_AudioSet_keywords ../data/AudioSet/class_labels_indices.csv

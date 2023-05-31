@@ -13,8 +13,4 @@ CUDA_VISIBLE_DEVICES="1" python ../inference_magic.py\
     --save_name MAGIC_WavCaps_AudioSet_KW\
     --include_prompt_magic False\
     --experiment test_performance\
-    --path_to_AudioSet_keywords ../data/AudioSet/class_labels_indices.csv &&
-    
-    python "../evaluation/join_test_results.py"\
-    --result_files_path ../inference_result/facebook/opt-1.3b/\
-    --hyperparam_json_path ../inference_result/facebook/opt-1.3b/AudioCaps/excludes_prompt_magic/output_jsons/test_performance/
+    --path_to_AudioSet_keywords ../data/AudioSet/class_labels_indices.csv
