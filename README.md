@@ -149,9 +149,9 @@ CUDA_VISIBLE_DEVICES="1"
 |On | WavCaps | AudioSetKW+ChatGPT KW | MAGIC_WavCaps_AudioSet+ChatGPT_KW.sh | |
 
 
-**Inspecting the results**
+**Inspecting the results / logs**
 
-There are three files to analyze the results of a run with a dataset, which are stored in the folder specifying the language model. A run is uniquely identified by its time suffix. Like this, the three files can be matched for every run. The figure in front of the timestamp is the average of all NLG metrics, indicating the quality of the run.
+There are three files to analyze the results of a run with a dataset, which are stored in the folder specifying the language model. A run is uniquely identified by its time suffix. Like this, the three files can be matched for every run. The figure in front of the timestamp is the average of all NLG metrics, indicating the quality of the run. The folder ```audio_captioning/logs``` stores the result of our audio CLIP model ablation. We have used this to construct the state-of-the-art table in the paper. 
 
 1. evaluation: A table containing the NLG metrics of the run: https://github.com/SFauth/AACLM/blob/1a9aa00c3af548f997a0aa6474ed31f0ed3ad303/audio_captioning/inference_result/facebook/opt-1.3b/AudioCaps/excludes_prompt_magic/evaluation/test_performance/0.193_2023-05-31%2009%3A01%3A59_MAGIC_WavCaps_AudioSet_KW.csv
 
