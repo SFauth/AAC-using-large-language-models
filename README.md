@@ -84,9 +84,11 @@ mv clotho_audio_evaluation.7z evaluation_data_files.7z
 Set up the pre-trained audio CLIP model's checkpoint. If you only want to use the best audio CLIP model, skip a) and b):
 
 - a) For AudioCLIP:
+   AudioCLIP also requires a vocabulary file for the tokenizer (2nd link).
 ```
 cd audio_captioning/clip/AudioCLIP/assets
 wget https://github.com/AndreyGuzhov/AudioCLIP/releases/download/v0.1/AudioCLIP-Full-Training.pt
+wget -P https://github.com/AndreyGuzhov/AudioCLIP/releases/download/v0.1/bpe_simple_vocab_16e6.txt.gz
 ```
 - b) For LAION:
 ```
