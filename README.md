@@ -176,11 +176,9 @@ CUDA_VISIBLE_DEVICES="1"
 
 **Inspecting the results / logs**
 
-The folder ```audio_captioning/inference_results/facebook/opt-1.3b``` stores the result of all runs. If a new language model is selected, the code should automatically generate a new folder for the new model. Inside the LM's folder, there is two or three folders for each dataset:
-1. AudioCaps/excludes_prompt_magic/validation
-2. AudioCaps/excludes_prompt_magic/test_performance
-3. AudioCaps/excludes_prompt_magic/test_performance
-4. clotho_v2.1/excludes_prompt_magic/validation
+The folder ```audio_captioning/inference_results/facebook/opt-1.3b``` stores the result of all runs. If a new language model is selected, the program should automatically generate a new folder for the new model. Inside the LM's folder, there is one folder for each dataset:
+1. AudioCaps/excludes_prompt_magic
+2. clotho_v2.1/excludes_prompt_magic
 
 Inside each folder, there are three subfolders analyzing the results.
 1. evaluation: Stores a .csv file containing the NLG metrics of every run: https://github.com/SFauth/AACLM/blob/1a9aa00c3af548f997a0aa6474ed31f0ed3ad303/audio_captioning/inference_result/facebook/opt-1.3b/AudioCaps/excludes_prompt_magic/evaluation/test_performance/0.193_2023-05-31%2009%3A01%3A59_MAGIC_WavCaps_AudioSet_KW.csv
@@ -189,14 +187,16 @@ https://github.com/SFauth/AACLM/blob/1a9aa00c3af548f997a0aa6474ed31f0ed3ad303/au
 3. output_jsons: For every run a list of dictionaries containing the prediction for every sample and all hyperparameters
 https://github.com/SFauth/AACLM/blob/1a9aa00c3af548f997a0aa6474ed31f0ed3ad303/audio_captioning/inference_result/facebook/opt-1.3b/AudioCaps/excludes_prompt_magic/output_jsons/test_performance/0.193_2023-05-31%2009%3A01%3A59_MAGIC_WavCaps_AudioSet_KW.json
 
+After deciding on which result file (CSV, HTML or JSON) you want to check out, specify the experiment type:
+- validation = runs on the validation set to find the optimal hyperparameters
+- test_performance = runs on the test set for model ablation (results in the state-of-the-art table (SOTA) and in the model ablation plot)
+- ablation = runs on the test set for hyperparamer ablation (values in the $\beta$ and $l$ ablation plots made with the best model in test_performance)
+
 A run is uniquely identified by its time suffix. Like this, the three files can be matched for every run. The figure in front of the timestamp is the average of all NLG metrics, indicating the quality of the run.
 
-**TLDR**: There are **three files** per run on a dataset. Pick the ones with the most recent timestamp to check on your results.
+**TLDR**: There are **three files** per run on a dataset. Click through all subfolders and pick the ones with the most recent timestamp to check on your results.
 
-Which subfolder stores which experiment type?
-- validation = runs on the validation set to find the optimal hyperparameters
-- test_performance = runs on the test set to benchmark
-- ablation = runs on the test set for ablation
+
 
 ****
 <span id='future_work'/>
