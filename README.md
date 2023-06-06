@@ -2,8 +2,9 @@
 **Author**: Stefan Fauth
 
 
-This repository contains code, models, and other related resources of my master's thesis. The repo is based on the MAGIC paper [[Language Models Can See:
-Plugging Visual Controls in Text Generation]](https://arxiv.org/abs/2205.02655). I am grateful to the authors: Yixuan Su, Tian Lan, Yahui Liu, Fangyu Liu, Dani Yogatama, Yan Wang, Lingpeng Kong, and Nigel Collier.
+This repository contains code, models, and other related resources of my master's thesis. The repo is based on MAGIC. I am grateful to the authors: Yixuan Su, Tian Lan, Yahui Liu, Fangyu Liu, Dani Yogatama, Yan Wang, Lingpeng Kong, and Nigel Collier. Please check out their [repository](https://github.com/yxuansu/MAGIC) and [paper](https://arxiv.org/abs/2205.02655). 
+
+
 
 ****
 
@@ -29,7 +30,29 @@ Plugging Visual Controls in Text Generation]](https://arxiv.org/abs/2205.02655).
 <span id='introduction'/>
 
 ### 1. Introduction:
-Automated Audio Captioning using LMs.
+Automated audio captioning (AAC) is concerned with obtaining a meaningful
+caption of an audio clip. Usually, this problem is approached by expensive training
+of an encoder and a decoder. This training process requires significant computa-
+tional capacities and is data-hungry. In the field of AAC, data scarcity is still a major
+problem and the current datasets are significantly smaller than datasets in image cap-
+tioning. Completely avoiding any training, we propose, to our knowledge, the first
+zero-shot AAC system that, also, only consists of off-the-shelf pre-trained compo-
+nents. We build a system, based on recent advances in computer vision (CV), where
+the combination of pre-trained components have achieved impressive performance
+on image captioning problems in a zero-shot setting. By using a pre-trained audio
+CLIP model, we identify meaningful keywords that describe the audio clip and create
+an audio-guided prompt. We then use this prompt to make use of the capabilities
+of a large pre-trained language model (LM) and guide its decoding process. Instead
+of making the model greedily choose the token featuring the highest probability,
+we aurally guide the selection of the next token using the same audio CLIP model.
+We show that our model is able to clearly outperform a baseline on AudioCaps and
+Clotho, using common metrics in AAC research. In order to explain these results,
+we conduct experiments with three different audio CLIP models that differ in pre-
+training data and architecture. Moreover, we provide extensive ablation studies with
+different hyperparameters that control the amount of guiding in the prompt and in
+the decoding process. Finally, we use the insights from these results to provide clear
+perspectives for future research, which can be easily adapted due to the flexibility of
+the framework.
 ****
 <span id='environment_setup'/>
 
@@ -61,7 +84,7 @@ conda install -c conda-forge openjdk # for using Java based Stanford NLG metrics
 
 ### 3. Data setup:
 
-The repo is constructed, such that the data to do inference on can be stored in another directory. In case, you already have AudioCaps and Clotho's evaluation data set loaded, it is enough to **specify the softlink** in the directory audio_captioning/softlinks and you can skip a) and b). If you do **not have it** yet and want to minimize the effort to run an experiment, just **follow a) and b)**
+In case, you already have AudioCaps and Clotho's evaluation data set loaded, it is enough to **specify the softlink** in the directory audio_captioning/softlinks and you can skip a) and b). If you do **not have it** yet, just **follow a) and b)**:
 
 - a) AudioCaps:
 ```
@@ -81,7 +104,7 @@ mv clotho_audio_evaluation.7z evaluation_data_files.7z
 
 <span id='clip_models'/>
 
-Set up the pre-trained audio CLIP model's checkpoint. If you only want to use the best audio CLIP model, skip a) and b):
+Set up the pre-trained audio CLIP model's checkpoint. If you want to directly reproduce our best model, skip a) and b):
 
 - a) For AudioCLIP:
    AudioCLIP also requires a vocabulary file for the tokenizer (2nd link).
@@ -97,7 +120,7 @@ wget https://huggingface.co/lukewys/laion_clap/resolve/main/630k-audioset-fusion
 ```
 - c) For WavCaps:
    - Replace the file name with your absolute path to the inference.yaml file https://github.com/SFauth/AACLM/blob/62e2c0a29c1e6a9efc4f7e4e7becf40104df7465/audio_captioning/clip/load_clip_model.py#L8 and 
-   - Download checkpoint:
+   - Download the checkpoint:
 ```
 cd audio_captioning/clip/WavCaps/retrieval/assets
 gdown 1il6X1EiUPlbyysM9hn2CYr-YRSCuSy2m
@@ -153,17 +176,27 @@ CUDA_VISIBLE_DEVICES="1"
 
 **Inspecting the results / logs**
 
-There are three files to analyze the results of a run with a dataset, which are stored in the folder specifying the language model. A run is uniquely identified by its time suffix. Like this, the three files can be matched for every run. The figure in front of the timestamp is the average of all NLG metrics, indicating the quality of the run.
+The folder ```audio_captioning/inference_results/facebook/opt-1.3b``` stores the result of all runs. If a new language model is selected, the code should automatically generate a new folder for the new model. Inside the LM's folder, there is two or three folders for each dataset:
+1. AudioCaps/excludes_prompt_magic/validation
+2. AudioCaps/excludes_prompt_magic/test_performance
+3. AudioCaps/excludes_prompt_magic/test_performance
+4. clotho_v2.1/excludes_prompt_magic/validation
 
-1. evaluation: A table containing the NLG metrics of the run: https://github.com/SFauth/AACLM/blob/1a9aa00c3af548f997a0aa6474ed31f0ed3ad303/audio_captioning/inference_result/facebook/opt-1.3b/AudioCaps/excludes_prompt_magic/evaluation/test_performance/0.193_2023-05-31%2009%3A01%3A59_MAGIC_WavCaps_AudioSet_KW.csv
-
-2. output_tables: An HTML table containing the audio clip and sample-level results (NLG metrics, cosine similarities with the audio of the prediction, the prediction, ...). Run the HTML file
+Inside each folder, there are three subfolders analyzing the results.
+1. evaluation: Stores a .csv file containing the NLG metrics of every run: https://github.com/SFauth/AACLM/blob/1a9aa00c3af548f997a0aa6474ed31f0ed3ad303/audio_captioning/inference_result/facebook/opt-1.3b/AudioCaps/excludes_prompt_magic/evaluation/test_performance/0.193_2023-05-31%2009%3A01%3A59_MAGIC_WavCaps_AudioSet_KW.csv
+2. output_tables: Stores an HTML table containing the audio clip and sample-level results for qualitative analysis (NLG metrics, cosine similarities with the audio of the prediction, the prediction, ...). Run an HTML file to view it!
 https://github.com/SFauth/AACLM/blob/1a9aa00c3af548f997a0aa6474ed31f0ed3ad303/audio_captioning/inference_result/facebook/opt-1.3b/AudioCaps/excludes_prompt_magic/output_tables/test_performance/0.193_2023-05-31%2009%3A01%3A59_MAGIC_WavCaps_AudioSet_KW.html
-
-3. output_jsons: A list of dictionaries containing the prediction for every sample and all hyperparameters
+3. output_jsons: For every run a list of dictionaries containing the prediction for every sample and all hyperparameters
 https://github.com/SFauth/AACLM/blob/1a9aa00c3af548f997a0aa6474ed31f0ed3ad303/audio_captioning/inference_result/facebook/opt-1.3b/AudioCaps/excludes_prompt_magic/output_jsons/test_performance/0.193_2023-05-31%2009%3A01%3A59_MAGIC_WavCaps_AudioSet_KW.json
 
-The folder ```audio_captioning/logs``` stores the result of our audio CLIP model ablation. We have used this to construct the state-of-the-art table in the paper. 
+A run is uniquely identified by its time suffix. Like this, the three files can be matched for every run. The figure in front of the timestamp is the average of all NLG metrics, indicating the quality of the run.
+
+**TLDR**: There are **three files** per run on a dataset. Pick the ones with the most recent timestamp to check on your results.
+
+Which subfolder stores which experiment type?
+- validation = runs on the validation set to find the optimal hyperparameters
+- test_performance = runs on the test set to benchmark
+- ablation = runs on the test set for ablation
 
 ****
 <span id='future_work'/>
