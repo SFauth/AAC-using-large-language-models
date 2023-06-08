@@ -200,7 +200,7 @@ A run is uniquely identified by its time suffix. Like this, the three files can 
 
 **TLDR**: There are **three files** per run on a dataset. Click through all subfolders and pick the ones with the most recent timestamp to check on your results.
 
-If this was not clear, check out the 
+If this was not clear, check out the ```audio_captioning/README.md```, which sketches the folder structure.
 
 ****
 <span id='future_work'/>
