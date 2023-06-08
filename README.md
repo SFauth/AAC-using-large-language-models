@@ -18,13 +18,14 @@ This repository contains code, models, and other related resources of my master'
 * <a href='#clip_models'>4. Audio CLIP Model setup</a>
 * <a href='#stanford'>5. Natural language generation metrics setup </a>
 * <a href='#run_inference'>6. Running inference</a>
-* <a href='#future_work'>7. Future work</a>
-    * <a href='#future_work_hyper'>7.1. How to exchange the hyperparameters that are not in the shell script?</a>
-    * <a href='#future_work_LM'>7.2. How to exchange the language model? </a>
-    * <a href='#future_work_CLIP'>7.3. How to exchange the audio CLIP model?</a>
-    * <a href='#future_work_flag'>7.4. Detailed explanation of all flags in the inference shell-scripts</a>
-    * <a href='#ablation'>7.5. Example: how did we do the ablation studies to find the optimal beta?</a>
-* <a href='#contact'>8. Contact</a>
+* <a href='#logs'>7. Inspecting results / logs </a>
+* <a href='#future_work'>8. Future work</a>
+    * <a href='#future_work_hyper'>8.1. How to exchange the hyperparameters that are not in the shell script?</a>
+    * <a href='#future_work_LM'>8.2. How to exchange the language model? </a>
+    * <a href='#future_work_CLIP'>8.3. How to exchange the audio CLIP model?</a>
+    * <a href='#future_work_flag'>8.4. Detailed explanation of all flags in the inference shell-scripts</a>
+    * <a href='#ablation'>8.5. Example: how did we do the ablation studies to find the optimal beta?</a>
+* <a href='#contact'>9. Contact</a>
 ****
 
 <span id='introduction'/>
@@ -173,8 +174,11 @@ CUDA_VISIBLE_DEVICES="1"
 |On | WavCaps | AudioSetKW | MAGIC_WavCaps_AudioSet_KW.sh | Best Model|
 |On | WavCaps | AudioSetKW+ChatGPT KW | MAGIC_WavCaps_AudioSet+ChatGPT_KW.sh | |
 
+****
+<span id='logs'/>
 
-**Inspecting the results / logs**
+### 6. Inspecting results / logs:
+
 
 The folder ```audio_captioning/inference_results/facebook/opt-1.3b``` stores the result of all runs. If a new language model is selected, the program should automatically generate a new folder for the new model. Inside the LM's folder, there is one folder for each dataset:
 1. AudioCaps/excludes_prompt_magic
@@ -201,11 +205,11 @@ A run is uniquely identified by its time suffix. Like this, the three files can 
 ****
 <span id='future_work'/>
 
-### 7. Future work
+### 8. Future work
 
 How to exchange components of the system or conduct experiments? We have found the optimal parameters by running sweeps. This can be done by making a change and then using one of the shell-scripts. 
 
-#### 7.1 How to **exchange** the **hyperparameters** that are **not in** the **shell-script**?
+#### 8.1 How to **exchange** the **hyperparameters** that are **not in** the **shell-script**?
 
 <span id='future_work_hyper'/>
 
@@ -215,7 +219,7 @@ Change the parameter, e.g. $\beta$ and $l$:
 - https://github.com/SFauth/AACLM/blob/d55733c5e74e67e4845c79f6616faf883b7b2069/audio_captioning/inference_magic.py#L229
   
    
-#### 7.2 How to **exchange** the **language model** with another model from HuggingFace?
+#### 8.2 How to **exchange** the **language model** with another model from HuggingFace?
 
 <span id='future_work_LM'/>
 
@@ -224,7 +228,7 @@ Note that this may vary, depending on the model.
 - if necessary, adapt the snippet:
 [https://github.com/SFauth/AACLM/blob/557f433fe7f7b369df23f156113b15cfa6b670ca/audio_captioning/language_model/simctg.py#L48-L52](https://github.com/SFauth/AACLM/blob/557f433fe7f7b369df23f156113b15cfa6b670ca/audio_captioning/language_model/simctg.py#L48-L52)
 
-#### 7.3 How to **exchange** the **audio CLIP** model? 
+#### 8.3 How to **exchange** the **audio CLIP** model? 
 
 <span id='future_work_CLIP'/>
 
@@ -234,13 +238,13 @@ Replicate the code for the other audio CLIP models
 - add an elif condition for the new model: https://github.com/SFauth/AACLM/blob/62e2c0a29c1e6a9efc4f7e4e7becf40104df7465/audio_captioning/inference_magic.py#L126-L135
 - specify in the corresponding shell-script the path to the model's checkpoint: https://github.com/SFauth/AACLM/blob/62e2c0a29c1e6a9efc4f7e4e7becf40104df7465/audio_captioning/sh_folder/MAGIC_WavCaps_AudioSet_KW.sh#L5
 
-#### 7.4 **Explanation** of every **flag**:
+#### 8.4 **Explanation** of every **flag**:
 
 <span id='future_work_flag'/>
 
 https://github.com/SFauth/AACLM/blob/62e2c0a29c1e6a9efc4f7e4e7becf40104df7465/audio_captioning/inference_magic.py#L32-L57
 
-#### 7.5 Example: how did we do the ablation studies to find the optimal beta? 
+#### 8.5 Example: how did we do the ablation studies to find the optimal beta? 
 
 <span id='ablation'/>
 
@@ -258,7 +262,7 @@ https://github.com/SFauth/AACLM/blob/62e2c0a29c1e6a9efc4f7e4e7becf40104df7465/au
 
 <span id='contact'/>
 
-### 8. Contact
+### 9. Contact
 If there are still open questions, have a look at the dissertation or contact me at (SFauth@gmx.net).
 
 
