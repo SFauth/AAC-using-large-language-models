@@ -1,6 +1,6 @@
 \begin{table}
 \centering
-\caption{Beta Ablation on AudioCaps validation set}
+\caption{Number of keywords $l$ ablation on AudioCaps validation set}
 \begin{tabular}{rrrrrrrrr}
 \toprule
  beta &  Mean Score &  Bleu 1 &  Bleu 4 &  METEOR &  ROUGE L &  CIDEr &  SPICE &  SPIDEr \\
