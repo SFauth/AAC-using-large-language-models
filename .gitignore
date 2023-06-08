@@ -13,6 +13,7 @@ audio_captioning/inference_result/facebook/opt-1.3b/*2023-05*
 **/*.jpg*
 **/*.pt
 # in all ablation folders, keep only files that contain "2023-06"2023-06-04 10:48:59
+*2023-04*
 *2023-05*
 *2023-06-04 10:48:59*
 *2023-06-04 08:08:59*
