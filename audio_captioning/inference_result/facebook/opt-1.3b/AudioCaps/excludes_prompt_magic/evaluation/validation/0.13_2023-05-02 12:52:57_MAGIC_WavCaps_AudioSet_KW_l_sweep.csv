@@ -1,2 +1,0 @@
-Dataset,Model,Mean_NLG_M,Bleu_1,Bleu_2,Bleu_3,Bleu_4,METEOR,ROUGE_L,CIDEr,SPICE,SPIDEr
-AudioCaps,MAGIC_WavCaps_AudioSet_KW_l_sweep,0.13,0.285,0.125,0.05,0.023,0.113,0.227,0.15,0.083,0.116
