@@ -1,2 +1,0 @@
-Dataset,Model,Mean_NLG_M,Bleu_1,Bleu_2,Bleu_3,Bleu_4,METEOR,ROUGE_L,CIDEr,SPICE,SPIDEr
-clotho,MAGIC_AudioCLIP_AudioSet_KW,0.084,0.309,0.083,0.025,0.0,0.072,0.214,0.019,0.017,0.018
