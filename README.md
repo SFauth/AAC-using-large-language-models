@@ -177,7 +177,7 @@ CUDA_VISIBLE_DEVICES="1"
 ****
 <span id='logs'/>
 
-### 6. Inspecting results / logs:
+### 7. Inspecting results / logs:
 
 
 The folder ```audio_captioning/inference_results/facebook/opt-1.3b``` stores the result of all runs. If a new language model is selected, the program should automatically generate a new folder for the new model. Inside the LM's folder, there is one folder for each dataset:
@@ -200,7 +200,7 @@ A run is uniquely identified by its time suffix. Like this, the three files can 
 
 **TLDR**: There are **three files** per run on a dataset. Click through all subfolders and pick the ones with the most recent timestamp to check on your results.
 
-
+If this was not clear, check out the 
 
 ****
 <span id='future_work'/>
