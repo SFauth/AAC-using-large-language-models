@@ -160,7 +160,7 @@ CUDA_VISIBLE_DEVICES="1"
 
 |MAGIC| Audio Model | Keywords | Script | Comment |
 |----------|----------|---------|--------|---------|
-|Off| - | - | MAGIC_no_audio.sh | Baseline |
+|Off| - | - | baseline.sh | Baseline |
 |Off| WavCaps | AudioSetKW | WavCaps_AudioSet_KW.sh |  |
 |Off| WavCaps | AudioSet+ChatGPT KW | WavCaps_AudioSet+ChatGPT_KW.sh |  |
 |On | AudioCLIP | - | MAGIC_AudioCLIP.sh | |
