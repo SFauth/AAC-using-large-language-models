@@ -5,9 +5,11 @@ audio_captioning/evaluation/pycocoevalcap/spice/lib/*stanford*
 *code_testing*
 audio_captioning/softlinks/AudioCaps_data/
 audio_captioning/softlinks/evaluation_data_files/
+audio_captioning/inference_result/facebook/opt-1.3b/*2023-05*
 *.pyc
 *.swp
 .vscode
 **/*.wav*
 **/*.jpg*
 **/*.pt
+# in all ablation folders, keep only files that contain "2023-06"
