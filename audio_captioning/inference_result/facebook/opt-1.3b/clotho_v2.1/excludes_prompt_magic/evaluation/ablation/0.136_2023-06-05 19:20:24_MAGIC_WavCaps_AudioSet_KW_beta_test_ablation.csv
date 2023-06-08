@@ -1,0 +1,2 @@
+Dataset,Model,Mean_NLG_M,Bleu_1,Bleu_2,Bleu_3,Bleu_4,METEOR,ROUGE_L,CIDEr,SPICE,SPIDEr
+clotho,MAGIC_WavCaps_AudioSet_KW_beta_test_ablation,0.136,0.335,0.148,0.066,0.03,0.094,0.258,0.143,0.053,0.098

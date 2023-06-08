@@ -73,7 +73,6 @@ def get_prompt_id(text, tokenizer):
 import argparse
 if __name__ == '__main__':
     if torch.cuda.is_available():
-        print ('Cuda is available.')
         print('{} GPUs available'.format(torch.cuda.device_count()))
     cuda_available = torch.cuda.is_available()
     args = parse_config()
@@ -122,7 +121,7 @@ if __name__ == '__main__':
         preprocessor = preprocess_for_WavCaps
         
         
-    elif "audioclip" in args.audio_pt_file:
+    elif "AudioCLIP" in args.audio_pt_file:
         print('AudioCLIP encoder selected!')
         sys.path.append(os.path.join(args.audio_code_path, 'AudioCLIP'))
         from load_clip_model import load_AudioClip
@@ -214,34 +213,29 @@ if __name__ == '__main__':
     #betas = torch.linspace(1.6, 2, steps=5).cuda()
     #betas = torch.linspace(0.7, 0.7, steps=1).cuda()
     #betas = torch.tensor([2.5, 3, 4, 5, 7, 10, 25], device=device)
-    #betas = torch.tensor([0.1], device=device)
-    betas = torch.tensor([0.1], device=device)
+    betas = torch.tensor([0.5], device=device)
+    #betas = torch.tensor([0], device=device)
 
-    prompts = ["This is a sound of "] 
-
-    #prompts = [" "]
+    prompts = ["This is a sound of "]
 
 
-    #temperatures = torch.linspace(10, 25, steps=1).cuda()
-    temperatures = torch.linspace(25, 25, steps=1).cuda()
+    temperatures = torch.tensor([10]).cuda()
 
-    #top_keywords = torch.tensor([2]).cuda()
+
     top_keywords = torch.tensor([2]).cuda()
 
-    #keywords_prompts = ["I am an intelligent audio captioning bot. I think there might be "]
-     
+
     keywords_prompts = ["Objects: "]
 
-    #keywords_prompts = ["Generate an audio caption based on the objects "]
     
     include_prompt_magic = [False]
 
-    #alphas = torch.linspace(0, 0.1, steps=1).cuda()
-    alphas = torch.linspace(0, 0, steps=1).cuda()
+
+    alphas = torch.tensor([0]).cuda()
 
 
-    #end_penaltys = torch.linspace(0.1, 0.16, steps=1).cuda()
-    end_penaltys = torch.linspace(0.1, 0.1, steps=1).cuda()
+    end_penaltys = torch.tensor([0.1]).cuda()
+
 
     hyperparam_grid = itertools.product(betas,
                                         prompts,
@@ -331,9 +325,12 @@ if __name__ == '__main__':
                                                     device)
                     
                     if "CLAP" in str(type(clip)):
+                        clip.to(device)
+                        sound_instance.to(device)
                         audio_embeds = clip.encode_audio(sound_instance,
                                                         use_tensor=True)      
                     else:
+                        
                         audio_embeds = clip.encode_audio(sound_instance)
                     
                                             
@@ -368,7 +365,7 @@ if __name__ == '__main__':
                     if cuda_available:
                         input_ids = input_ids.to(device)
 
-                    #try:
+                
 
                     """
                     input_ids: gets token id of the SOS token 
@@ -465,10 +462,10 @@ if __name__ == '__main__':
                     sound_file_name = os.path.split(sound_full_path)[1]
 
                     if "clotho" in dataset:
-                        sound_full_path = os.path.join("../../../../../softlinks_to_wav/evaluation_data_files", sound_file_name)
+                        sound_full_path = os.path.join("../../../../../../softlinks/evaluation_data_files", sound_file_name)
 
                     elif "AudioCaps" in dataset:
-                        sound_full_path = os.path.join("../../../../../softlinks_to_wav/AudioCaps_data", sound_file_name)
+                        sound_full_path = os.path.join("../../../../../../softlinks/AudioCaps_data", sound_file_name)
 
                     else:
                         pass
@@ -517,8 +514,6 @@ if __name__ == '__main__':
         p.finish()
 
         #%% add NLG metrics for whole run to table
-
-        print(result_list)
 
         cocoEval_final = COCOEvalCap_list(result_list)
         

@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import argparse
 import json
-from plotnine import ggplot, aes, geom_line, geom_point, xlab, ylab, scale_x_continuous, scale_y_continuous
+from plotnine import *
 
 def parse_config():
     parser = argparse.ArgumentParser()
@@ -22,34 +22,62 @@ def ablation_plot(sweep_table,
     Function that creates an ablation plot for the specified hyperparam, based on the data specified in sweep table.
     For a better interpretable plot, specify a hyperparameter value, of which bigger values are dropped.
     """
+
     # change table to long format 
 
     sweep_table_long = pd.melt(sweep_table,
                                 id_vars=hyperparam,
                                 var_name="Metric")
+
+    sweep_table_long["mean_score"] = np.where(sweep_table_long["Metric"] == "Mean Score",
+                                              "Mean_Score",
+                                              "Single_Metric")
+    
+    sweep_table_long["Metric"] = np.where(sweep_table_long["Metric"] == "Mean Score",
+                                          "NLG Mean Score",
+                                          sweep_table_long["Metric"])
+    
     
     # TRUNCATE VALUES!
 
     if truncation_val != None:
         sweep_table_long = sweep_table_long[sweep_table_long[hyperparam] <= truncation_val]
 
+    if hyperparam == "l":
+        x_axis_label = "Number of Keywords $l$"
+
+    else:
+        x_axis_label = "$\\beta$"
+
     plot = (
 
     ggplot(sweep_table_long)
 
-    + aes(x=hyperparam, y="value", color="Metric")  
+    + aes(x=hyperparam, y="value", color="Metric", linetype="mean_score")  
 
     + geom_line()
 
+    + scale_linetype_manual(values=['dashed', 'solid'])
+
+    + guides(linetype=False)
+
+    + theme_classic()
+
     + geom_point(shape='x', size=2) 
+
+    + xlab(x_axis_label)
     
     + ylab("Score")
-
+ 
     + scale_x_continuous(breaks=round(sweep_table_long[hyperparam], 1))
 
     + scale_y_continuous(breaks=np.linspace(5, 45, 9))
     )
 
+    plot = plot + theme(
+            panel_grid_major=element_line(color='lightgray'),
+            panel_grid_minor=element_blank())
+    
     plot.save(save_path, dpi=320)
 
     print("{} ablation plot saved in {}".format(hyperparam, save_path))
@@ -82,6 +110,7 @@ if __name__ == '__main__':
 
     hyperparams_dicts_list_list = glob(os.path.join(args.hyperparam_json_path, '*.json'), recursive=True)
 
+
     beta = []
     l = []
     index_hyperparams = []
@@ -92,7 +121,8 @@ if __name__ == '__main__':
 
         file_name = os.path.split(hyperparam_dicts_list)[-1]
 
-        if args.hyperparam in file_name:
+        if (args.hyperparam in file_name) and ("2023-06" in file_name):
+
             index_hyperparams.append(file_name.split('_MAGIC')[0])
             f = open(hyperparam_dicts_list)
             dict_list = json.load(f)
@@ -102,11 +132,14 @@ if __name__ == '__main__':
             # also append beta! then just select based on args.hyperparam later!
             # change hyperparams df with one column indicating split 
 
+
     hyperparams = pd.DataFrame([beta, l]).transpose()
 
     hyperparams = pd.concat([hyperparams, pd.Series(index_hyperparams)], axis=1)
 
     hyperparams = pd.concat([hyperparams, pd.Series(ablation_or_not)], axis=1)
+
+   
 
     hyperparams.columns = ["beta", "l", "timestamp", "ablation_or_not"]
 
@@ -125,6 +158,7 @@ if __name__ == '__main__':
     else: 
 
         hyperparams = hyperparams[hyperparams["ablation_or_not"].str.contains("l_test_ablation")]
+
 
 
     sweep_table = pd.merge(hyperparams, result_table, on='timestamp', how='left').\

@@ -48,7 +48,7 @@ def load_CLAP(cuda_available,
         clip = laion_clap.CLAP_Module(enable_fusion=True, device='cpu')
 
     # create encode_text and encode_audio function
-
+# IM MAGIC REPO LAUFEN LASSEN!!
     clip.load_ckpt(ckpt=pt_file,
                    model_id=3)
     clip.eval()

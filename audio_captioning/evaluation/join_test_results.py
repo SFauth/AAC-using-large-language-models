@@ -13,14 +13,6 @@ def parse_config():
     parser.add_argument("--SOTA_table", type=str, help="specify TRUE if table is SOTA table")
     return parser.parse_args()
 
-def make_max_cells_bold(val, max_val, second_max_val):
-    if val == max_val:
-        return '\textbf{' + str(val) + '}'
-    elif val == second_max_val:
-        return '\textbf{' + str(val) + '}'
-    else:
-        return val
-
 def sorting_function_keyword_lists(list_name):
     return len(str(list_name))
 
@@ -29,7 +21,7 @@ if __name__ == '__main__':
 
     # hyperparams
 
-    hyperparams_dict = glob(os.path.join(args.hyperparam_json_path, '*.json'), recursive=True)[0]
+    hyperparams_dict = glob(os.path.join(args.hyperparam_json_path, '**/*.json'), recursive=True)[0]
     hyperparams = pd.read_json(hyperparams_dict).loc[0:1,["alpha",
                                           "beta",
                                           "k",
@@ -47,12 +39,30 @@ if __name__ == '__main__':
 
     for f in glob(os.path.join(args.result_files_path, '**/*.csv'), recursive=True):
 
-        if "test_performance" in f and "beta_0.1" in f:
+        if ("2023-06" in f) and ("test_performance" in f):
             result_files.append(pd.read_csv(f).set_index(['Dataset', 'Model']))
-    
-    result_table = pd.concat(result_files, axis=0).applymap(lambda x: x*100).rename(columns={"Mean_NLG_M":"Mean Score"})
 
     
+    result_table = pd.concat(result_files, axis=0).\
+        applymap(lambda x: x*100).\
+        rename(columns={"Mean_NLG_M":"NLG Mean Score"}).\
+        sort_values("NLG Mean Score")
+
+
+    baselines = result_table.reset_index()
+
+    baselines = baselines[baselines["Model"]== "Baseline_LM_only"].\
+                set_index(["Dataset", "Model"])
+
+
+    if args.SOTA_table == "TRUE":
+         result_table.reset_index(inplace=True)
+         result_table = result_table.\
+            loc[result_table.groupby("Dataset")["SPIDEr"].idxmax()].\
+            set_index(["Dataset","Model"])
+         result_table = pd.concat([result_table, baselines], axis=0)
+        
+
     # add supervised SOTA results for clotho and AudioCaps
 
     SOTA = pd.DataFrame({'Dataset':["AudioCaps", "clotho"],
@@ -60,13 +70,14 @@ if __name__ == '__main__':
                          'Bleu_1':[70.7, 60.1],
                          'Bleu_2':[53.4, 40.0],
                          'Bleu_3':[39.5, 27.1],
-                         'Bleu_4':[28.9, 18.2],
+                         'Bleu_4':[28.3, 18.2],
                          'METEOR':[25.0, 18.5],
                          'ROUGE_L':[50.7, 40.0],
                          'CIDEr':[78.7, 48.8],
                          'SPICE':[18.2, 13.5],
                          'SPIDEr':[48.5, 31.0]}).set_index(['Dataset', 'Model'])
     
+
     ablation_table = pd.concat([result_table, SOTA], axis=0).reset_index()
 
     groups = [
@@ -80,7 +91,7 @@ if __name__ == '__main__':
 
     group_names = ['Baseline', 'MAGIC AudioCLIP', 'MAGIC LAION', 'MAGIC WavCaps', 'WavCaps', 'SOTA']
 
-    
+    print(ablation_table)
     ablation_table["Group"] = pd.Series(np.select(groups, group_names))
     ablation_table["Dataset"] = np.where(ablation_table["Dataset"] == "clotho",
                                          "Clotho",
@@ -120,7 +131,7 @@ if __name__ == '__main__':
     
     name_cols = ["MAGIC", "Audio Model", "Keywords"]
     new_columns = name_cols + (ablation_table.columns.drop(name_cols).tolist())
-    ablation_table = ablation_table[new_columns].drop(columns=["Model"])
+    ablation_table = ablation_table[new_columns].drop(columns=["Model", "Bleu_2", "Bleu_3"])
 
     ablation_table["MAGIC"] = np.where((ablation_table["Audio Model"] == "-") & (ablation_table["Keywords"] == "-"),
                                 "Off",
@@ -156,14 +167,14 @@ if __name__ == '__main__':
     ac = ac.\
         groupby(['MAGIC', 'Audio Model', 'Keywords']).\
         apply(lambda x: x.assign(keyword_list_length=x['Keywords'].map(sorting_function_keyword_lists)).\
-        sort_values('keyword_list_length')).\
+        sort_values('Bleu 1')).\
         reset_index(drop=True).\
         drop(columns=["keyword_list_length"])
     
     clotho = clotho.\
         groupby(['MAGIC', 'Audio Model', 'Keywords']).\
         apply(lambda x: x.assign(keyword_list_length=x['Keywords'].map(sorting_function_keyword_lists)).\
-        sort_values('keyword_list_length')).\
+        sort_values('SPIDEr')).\
         reset_index(drop=True).\
         drop(columns=["keyword_list_length"])
 

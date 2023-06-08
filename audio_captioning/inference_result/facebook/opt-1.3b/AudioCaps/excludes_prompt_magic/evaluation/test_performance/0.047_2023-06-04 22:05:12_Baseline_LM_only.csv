@@ -1,0 +1,2 @@
+Dataset,Model,Mean_NLG_M,Bleu_1,Bleu_2,Bleu_3,Bleu_4,METEOR,ROUGE_L,CIDEr,SPICE,SPIDEr
+AudioCaps,Baseline_LM_only,0.047,0.188,0.011,0.0,0.0,0.041,0.178,0.001,0.0,0.0
