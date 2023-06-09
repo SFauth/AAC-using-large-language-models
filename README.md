@@ -61,23 +61,23 @@ the framework.
 
 1. Clone the repo
 ```
-git clone https://github.com/SFauth/AACLM.git
+git clone https://github.com/SFauth/AACLM.git](https://github.com/ExplainableML/2023-audiocaptioning-msc-stefan.git
 ```
 2. Set it as the current directory
 ```
-cd AACLM
+cd 2023-audiocaptioning-msc-stefan
+
 ```
 3. Create a new conda environment with the correct Python version
 ```
-conda create --name <ENV_NAME> python=3.7.1
+conda env create -f env1.yaml
 ```
 4. Activate the environment
 ```
-conda activate <ENV_NAME>
+conda activate ZSAAC
 ```
-5. Install all dependencies
+5. Install remaining dependencies
 ```
-pip3 install -r requirements.txt
 conda install -c conda-forge openjdk # for using Java based Stanford NLG metrics computation
 ```
 ****
