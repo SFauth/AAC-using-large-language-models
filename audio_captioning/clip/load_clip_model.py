@@ -5,7 +5,7 @@ def load_WavCaps(cuda_available,
     from WavCaps.retrieval.models.ase_model import ASE
     from torch import load
 
-    with open("/home/sfauth/code/AACLM/audio_captioning/clip/WavCaps/retrieval/settings/inference.yaml", "r") as f:
+    with open("/home/sfauth/code/2023-audiocaptioning-msc-stefan/audio_captioning/clip/WavCaps/retrieval/settings/inference.yaml", "r") as f:
         config = yaml.safe_load(f)
 
     clip = ASE(config)
