@@ -325,10 +325,12 @@ if __name__ == '__main__':
                                                     device)
                     
                     if "CLAP" in str(type(clip)):
-                        clip.to(device)
-                        sound_instance.to(device)
-                        audio_embeds = clip.encode_audio(sound_instance,
-                                                        use_tensor=True)      
+                        try:
+                            audio_embeds = clip.encode_audio(sound_instance,
+                                                        use_tensor=True)  
+                        except:
+
+                            audio_embeds = clip.get_audio_embedding_from_filelist(x=sound_full_path, use_tensor=True)  
                     else:
                         
                         audio_embeds = clip.encode_audio(sound_instance)
