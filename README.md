@@ -116,11 +116,13 @@ wget -P https://github.com/AndreyGuzhov/AudioCLIP/releases/download/v0.1/bpe_sim
 ```
 - b) For LAION:
 ```
-cd audio_captioning/clip/CLAP/assets
+cd audio_captioning/clip
+mkdir CLAP/assets
+cd CLAP/assets
 wget https://huggingface.co/lukewys/laion_clap/resolve/main/630k-audioset-fusion-best.pt
 ```
 - c) For WavCaps:
-   - Replace the file name with your absolute path to the inference.yaml file https://github.com/SFauth/AACLM/blob/62e2c0a29c1e6a9efc4f7e4e7becf40104df7465/audio_captioning/clip/load_clip_model.py#L8 and 
+   - Replace the file name with your absolute path to the inference.yaml file https://github.com/ExplainableML/2023-audiocaptioning-msc-stefan/blob/c4a8fcdc479ab3c77cb79f59d3f82cdba7d2c933/audio_captioning/clip/load_clip_model.py#L8 and 
    - Download the checkpoint:
 ```
 cd audio_captioning/clip/WavCaps/retrieval/assets
@@ -215,8 +217,8 @@ How to exchange components of the system or conduct experiments? We have found t
 
 Change the parameter, e.g. $\beta$ and $l$:
 
-- https://github.com/SFauth/AACLM/blob/d55733c5e74e67e4845c79f6616faf883b7b2069/audio_captioning/inference_magic.py#L218
-- https://github.com/SFauth/AACLM/blob/d55733c5e74e67e4845c79f6616faf883b7b2069/audio_captioning/inference_magic.py#L229
+- https://github.com/ExplainableML/2023-audiocaptioning-msc-stefan/blob/c4a8fcdc479ab3c77cb79f59d3f82cdba7d2c933/audio_captioning/inference_magic.py#L216
+- https://github.com/ExplainableML/2023-audiocaptioning-msc-stefan/blob/c4a8fcdc479ab3c77cb79f59d3f82cdba7d2c933/audio_captioning/inference_magic.py#L225
   
    
 #### 8.2 How to **exchange** the **language model** with another model from HuggingFace?
@@ -226,25 +228,25 @@ Change the parameter, e.g. $\beta$ and $l$:
 Note that this may vary, depending on the model.
 - change in the corresponding shell-script the flag _language_model_name_ according to the model name on Huggingface, e.g. GPT2
 - if necessary, adapt the snippet:
-[https://github.com/SFauth/AACLM/blob/557f433fe7f7b369df23f156113b15cfa6b670ca/audio_captioning/language_model/simctg.py#L48-L52](https://github.com/SFauth/AACLM/blob/557f433fe7f7b369df23f156113b15cfa6b670ca/audio_captioning/language_model/simctg.py#L48-L52)
+https://github.com/ExplainableML/2023-audiocaptioning-msc-stefan/blob/c4a8fcdc479ab3c77cb79f59d3f82cdba7d2c933/audio_captioning/language_model/simctg.py#L48-L52
 
 #### 8.3 How to **exchange** the **audio CLIP** model? 
 
 <span id='future_work_CLIP'/>
 
 Replicate the code for the other audio CLIP models
-- add a preprocessing function to: https://github.com/SFauth/AACLM/blob/62e2c0a29c1e6a9efc4f7e4e7becf40104df7465/audio_captioning/clip/audio_preprocessors.py#L26-L29
-- create a model loading function: https://github.com/SFauth/AACLM/blob/62e2c0a29c1e6a9efc4f7e4e7becf40104df7465/audio_captioning/clip/load_clip_model.py#L23-L35
-- add an elif condition for the new model: https://github.com/SFauth/AACLM/blob/62e2c0a29c1e6a9efc4f7e4e7becf40104df7465/audio_captioning/inference_magic.py#L126-L135
-- specify in the corresponding shell-script the path to the model's checkpoint: https://github.com/SFauth/AACLM/blob/62e2c0a29c1e6a9efc4f7e4e7becf40104df7465/audio_captioning/sh_folder/MAGIC_WavCaps_AudioSet_KW.sh#L5
+- add a preprocessing function to: https://github.com/ExplainableML/2023-audiocaptioning-msc-stefan/blob/c4a8fcdc479ab3c77cb79f59d3f82cdba7d2c933/audio_captioning/clip/audio_preprocessors.py#L26-L29
+- create a model loading function: https://github.com/ExplainableML/2023-audiocaptioning-msc-stefan/blob/c4a8fcdc479ab3c77cb79f59d3f82cdba7d2c933/audio_captioning/clip/load_clip_model.py#L23-L25
+- add an elif condition for the new model: https://github.com/ExplainableML/2023-audiocaptioning-msc-stefan/blob/c4a8fcdc479ab3c77cb79f59d3f82cdba7d2c933/audio_captioning/inference_magic.py#L124-L133
+- specify in the corresponding shell-script the path to the model's checkpoint: https://github.com/ExplainableML/2023-audiocaptioning-msc-stefan/blob/c4a8fcdc479ab3c77cb79f59d3f82cdba7d2c933/audio_captioning/sh_folder/MAGIC_AudioCLIP_AudioSet_KW.sh#L5
 
 #### 8.4 **Explanation** of every **flag**:
 
 <span id='future_work_flag'/>
 
-https://github.com/SFauth/AACLM/blob/62e2c0a29c1e6a9efc4f7e4e7becf40104df7465/audio_captioning/inference_magic.py#L32-L57
+https://github.com/ExplainableML/2023-audiocaptioning-msc-stefan/blob/c4a8fcdc479ab3c77cb79f59d3f82cdba7d2c933/audio_captioning/inference_magic.py#L31-L60
 
-#### 8.5 Example: how did we do the ablation studies to find the optimal beta? 
+#### 8.5 Example: how to do validation runs? 
 
 <span id='ablation'/>
 
@@ -252,12 +254,13 @@ https://github.com/SFauth/AACLM/blob/62e2c0a29c1e6a9efc4f7e4e7becf40104df7465/au
    ```python
    betas = torch.tensor([0, 0.1, 0.2, 0.3], device=device) 
    ```
-2. We created a shell-script and defined a GPU to use. Since we want to use the validation set of AudioCaps, we have to **define the correct --GT_captions_AudioCaps flag** that contains the names of the files that are part of the validation set. Furthermore, we **specify as experiment name "validation"** to make the result being saved in the validation folder and **set a save name containing the hyperparameter that we ablate**: https://github.com/SFauth/AACLM/blob/559d3e88aeec5d1b6e352ccf8ec2581eb9080e00/audio_captioning/sh_folder/MAGIC_WavCaps_AudioSet_KW_beta_sweep_AC.sh#L1-L14
+Do the same for every value that you want to try out. 
    
-3. As we have had than more than one GPU, we then repeated step 1 and step 2 using other $\beta$ values, indicating to use another GPU
+2. Create a shell-script and define  a GPU to use. Since we want to use the validation set of AudioCaps, we have to **define the correct --GT_captions_AudioCaps flag** that contains the names of the files that are part of the validation set. Furthermore, we **specify as experiment name "validation"** to make the result being saved in the validation folder and **set a save name containing the hyperparameter that we ablate**: https://github.com/ExplainableML/2023-audiocaptioning-msc-stefan/blob/c4a8fcdc479ab3c77cb79f59d3f82cdba7d2c933/audio_captioning/sh_folder/MAGIC_WavCaps_AudioSet_KW_hyperparam_sweep_AC.sh#LL1C1-L14C1
    
-4. We created a table and a visualization using a shell-script, specifying the **correct folders where to find the result JSON and CSV**. Besides, we specify the **correct hyperparameter** and give a **caption indicating whether we used a test or validation set**:
-   https://github.com/SFauth/AACLM/blob/559d3e88aeec5d1b6e352ccf8ec2581eb9080e00/audio_captioning/sh_folder/create_beta_validation_ablation_table_AC.sh#L1-L5
+3. As we have had than more than one GPU, we then repeated step 1 and step 2 using other $\beta$ or hyperparameter values, indicating to use another GPU
+   
+4. Use a jupyter notebook to create the visualization: https://github.com/ExplainableML/2023-audiocaptioning-msc-stefan/blob/c4a8fcdc479ab3c77cb79f59d3f82cdba7d2c933/audio_captioning/evaluation/development_result_jsons/create_val_plot.ipynb
 ****
 
 <span id='contact'/>
