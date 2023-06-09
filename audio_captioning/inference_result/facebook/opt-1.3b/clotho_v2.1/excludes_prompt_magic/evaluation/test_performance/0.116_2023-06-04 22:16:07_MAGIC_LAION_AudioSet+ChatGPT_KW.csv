@@ -1,2 +1,0 @@
-Dataset,Model,Mean_NLG_M,Bleu_1,Bleu_2,Bleu_3,Bleu_4,METEOR,ROUGE_L,CIDEr,SPICE,SPIDEr
-clotho,MAGIC_LAION_AudioSet+ChatGPT_KW,0.116,0.302,0.123,0.049,0.02,0.082,0.224,0.113,0.048,0.08
