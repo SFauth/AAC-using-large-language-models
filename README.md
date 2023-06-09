@@ -242,6 +242,12 @@ A run is uniquely identified by its time suffix. Like this, the three files can 
 
 If this was not clear, check out the ```audio_captioning/README.md```, which sketches the folder structure.
 
+If you want to check out my specific logs, go on Callisto in my home directory to:
+
+```
+code/AACLM/audio_captioning/inference_results
+```
+
 ****
 <span id='future_work'/>
 
