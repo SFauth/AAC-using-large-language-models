@@ -52,6 +52,8 @@ def load_CLAP(cuda_available,
     clip.load_ckpt(ckpt=pt_file,
                    model_id=3)
     clip.eval()
+
+    clip = clip.cuda()
     # DISCLAIMER: in the package example, eval mode is not activated!
 
     setattr(clip, "encode_audio", clip.get_audio_embedding_from_data)

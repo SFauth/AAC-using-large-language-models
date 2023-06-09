@@ -325,6 +325,8 @@ if __name__ == '__main__':
                                                     device)
                     
                     if "CLAP" in str(type(clip)):
+
+                        sound_instance = sound_instance.cuda()                        
                         try:
                             audio_embeds = clip.encode_audio(sound_instance,
                                                         use_tensor=True)  
