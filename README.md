@@ -187,11 +187,45 @@ The folder ```audio_captioning/inference_results/facebook/opt-1.3b``` stores the
 2. clotho_v2.1/excludes_prompt_magic
 
 Inside each folder, there are three subfolders analyzing the results.
-1. evaluation: Stores a .csv file containing the NLG metrics of every run: https://github.com/SFauth/AACLM/blob/1a9aa00c3af548f997a0aa6474ed31f0ed3ad303/audio_captioning/inference_result/facebook/opt-1.3b/AudioCaps/excludes_prompt_magic/evaluation/test_performance/0.193_2023-05-31%2009%3A01%3A59_MAGIC_WavCaps_AudioSet_KW.csv
+1. evaluation: Stores a .csv file containing the NLG metrics of every run:
+
+|Dataset| Model | Mean NLG Score | ... | SPIDEr |
+|----------|----------|---------|--------|---------|
+|AudioSet| MAGIC_WavCaps_AudioSet_KW_l_test_ablation | 0.166 | ... | 0.138 |
+
 2. output_tables: Stores an HTML table containing the audio clip and sample-level results for qualitative analysis (NLG metrics, cosine similarities with the audio of the prediction, the prediction, ...). Run an HTML file to view it!
-https://github.com/SFauth/AACLM/blob/1a9aa00c3af548f997a0aa6474ed31f0ed3ad303/audio_captioning/inference_result/facebook/opt-1.3b/AudioCaps/excludes_prompt_magic/output_tables/test_performance/0.193_2023-05-31%2009%3A01%3A59_MAGIC_WavCaps_AudioSet_KW.html
-3. output_jsons: For every run a list of dictionaries containing the prediction for every sample and all hyperparameters
-https://github.com/SFauth/AACLM/blob/1a9aa00c3af548f997a0aa6474ed31f0ed3ad303/audio_captioning/inference_result/facebook/opt-1.3b/AudioCaps/excludes_prompt_magic/output_jsons/test_performance/0.193_2023-05-31%2009%3A01%3A59_MAGIC_WavCaps_AudioSet_KW.json
+
+3. output_jsons: For every run a list of dictionaries containing the prediction for every sample and all hyperparameters:
+
+
+```yaml
+{
+        "split": "test",
+        "sound_name": "--0w1YA1Hm4_30000.wav",
+        "captions": [
+            "A vehicle driving as a man and woman are talking and laughing",
+            "Men speak and laugh with humming of an engine",
+            "High pitched speaking and laughing",
+            "Humming of an engine with a woman and men speaking",
+            "People talking with the dull roar of a vehicle on the road"
+        ],
+        "prediction": "laughter and joy.",
+        "beta": 0.5,
+        "prompt": "This is a sound of ",
+        "k": 45,
+        "alpha": 0,
+        "decoding_len": 78,
+        "clip_text_max_len": 77,
+        "n_test_samples": 975,
+        "included_prompt_in_magic": false,
+        "dataset": "AudioCaps",
+        "CLAP_type": "HTSAT-BERT-PT.pt",
+        "temperature": 10,
+        "l": 7,
+        "keyword_prompt": "Objects: ",
+        "end_penalty": 0.10000000149011612
+    }
+```
 
 After deciding on which result file (CSV, HTML or JSON) you want to check out, specify the experiment type:
 - validation = runs on the validation set to find the optimal hyperparameters
