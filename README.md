@@ -4,6 +4,7 @@
 
 This repository contains code, models, and other related resources of my master's thesis. The repo is based on MAGIC. I am grateful to the authors: Yixuan Su, Tian Lan, Yahui Liu, Fangyu Liu, Dani Yogatama, Yan Wang, Lingpeng Kong, and Nigel Collier. Please check out their [repository](https://github.com/yxuansu/MAGIC) and [paper](https://arxiv.org/abs/2205.02655). 
 
+Except for this README, there are different README files in the subfolders. However, if you only want to do inference using the best model, you can ignore these and focus on the main README here.
 
 
 ****
@@ -80,6 +81,9 @@ conda activate ZSAAC
 ```
 conda install -c conda-forge openjdk # for using Java based Stanford NLG metrics computation
 ```
+6. Secret Tip
+
+If you have problems with the environment, just activate the MAGIC environment in the Callisto directory in my AACLM directory and run everything there.
 ****
 <span id='data'/>
 
@@ -228,15 +232,21 @@ Inside each folder, there are three subfolders analyzing the results.
 ```
 
 After deciding on which result file (CSV, HTML or JSON) you want to check out, specify the experiment type:
-- validation = runs on the validation set to find the optimal hyperparameters
-- test_performance = runs on the test set for model ablation (results in the state-of-the-art table (SOTA) and in the model ablation plot)
-- ablation = runs on the test set for hyperparamer ablation (values in the $\beta$ and $l$ ablation plots made with the best model in test_performance)
+- validation = runs on the validation set to find the optimal hyperparameters (validation plot: Figure 2)
+- test_performance = runs on the test set for model ablation (results in the state-of-the-art table (SOTA) and in the model ablation plot: Table 6, 7 and Figure 3)
+- ablation = runs on the test set for hyperparamer ablation (values in the $\beta$ and $l$ ablation plots made with the best model found in validation: Figure 4, 5)
 
 A run is uniquely identified by its time suffix. Like this, the three files can be matched for every run. The figure in front of the timestamp is the average of all NLG metrics, indicating the quality of the run.
 
 **TLDR**: There are **three files** per run on a dataset. Click through all subfolders and pick the ones with the most recent timestamp to check on your results.
 
 If this was not clear, check out the ```audio_captioning/README.md```, which sketches the folder structure.
+
+If you want to check out my specific logs, go on Callisto in my home directory to:
+
+```
+code/AACLM/audio_captioning/inference_results
+```
 
 ****
 <span id='future_work'/>
