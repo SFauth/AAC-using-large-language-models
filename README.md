@@ -81,6 +81,9 @@ conda activate ZSAAC
 ```
 conda install -c conda-forge openjdk # for using Java based Stanford NLG metrics computation
 ```
+6. Secret Tip
+
+If you have problems with the environment, just activate the MAGIC environment in the Callisto directory in my AACLM directory and run everything there.
 ****
 <span id='data'/>
 
@@ -229,9 +232,9 @@ Inside each folder, there are three subfolders analyzing the results.
 ```
 
 After deciding on which result file (CSV, HTML or JSON) you want to check out, specify the experiment type:
-- validation = runs on the validation set to find the optimal hyperparameters
-- test_performance = runs on the test set for model ablation (results in the state-of-the-art table (SOTA) and in the model ablation plot)
-- ablation = runs on the test set for hyperparamer ablation (values in the $\beta$ and $l$ ablation plots made with the best model found in validation)
+- validation = runs on the validation set to find the optimal hyperparameters (validation plot: Figure 2)
+- test_performance = runs on the test set for model ablation (results in the state-of-the-art table (SOTA) and in the model ablation plot: Table 6, 7 and Figure 3)
+- ablation = runs on the test set for hyperparamer ablation (values in the $\beta$ and $l$ ablation plots made with the best model found in validation: Figure 4, 5)
 
 A run is uniquely identified by its time suffix. Like this, the three files can be matched for every run. The figure in front of the timestamp is the average of all NLG metrics, indicating the quality of the run.
 
