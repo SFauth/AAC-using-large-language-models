@@ -231,7 +231,7 @@ Inside each folder, there are three subfolders analyzing the results.
 After deciding on which result file (CSV, HTML or JSON) you want to check out, specify the experiment type:
 - validation = runs on the validation set to find the optimal hyperparameters
 - test_performance = runs on the test set for model ablation (results in the state-of-the-art table (SOTA) and in the model ablation plot)
-- ablation = runs on the test set for hyperparamer ablation (values in the $\beta$ and $l$ ablation plots made with the best model in test_performance)
+- ablation = runs on the test set for hyperparamer ablation (values in the $\beta$ and $l$ ablation plots made with the best model found in validation)
 
 A run is uniquely identified by its time suffix. Like this, the three files can be matched for every run. The figure in front of the timestamp is the average of all NLG metrics, indicating the quality of the run.
 
