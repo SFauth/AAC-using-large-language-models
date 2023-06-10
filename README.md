@@ -26,7 +26,8 @@ Except for this README, there are different README files in the subfolders. Howe
     * <a href='#future_work_CLIP'>8.3. How to exchange the audio CLIP model?</a>
     * <a href='#future_work_flag'>8.4. Detailed explanation of all flags in the inference shell-scripts</a>
     * <a href='#ablation'>8.5. Example: how did we do the ablation studies to find the optimal beta?</a>
-* <a href='#contact'>9. Contact</a>
+* <a href='#validation_docs'>9. Validation documentation: what hyperparam grid did we use</a>
+* <a href='#contact'>10. Contact</a>
 ****
 
 <span id='introduction'/>
@@ -305,11 +306,39 @@ Do the same for every value that you want to try out.
 3. As we have had than more than one GPU, we then repeated step 1 and step 2 using other $\beta$ or hyperparameter values, indicating to use another GPU
    
 4. Use a jupyter notebook to create the visualization: https://github.com/ExplainableML/2023-audiocaptioning-msc-stefan/blob/c4a8fcdc479ab3c77cb79f59d3f82cdba7d2c933/audio_captioning/evaluation/development_result_jsons/create_val_plot.ipynb
+
+****
+<span id='validation_docs'/>
+
+### 9. Validation documentation
+
+We provide a small summary of the hyperparameter grids that we ran full sweeps on with the best model to find the optimal set of hyperparameters:
+
+
+|Dataset| Hyperparameter | Values |
+|----------|----------|----------|
+|AudioCaps Validation| $\alpha$ | [0, 0.5] | 
+|...| $\beta$ |[0, 0.1, 0.2, 0.3, ... 2] | 
+|...| $\gamma$ |[0.1, 0.13, 0.16]|
+|...| $\tau$ |[10, 18.7, 25]|
+|...| $l$ | [0, 1, 2] |
+|...| $k$ | [45] |
+|...| keyword_prompt | [Objects: ] |
+|...| basic_prompt | [This is a sound of ] |
+
+
+We have then used this set doing our main component ablation studies and have also ablated $\beta$ and $l$.
+
+
+
+
+
+
 ****
 
 <span id='contact'/>
 
-### 9. Contact
+### 10. Contact
 If there are still open questions, have a look at the dissertation or contact me at (SFauth@gmx.net).
 
 
