@@ -18,6 +18,13 @@ The source code and the logs (inference_result) are organized as follows:
                     ├── output_jsons
                     ├── output_tables
         ├── ./softlinks/ # Store the softlinks to or the audio files themselves here!!!
+                ├── AudioCaps_data  # stores AudioCaps .wav files
+                    ├── audiocaps_audio_clip_1.wav
+                    ...
+                ├── evaluation_data_files # stores Clotho .wav files
+                    ├── clotho_audio_clip_1.wav
+                    ...
+        
         ├── inference_magic.py # The central python script combining the data, the models and that stores the results
         └── sound_obj_generator.py # This program created the ChatGPT keyword list
      
