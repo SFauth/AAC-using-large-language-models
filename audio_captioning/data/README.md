@@ -77,6 +77,7 @@ audio_captioning/data/raw_data/caption_datasets/clotho_v2.1
 ```
 3. Run ```process_clotho_v2.1.py```
 
+**Disclaimer**: We refer to Clotho's evaluation set as Clotho's test set.
 
 ****
 <span id='summary_stats'/> 
