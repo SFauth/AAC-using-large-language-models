@@ -90,13 +90,37 @@ If you have problems with the environment, just activate the MAGIC environment i
 
 ### 3. Data setup:
 
-In case, you already have AudioCaps and Clotho's evaluation data set loaded, it is enough to **specify the softlink** in the directory audio_captioning/softlinks and you can skip a) and b). If you do **not have it** yet, just **follow a) and b)**:
+In case, you already have AudioCaps and Clotho's evaluation data set loaded, it is enough to **specify the softlink** in the directory
 
-- a) AudioCaps:
+```
+audio_captioning/softlinks
+```
+
+and you can skip a) and b). If you do **not have the data** yet, just **follow a) and b)**:
+
+- a) AudioCaps (Download validation and test data):
+
 ```
 cd audio_captioning/softlinks
-tar -xzf AudioCaps_data.tar.gz # unpack the compressed file containg the data
+mkdir AudioCaps_data
+cd AudioCaps_data
+apt install ffmpeg youtube-dl
+aac-datasets-download --root "." audiocaps --subsets "val"
+mv AUDIOCAPS/audiocaps_audio_files/* . 
+rm -r AUDIOCAPS
 ```
+Repeat for test data:
+
+```
+cd AudioCaps_data
+aac-datasets-download --root "." audiocaps --subsets "test"
+mv AUDIOCAPS/audiocaps_audio_files/* . 
+rm -r AUDIOCAPS
+```
+
+
+```
+
 - b) Clotho :
 Download the evaluation, i.e. test data, of Clotho Version 2.1:
 ```
