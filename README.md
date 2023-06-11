@@ -128,17 +128,15 @@ mkdir AudioCaps_data
 cd AudioCaps_data
 apt install ffmpeg youtube-dl
 aac-datasets-download --root "." audiocaps --subsets "val"
-mv AUDIOCAPS/audiocaps_audio_files/* . 
-rm -r AUDIOCAPS
 ```
-Repeat for test data:
+Put the folder containing the .wav files into
 
 ```
-cd AudioCaps_data
-aac-datasets-download --root "." audiocaps --subsets "test"
-mv AUDIOCAPS/audiocaps_audio_files/* . 
-rm -r AUDIOCAPS
+AudioCaps_data
 ```
+
+Repeat for test data and put the .wav files also in the same folder (AudioCaps_data)
+
 
 
 - b) Clotho :
