@@ -94,7 +94,6 @@ The shell scripts are written in a way that requires the data to be in
 
 ```
 audio_captioning/softlinks
-
 ```
 
 The structure should look like:
@@ -116,14 +115,10 @@ https://github.com/ExplainableML/2023-audiocaptioning-msc-stefan/blob/e3c8b02345
 
 
 
-In case, you already have AudioCaps and Clotho's evaluation data set loaded, it is enough to **specify the softlink** in the directory.
-
-
-
-and you can skip a) and b). 
-
+In case, you already have AudioCaps and Clotho's evaluation data set loaded, it is enough to **specify the softlink** in the directory and you can skip a) and b). 
 
 If you do **not have the data** yet, just **follow a) and b)**:
+
 
 - a) AudioCaps (Download validation and test data):
 
