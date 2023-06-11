@@ -14,7 +14,13 @@
         
 
 
-The original MAGIC repo uses .json files to match GT captions with their respective file name. Here, we provide the scripts that we have used to transform the .csv files from AudioCaps and Clotho to the required .json files. This is an example of AudioSet's validation set:
+The original MAGIC repo uses .json files to match GT captions with their respective file name. Therefore, the file name ("sound_name") in the .json files have to be equal to the actual files, where the actual file is stored:
+
+```
+softlinks/AudioCaps_data
+```
+
+Here, we provide the scripts that we have used to transform the .csv files from AudioCaps and Clotho to the required .json files. This is an example of AudioSet's validation set. The file ```softlinks/AudioCaps_data/rqfQRErjfk8_170000.wav``` is associated with these GT captions:
 ```yaml
 {
         "split": "val",
@@ -29,6 +35,8 @@ The original MAGIC repo uses .json files to match GT captions with their respect
         ]
     }
 ```
+
+
 <span id='data_prep'/>
 
 **Disclaimer**: you can ignore the data preparation part if you use the .json files in the respective .sh inference script (--GT_captions_AudioCaps) that we have provided to match a file name with its ground truth captions. 
