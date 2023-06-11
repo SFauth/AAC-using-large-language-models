@@ -128,14 +128,13 @@ mkdir AudioCaps_data
 cd AudioCaps_data
 apt install ffmpeg youtube-dl
 aac-datasets-download --root "." audiocaps --subsets "val"
+aac-datasets-download --root "." audiocaps --subsets "test"
 ```
-Put all .wav files into
+Put all .wav files into ``` AudioCaps_data ```.
+You can use ```mv AUDIOCAPS_32000Hz/audio/test/*.wav .``` and ```mv AUDIOCAPS_32000Hz/audio/val/*.wav .```
 
-```
-AudioCaps_data
-```
-
-Repeat for test data and put the .wav files also in the same folder (AudioCaps_data)
+Make sure that the file names match with the file names in ```audio_captioning/data/AudioCaps/AudioCaps_val.json```, resp.
+```audio_captioning/data/AudioCaps/AudioCaps_test.json```.
 
 
 
