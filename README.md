@@ -129,7 +129,7 @@ cd AudioCaps_data
 apt install ffmpeg youtube-dl
 aac-datasets-download --root "." audiocaps --subsets "val"
 ```
-Put the folder containing the .wav files into
+Put all .wav files into
 
 ```
 AudioCaps_data
