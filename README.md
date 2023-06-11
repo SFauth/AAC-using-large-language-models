@@ -134,7 +134,9 @@ Put all .wav files into ``` AudioCaps_data ```.
 You can use ```mv AUDIOCAPS_32000Hz/audio/test/*.wav .``` and ```mv AUDIOCAPS_32000Hz/audio/val/*.wav .```
 
 Make sure that the file names match with the file names in ```audio_captioning/data/AudioCaps/AudioCaps_val.json```, resp.
-```audio_captioning/data/AudioCaps/AudioCaps_test.json```.
+```audio_captioning/data/AudioCaps/AudioCaps_test.json```. If this is not the case, you can either change all file names, such that they match.
+
+Alternatively, check out the script ```audio_captioning/data/process_AudioCaps.py``` and create new .JSON files that match them with their GT captions.
 
 
 
