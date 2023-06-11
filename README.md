@@ -70,7 +70,7 @@ git clone https://github.com/SFauth/AACLM.git](https://github.com/ExplainableML/
 cd 2023-audiocaptioning-msc-stefan
 
 ```
-3. Create a new conda environment with the correct Python version
+3. Create a new conda environment
 ```
 conda env create -f env1.yaml
 ```
@@ -84,7 +84,7 @@ conda install -c conda-forge openjdk # for using Java based Stanford NLG metrics
 ```
 6. Secret Tip
 
-If you have problems with the environment, just activate the MAGIC environment in the Callisto directory in my AACLM directory and run everything there.
+If you have problems with the environment, just activate the ZSAAC_2 environment in the Callisto directory in my AACLM directory and run everything there.
 ****
 <span id='data'/>
 
