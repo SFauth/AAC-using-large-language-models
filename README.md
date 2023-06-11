@@ -2,7 +2,7 @@
 **Author**: Stefan Fauth
 
 
-This repository contains code, models, and other related resources of my master's thesis. The repo is based on MAGIC and we use their code related to MAGIC search, the repo structure and the sh-folders. I am grateful to the authors: Yixuan Su, Tian Lan, Yahui Liu, Fangyu Liu, Dani Yogatama, Yan Wang, Lingpeng Kong, and Nigel Collier. Please check out their [repository](https://github.com/yxuansu/MAGIC) and [paper](https://arxiv.org/abs/2205.02655). 
+This repository contains code, models, and other related resources of my master's thesis. The repo is built on MAGIC: we have built on MAGIC's code related to MAGIC search, the repo structure and the sh-folders to build our system. I am grateful to the authors: Yixuan Su, Tian Lan, Yahui Liu, Fangyu Liu, Dani Yogatama, Yan Wang, Lingpeng Kong, and Nigel Collier. Please check out their [repository](https://github.com/yxuansu/MAGIC) and [paper](https://arxiv.org/abs/2205.02655). 
 
 Except for this README, there are different README files in the subfolders. However, if you only want to do inference using the best model, you can ignore these and focus on the main README here.
 
