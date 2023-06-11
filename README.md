@@ -63,7 +63,7 @@ the framework.
 
 1. Clone the repo
 ```
-git clone https://github.com/SFauth/AACLM.git](https://github.com/ExplainableML/2023-audiocaptioning-msc-stefan.git
+git clone https://github.com/ExplainableML/2023-audiocaptioning-msc-stefan.git
 ```
 2. Set it as the current directory
 ```
