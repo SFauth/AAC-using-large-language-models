@@ -90,13 +90,40 @@ If you have problems with the environment, just activate the MAGIC environment i
 
 ### 3. Data setup:
 
-In case, you already have AudioCaps and Clotho's evaluation data set loaded, it is enough to **specify the softlink** in the directory
+The shell scripts are written in a way that requires the data to be in
 
 ```
 audio_captioning/softlinks
+
 ```
 
-and you can skip a) and b). If you do **not have the data** yet, just **follow a) and b)**:
+The structure should look like:
+
+      .
+      ├── ./softlinks/  
+         ├── AudioCaps_data  # stores AudioCaps .wav files
+             ├── audiocaps_audio_clip_1.wav
+             ├── ...
+             └── ...
+         ├── evaluation_data_files # stores Clotho .wav files
+             ├── clotho_audio_clip_1.wav
+             ├── ...
+             └── ...
+
+
+If you want to store the data in a different folder, **specify the softlink** or change in **every shell script** the flag:
+https://github.com/ExplainableML/2023-audiocaptioning-msc-stefan/blob/e3c8b02345b8999e1a274a86e1f1804498e3788d/audio_captioning/sh_folder/MAGIC_AudioCLIP.sh#L6-L7
+
+
+
+In case, you already have AudioCaps and Clotho's evaluation data set loaded, it is enough to **specify the softlink** in the directory.
+
+
+
+and you can skip a) and b). 
+
+
+If you do **not have the data** yet, just **follow a) and b)**:
 
 - a) AudioCaps (Download validation and test data):
 
@@ -118,8 +145,6 @@ mv AUDIOCAPS/audiocaps_audio_files/* .
 rm -r AUDIOCAPS
 ```
 
-
-```
 
 - b) Clotho :
 Download the evaluation, i.e. test data, of Clotho Version 2.1:
