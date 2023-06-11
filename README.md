@@ -136,7 +136,9 @@ You can use ```mv AUDIOCAPS_32000Hz/audio/test/*.wav .``` and ```mv AUDIOCAPS_32
 Make sure that the file names match with the file names in ```audio_captioning/data/AudioCaps/AudioCaps_val.json```, resp.
 ```audio_captioning/data/AudioCaps/AudioCaps_test.json```. If this is not the case, you can either change all file names, such that they match.
 
-Alternatively, check out the script ```audio_captioning/data/process_AudioCaps.py``` and create new .JSON files that match them with their GT captions.
+Alternatively, check out the script ```audio_captioning/data/process_AudioCaps.py``` and create new .JSON files that match them with their GT captions. In this context, change up these variables, if the file names have different pre/suffixes:
+
+https://github.com/ExplainableML/2023-audiocaptioning-msc-stefan/blob/42d77fa5f8cac8f4bc03788b097bed92838ebce6/audio_captioning/data/process_AudioCaps.py#L35-L37
 
 
 
